@@ -1,12 +1,39 @@
+# USAGE: make [target=<targetpath>] [noroot=y] [autorm=y] [mount=<path>] [creater=<name>]
+# example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba
 D=docker
 
 TGT=${target}
 ARGS=${args}
 MOUNT=${mount}
+NOROOT=${noroot}
+AUTORM=${autorm}
+CREATER=${creater}
 
 SRCS := $(shell find . -type f)
 export http_proxy
 export https_proxy
+export USER
+
+ifneq ($(NOROOT), )
+	root=-u `id -u`:`id -g`
+endif
+ifneq ($(AUTORM), )
+	rm=--rm
+endif
+ifneq ($(MOUNT), )
+	mt=--mount type=bind,src=$(MOUNT),dst=$(MOUNT)
+endif
+ifneq ($(http_proxy), )
+	use_http_proxy=--build-arg http_proxy=$(http_proxy)
+endif
+ifneq ($(https_proxy), )
+	use_https_proxy=--build-arg https_proxy=$(https_proxy)
+endif
+ifneq ($(CREATER), )
+	builder=$(CREATER)
+else
+	builder=$(USER)
+endif
 
 all: build run ## exec "build" and "run"
 build: $(SRCS) ## build to all container
@@ -14,39 +41,14 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-ifeq ($(http_proxy), )
-ifeq ($(https_proxy), )
-	$(D) image build -t $(TGT) $(TGT)/.
-else
-	$(D) image build --build-arg https_proxy=$(https_proxy) -t $(TGT) $(TGT)/.
-endif
-else
-ifeq ($(https_proxy), )
-	$(D) image build --build-arg http_proxy=$(http_proxy) -t $(TGT) $(TGT)/.
-else
-	$(D) image build --build-arg http_proxy=$(http_proxy) --build-arg https_proxy=$(https_proxy) -t $(TGT) $(TGT)/.
-endif
-endif
+	$(D) image build $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
 
 run: $(SRCS) ## start up to all container
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-ifeq ($(MOUNT), )
-#	$(D) run -u `id -u`:`id -g` --name $(TGT) --rm -it $(ARGS) $(TGT) /bin/bash
-	$(D) run --name $(TGT) --rm -it $(ARGS) $(TGT) /bin/bash
-else
-#	$(D) run -u `id -u`:`id -g` --name $(TGT) --rm -it --mount type=bind,src=$(MOUNT),dst=$(MOUNT) $(ARGS) $(TGT) /bin/bash
-	$(D) run --name $(TGT) --rm -it --mount type=bind,src=$(MOUNT),dst=$(MOUNT) $(ARGS) $(TGT) /bin/bash
-endif
-
-stop: $(SRCS) ## down to container
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-	$(D) stop $(TGT)
+	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container
@@ -62,7 +64,7 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) rmi $(TGT)
+	$(D) rmi $(builder)/$(TGT)
 
 .PHONY: help
 	all: help
