@@ -7,7 +7,7 @@ dockerfiles
 
 ## 使い方
 
-1. `<repository>/dockerfiles/<image name>/Dockerfile` を作成します
+1. `<repository>/dockerfiles/<image name>/Dockerfile` を作成する
 	* 含めるファイルがある場合は、`<repository>/dockerfiles/<image name>/files` 配下に入れておく
 2. `make build target=<image name> [creater=<name>]` でbuildできる
 	* 環境変数の、`http_proxy`, `https_proxy` を活用できるので必要に応じて設定しておく
@@ -22,7 +22,7 @@ dockerfiles
 	* `make attach target=<image name>`
 		* 起動済み同一コンテナに、アタッチする
 4. `make clean target=<image name>`
-		* イメージの削除を行う
+	* イメージの削除を行う
 
 ## リリース@dockerhub
 
