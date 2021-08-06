@@ -66,6 +66,12 @@ ifeq ($(TGT), )
 endif
 	$(D) rmi $(builder)/$(TGT)
 
+allrm: ## cleanup all container
+	$(D) ps -aq | xargs $(D) rm
+
+allrmi: ## cleanup all images
+	$(D) images -aq | xargs $(D) rmi
+
 .PHONY: help
 	all: help
 help: ## help
