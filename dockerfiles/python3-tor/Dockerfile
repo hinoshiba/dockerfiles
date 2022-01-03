@@ -24,3 +24,4 @@ ADD ./torrc /etc/tor/torrc
 RUN chmod 777 /work/run.sh
 
 WORKDIR /work
+CMD ["/usr/bin/tor", "-f", "/etc/tor/torrc"]
