@@ -25,3 +25,4 @@ RUN chmod 777 /work/run.sh
 EXPOSE 8853/udp 9150/tcp
 
 WORKDIR /work
+CMD ["/work/run.sh"]

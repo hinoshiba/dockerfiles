@@ -1,4 +1,4 @@
-# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [portmap=<n>]
+# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>]
 # example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
 D=docker
 
@@ -8,7 +8,7 @@ MOUNT=${mount}
 NOROOT=${noroot}
 AUTORM=${autorm}
 CREATER=${creater}
-PORTMAP=${portmap}
+PORT=${port}
 
 SRCS := $(shell find . -type f)
 export http_proxy
@@ -35,8 +35,8 @@ ifneq ($(CREATER), )
 else
 	builder=$(USER)
 endif
-ifeq ($(PORTMAP), )
-	portopt=-P
+ifneq ($(PORT), )
+	portopt=-p 127.0.0.1:$(PORT):$(PORT)
 endif
 
 .PHONY: all
