@@ -1,5 +1,5 @@
-# USAGE: make [target=<targetpath>] [noroot=y] [autorm=y] [mount=<path>] [creater=<name>]
-# example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba
+# USAGE: make [target=<targetpath>] [noroot=y] [autorm=y] [mount=<path>] [creater=<name>] [port=<port>]
+# example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
 D=docker
 
 TGT=${target}
@@ -8,6 +8,7 @@ MOUNT=${mount}
 NOROOT=${noroot}
 AUTORM=${autorm}
 CREATER=${creater}
+PORT=${port}
 
 SRCS := $(shell find . -type f)
 export http_proxy
@@ -34,8 +35,13 @@ ifneq ($(CREATER), )
 else
 	builder=$(USER)
 endif
+ifneq ($(PORT), )
+	port_bind=-p $(PORT):$(PORT)
+endif
 
+.PHONY: all
 all: build run ## exec "build" and "run"
+.PHONY: build
 build: $(SRCS) ## build to all container
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
@@ -43,12 +49,13 @@ ifeq ($(TGT), )
 endif
 	$(D) image build $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
 
+.PHONY: run
 run: $(SRCS) ## start up to all container
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(builder)/$(TGT) /bin/bash
+	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(port) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container
@@ -66,9 +73,11 @@ ifeq ($(TGT), )
 endif
 	$(D) rmi $(builder)/$(TGT)
 
+.PHONY: allrm
 allrm: ## cleanup all container
 	$(D) ps -aq | xargs $(D) rm
 
+.PHONY: allrmi
 allrmi: ## cleanup all images
 	$(D) images -aq | xargs $(D) rmi
 
