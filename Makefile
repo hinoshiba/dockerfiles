@@ -55,7 +55,7 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(port) $(builder)/$(TGT) /bin/bash
+	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(port_bind) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container
