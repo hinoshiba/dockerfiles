@@ -1,3 +1,4 @@
 #!/bin/bash
 
-python3 src/tor.py
+service tor start
+curl -x socks5h://0:9150 http://ipinfo.io

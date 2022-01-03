@@ -1,4 +1,4 @@
-# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<port>]
+# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [portmap=<n>]
 # example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
 D=docker
 
@@ -8,7 +8,7 @@ MOUNT=${mount}
 NOROOT=${noroot}
 AUTORM=${autorm}
 CREATER=${creater}
-PORT=${port}
+PORTMAP=${portmap}
 
 SRCS := $(shell find . -type f)
 export http_proxy
@@ -35,8 +35,8 @@ ifneq ($(CREATER), )
 else
 	builder=$(USER)
 endif
-ifneq ($(PORT), )
-	port_bind=-p $(PORT):$(PORT)
+ifeq ($(PORTMAP), )
+	portopt=-P
 endif
 
 .PHONY: all
@@ -55,7 +55,7 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(port_bind) $(builder)/$(TGT) /bin/bash
+	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container
