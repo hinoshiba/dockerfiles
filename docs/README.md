@@ -13,11 +13,11 @@ dockerfiles
 	* 環境変数の、`http_proxy`, `https_proxy` を活用できるので必要に応じて設定しておく
 	* `creater`を指定しない場合、環境変数の、`USER` の値が入る
 		* 作成されるコンテナは、公開されている名前と被らないように`$USER/<image name>` か、`<creater>/<image name>` で作成される
-3. `make run target=<image name> [creater=<name>] [noroot=y] [autorm=y] [mount=<path>]` で起動できる
+3. `make run target=<image name> [creater=<name>] [noroot=y] [autorm=n] [mount=<path>]` で起動できる
 	* `noroot=y`: uid, gidが、カレントユーザのもので起動する。マウントしてファイル変更する場合等に、便利
 		* 引数オプション的に活用しているので、`noroot=n`であっても、`noroot=y`で動作する。値は関係ない
-	* `autorm=y`: コンテナ停止後の自動削除を有効にする
-		* 引数オプション的に活用しているので、`autorm=n`であっても、`autorm=y`で動作する。値は関係ない
+	* `autorm=n`: コンテナ停止後の自動削除を有効にする
+		* 引数オプション的に活用しているので、`autorm=y`であっても、`autorm=n`で動作する。値は関係ない
 	* `mount`: dockerのmountオプションのショートカット系。裏で`type=bind`で動作してくれる。src, dst のpathが同じ形になる
 	* `make attach target=<image name>`
 		* 起動済み同一コンテナに、アタッチする

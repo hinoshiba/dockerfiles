@@ -1,4 +1,4 @@
-# USAGE: make [target=<targetpath>] [noroot=y] [autorm=y] [mount=<path>] [creater=<name>] [port=<port>]
+# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<port>]
 # example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
 D=docker
 
@@ -18,7 +18,7 @@ export USER
 ifneq ($(NOROOT), )
 	root=-u `id -u`:`id -g`
 endif
-ifneq ($(AUTORM), )
+ifeq ($(AUTORM), )
 	rm=--rm
 endif
 ifneq ($(MOUNT), )
