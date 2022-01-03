@@ -54,4 +54,4 @@ def reconnect_tor():
 if __name__ == '__main__':
     args = sys.argv
 
-    reconnect_tor(START)
+    reconnect_tor()
