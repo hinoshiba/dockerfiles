@@ -15,9 +15,14 @@ export http_proxy
 export https_proxy
 export USER
 
+
 ifneq ($(NOROOT), )
-	root=-u `id -u`:`id -g` -e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+	root=-u `id -u`:`id -g`
 endif
+ifeq ($(TGT), "workbench")
+	root=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+endif
+
 ifeq ($(AUTORM), )
 	rm=--rm
 endif

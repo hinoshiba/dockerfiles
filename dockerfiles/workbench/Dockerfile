@@ -15,5 +15,5 @@ RUN apt update && \
     locale-gen ja_JP.UTF-8
 
 ADD ./add_local_user.sh /root/add_local_user.sh
-RUN chmod +x  /root/add_local_user.sh
+RUN chmod +x /root/add_local_user.sh
 ENTRYPOINT ["/root/add_local_user.sh"]
