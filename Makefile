@@ -19,7 +19,7 @@ export USER
 ifneq ($(NOROOT), )
 	root=-u `id -u`:`id -g`
 endif
-ifeq ($(TGT), "workbench")
+ifeq ($(TGT), workbench)
 	root=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
 endif
 
