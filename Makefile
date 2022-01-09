@@ -15,12 +15,16 @@ export http_proxy
 export https_proxy
 export USER
 
-
 ifeq ($(NOROOT), )
 	ifeq ($(TGT), workbench)
-		root=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+		ifeq ($(shell uname), Darwin)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER})
+			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
+		else
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+		endif
 	else
-		root=-u `id -u`:`id -g`
+		useropt=-u `id -u`:`id -g`
 	endif
 endif
 
@@ -61,7 +65,7 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(TGT) -it $(root) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
+	$(D) run --name $(TGT) -it $(useropt) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container

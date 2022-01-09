@@ -8,4 +8,4 @@ useradd -u $USER_ID -o -m wrkkk
 groupmod -g $GROUP_ID wrkkk
 export HOME=/home/wrkkk
 
-su -u user "$@"
+su user "$@"
