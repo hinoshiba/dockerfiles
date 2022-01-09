@@ -26,6 +26,7 @@ ln -s /mnt/${LOCAL_HOME}/.gitconfig /home/${LOCAL_WHOAMI}/.gitconfig
 ln -s /mnt/${LOCAL_HOME}/Downloads /home/${LOCAL_WHOAMI}/Downloads
 
 # mount:wr
+ln -s /mnt/${LOCAL_HOME}/git /home/${LOCAL_WHOAMI}/git
 ln -s /mnt/${LOCAL_HOME}/work /home/${LOCAL_WHOAMI}/work
 ln -s /mnt/${LOCAL_HOME}/shared_cache /home/${LOCAL_WHOAMI}/shared_cache
 
