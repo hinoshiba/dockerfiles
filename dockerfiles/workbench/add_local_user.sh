@@ -14,4 +14,5 @@ export LC_ALL=ja_JP.UTF-8
 export HOME=${LOCAL_HOME}
 EOL
 
-su - wrkkk "$@"
+su - -l wrkkk "$@"
+#su - -l wrkkk "$@"
