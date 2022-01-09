@@ -7,7 +7,7 @@ ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
 RUN apt-get update && \
-    apt-get install -y  tzdata locales sudo visudo tee \
+    apt-get install -y  tzdata locales sudo \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
         less bash-completion && \
     apt-get clean && \
