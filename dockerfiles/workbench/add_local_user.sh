@@ -17,9 +17,12 @@ ln -s /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/newsboat /home/${LOCAL_WHOAMI}/.newsboat
+ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 
 # mount:ro
 ln -s /mnt/${LOCAL_HOME}/.ssh /home/${LOCAL_WHOAMI}/.ssh
+ln -s /mnt/${LOCAL_HOME}/.gnupg /home/${LOCAL_WHOAMI}/.gnupg
+ln -s /mnt/${LOCAL_HOME}/.gitconfig /home/${LOCAL_WHOAMI}/.gitconfig
 ln -s /mnt/${LOCAL_HOME}/Downloads /home/${LOCAL_WHOAMI}/Downloads
 
 # mount:wr
