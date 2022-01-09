@@ -21,7 +21,12 @@ ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 
 # mount:ro
 ln -s /mnt/${LOCAL_HOME}/.ssh /home/${LOCAL_WHOAMI}/.ssh
-ln -s /mnt/${LOCAL_HOME}/.gnupg /home/${LOCAL_WHOAMI}/.gnupg
+sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.gnupg/
+ln -s /mnt/${LOCAL_HOME}/.gnupg/openpgp-revocs.d /home/${LOCAL_WHOAMI}/.gnupg/openpgp-revocs.d
+ln -s /mnt/${LOCAL_HOME}/.gnupg/private-keys-v1.d /home/${LOCAL_WHOAMI}/.gnupg/private-keys-v1.d
+ln -s /mnt/${LOCAL_HOME}/.gnupg/pubring.kbx /home/${LOCAL_WHOAMI}/.gnupg/pubring.kbx
+ln -s /mnt/${LOCAL_HOME}/.gnupg/pubring.kbx~ /home/${LOCAL_WHOAMI}/.gnupg/pubring.kbx~
+ln -s /mnt/${LOCAL_HOME}/.gnupg/trustdb.gpg /home/${LOCAL_WHOAMI}/.gnupg/trustdb.gpg
 ln -s /mnt/${LOCAL_HOME}/.gitconfig /home/${LOCAL_WHOAMI}/.gitconfig
 ln -s /mnt/${LOCAL_HOME}/Downloads /home/${LOCAL_WHOAMI}/Downloads
 

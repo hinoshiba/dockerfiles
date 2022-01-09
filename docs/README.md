@@ -31,7 +31,7 @@ dockerfiles
 	* カレントユーザを自動的にコンテナへ作成します
 		* ENTRYPOINT で作成するので、イメージ上は反映されません
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
-			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/add_local_user.sh#L21)
+			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/add_local_user.sh#L33)
 * 動作準備
 	* 以下ディレクトリを掘る
 		* `~/work/`
