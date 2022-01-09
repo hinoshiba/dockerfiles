@@ -24,6 +24,9 @@ dockerfiles
 4. `make clean target=<image name>`
 	* イメージの削除を行う
 
+### 特別な使い方: イメージ名: workbench
+
+
 ## リリース@dockerhub
 
 1. builderの用意
