@@ -14,7 +14,7 @@ show-read-feeds no
 feed-sort-order unreadarticlecount-asc
 
 color info color82 blue
-color listnomal_unread white default
+color listnormal_unread white default
 color listforcus white default reverse bold
 color listforcus_unread white default reverse bold
 
