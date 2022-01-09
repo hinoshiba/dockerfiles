@@ -26,7 +26,7 @@ ifeq ($(NOROOT), )
 		else
 			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
 		endif
-		mt=$(HOME)
+		MOUNT=$(HOME)
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
