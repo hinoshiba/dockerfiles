@@ -1,5 +1,5 @@
-# USAGE: make [target=<targetpath>] [noroot=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>]
-# example: make target=golang noroot=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
+# USAGE: make [target=<targetpath>] [noroot=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>]
+# example: make target=golang noroot=n autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
 D=docker
 
 TGT=${target}
@@ -16,11 +16,12 @@ export https_proxy
 export USER
 
 
-ifneq ($(NOROOT), )
-	root=-u `id -u`:`id -g`
-endif
-ifeq ($(TGT), workbench)
-	root=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+ifeq ($(NOROOT), )
+	ifeq ($(TGT), workbench)
+		root=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+	else
+		root=-u `id -u`:`id -g`
+	endif
 endif
 
 ifeq ($(AUTORM), )
