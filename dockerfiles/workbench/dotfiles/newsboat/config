@@ -1,0 +1,45 @@
+# -- feeds
+auto-reload yes
+reload-time 15
+reload-threads 4
+download-retries 4
+download-timeout 10
+prepopulate-query-feeds yes
+show-read-feeds yes
+
+save-path "~/work/Saved_RSS"
+
+# -- display
+show-read-feeds no
+feed-short-order unreadarticlecount-asc
+
+color info color82 blue
+color listnomal_unread white default
+color listforcus white default reverse bold
+color listforcus_unread white default reverse bold
+
+text-width 80
+
+# -- network
+# proxy <myproxy>:<port>
+# use-proxy yes
+ssl-verifyhost yes
+ssl-verifypeer yes
+
+# -- navigation
+
+goto-next-feed no
+browser lynx %u
+
+unbind-key G
+unbind-key g
+unbind-key b
+
+bind-key b open-in-browser
+bind-key j down
+bind-key k up
+bind-key $ reload-urls
+bind-key g pageup
+bind-key G pagedown
+bind-key o sort
+# bind-key O revsort

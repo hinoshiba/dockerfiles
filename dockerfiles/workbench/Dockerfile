@@ -7,7 +7,7 @@ ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
 RUN apt-get update && \
-    apt-get install -y  tzdata locales sudo \
+    apt-get install -y  tzdata locales sudo newsboat mutt imapfilter \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
         less bash-completion && \
     apt-get clean && \
@@ -16,5 +16,6 @@ RUN apt-get update && \
     locale-gen ja_JP.UTF-8
 
 ADD ./add_local_user.sh /root/add_local_user.sh
+ADD ./dotfiles /etc/dotfiles
 RUN chmod +x /root/add_local_user.sh
 ENTRYPOINT ["/root/add_local_user.sh"]

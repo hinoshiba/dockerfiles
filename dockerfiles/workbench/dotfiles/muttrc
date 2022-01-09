@@ -1,0 +1,211 @@
+set imap_user = "username@example.com"
+set imap_pass = "password"
+set ssl_starttls=yes
+set folder = "imaps://outlook.office365.com:993"
+set smtp_url = "smtp://username@example.com@smtp.office365.com:587/"
+set smtp_pass = "password"
+
+set editor = "vim"
+set copy="yes"
+set mbox_type="Maildir"
+set realname="username@example.com"
+set use_from="yes"
+set from="username@example.com"
+set envelope_from="yes"
+my_hdr Return-Path: username@example.com
+my_hdr X-addheader: ILoveVim
+set nomove
+
+color header green black "^Date:"
+color header yellow black "^Subject:"
+color header green black "^From:"
+color header green black "^To:"
+color header green black "^Cc:"
+color body red black "(ftp|http)://[^ ]+"
+color body red black "[-a-zA-Z0-9_.]+@[-a-zA-Z0-9_.]+"
+unignore Date
+set send_charset="iso-2022-jp:utf-8"
+
+set spoolfile = "+INBOX"
+set imap_check_subscribed
+set hostname = outlook.office365.com
+set mail_check = 120
+set timeout = 300
+set imap_keepalive = 300
+set postponed = "+下書き"
+set record = "+送信済みアイテム"
+set header_cache=~/.mutt/cache/headers
+set message_cachedir=~/.mutt/cache/bodies
+set certificate_file=~/.mutt/certificates
+set signature =~/.mutt/signature
+set move = no
+set include
+set auto_tag = yes
+ignore "Authentication-Results:"
+ignore "DomainKey-Signature:"
+ignore "DKIM-Signature:"
+hdr_order Date From To Cc
+alternative_order text/plain text/html *
+auto_view text/html
+bind editor <Tab> complete-query
+bind editor ^T complete
+bind editor <space> noop
+
+
+# Status Bar -----------------------------------------
+set status_chars  = " *%A"
+set status_format = "---[ Folder: %f ]---[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]---%>-%?p?( %p postponed )?---"
+
+# Index View Options ---------------------------------
+set date_format = "%m/%d"
+set index_format = "[%Z]  %D  %-20.20F  %s"
+set sort_aux = reverse-last-date-received  # like
+set uncollapse_jump                        # don't collapse on an unread message
+set sort_re                                # thread based on regex
+set reply_regexp = "^(([Rr][Ee]?(\[[0-9]+\])?: *)?(\[[^]]+\] *)?)*"
+
+# Index Key Bindings ---------------------------------
+bind index gg       first-entry
+bind index G        last-entry
+bind index R        group-reply
+bind index <tab>    sync-mailbox
+bind index <space>  collapse-thread
+
+# Ctrl-R to mark all as read
+macro index \Cr "T~U<enter><tag-prefix><clear-flag>N<untag-pattern>.<enter>" "mark all messages as read"
+
+# Saner copy/move dialogs
+macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
+macro index M "<save-message>?<toggle-mailboxes>" "move a message to a mailbox"
+
+# Sidebar Navigation ---------------------------------
+
+# Pager View Options ---------------------------------
+set pager_index_lines = 10 # number of index lines to show
+set pager_context = 3      # number of context lines to show
+set pager_stop             # don't go to next message automatically
+set menu_scroll            # scroll in menus
+set tilde                  # show tildes like in vim
+unset markers              # no ugly plus signs
+set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
+alternative_order text/plain text/enriched text/html
+
+# Pager Key Bindings ---------------------------------
+bind pager k  previous-line
+bind pager j  next-line
+bind pager gg top
+bind pager G  bottom
+bind pager R  group-reply
+bind browser gg top-page
+bind browser G bottom-page
+bind attach,index gg first-entry
+bind attach,index G last-entry
+
+# View attachments properly.
+bind attach <return> view-mailcap
+
+macro pager \Cu "|urlview<enter>" "call urlview to open links"
+
+# Color settings for mutt.
+# Default color definitions
+color normal     white         default
+color hdrdefault green         default
+color quoted    green         default
+color quoted1    yellow        default
+color quoted2    red           default
+color signature  cyan          default
+color indicator  brightyellow  red
+color error      brightred     default
+color tree  brightmagenta default
+color tilde     blue          default
+color attachment brightyellow  default
+color markers   brightred     default
+color message    white         default
+color search     brightwhite   magenta
+color bold       brightyellow  default
+
+# Color definitions when on a mono screen
+mono bold      bold
+mono underline underline
+mono indicator reverse
+mono error     bold
+
+# Colors for items in the reader
+color header brightyellow default "^(From|Subject):"
+color header brightcyan   default ^To:
+color header brightcyan   default ^Cc:
+mono  header bold                 "^(From|Subject):"
+
+# Many of these formulas were stolen from Jeremy Blosser
+# These would be much simpler if colors were additive.
+
+# regular new messages
+color index black         white "~N !~T !~F !~p !~P"
+# regular tagged messages
+color index black         cyan    "~T !~F !~p !~P"
+# regular flagged messages
+color index black         red     "~F !~p !~P"
+# messages to me
+color index yellow        default "~p !~N !~T !~F !~P"
+color index brightyellow  white  "~p ~N !~T !~F !~P"
+color index yellow        cyan    "~p ~T !~F !~P"
+color index yellow        red     "~p ~F !~P"
+# messages from me
+color index green         default "~P !~N !~T !~F"
+color index green         default "~P ~N !~T !~F"
+color index green         cyan    "~P ~T !~F"
+color index green         red     "~P ~F"
+# messages which mention my name in the body
+color index yellow        default "~b \"phil(_g|\!| gregory| gold)|pgregory\" !~N !~T !~F !~p !~P"
+color index brightyellow  white "~b \"phil(_g|\!| gregory| gold)|pgregory\" ~N !~T !~F !~p !~P"
+color index yellow        cyan    "~b \"phil(_g|\!| gregory| gold)|pgregory\" ~T !~F !~p !~P"
+color index yellow        red     "~b \"phil(_g|\!| gregory| gold)|pgregory\" ~F !~p !~P"
+# messages which are in reference to my mails
+color index magenta       default "~x \"(mithrandir|aragorn)\\.aperiodic\\.net|thorin\\.hillmgt\\.com\" !~N !~T !~F !~p !~P"
+color index magenta       white "~x \"(mithrandir|aragorn)\\.aperiodic\\.net|thorin\\.hillmgt\\.com\" ~N !~T !~F !~p !~P"
+color index magenta       cyan    "~x \"(mithrandir|aragorn)\\.aperiodic\\.net|thorin\\.hillmgt\\.com\" ~T !~F !~p !~P"
+color index magenta       red     "~x \"(mithrandir|aragorn)\\.aperiodic\\.net|thorin\\.hillmgt\\.com\" ~F !~p !~P"
+# messages to root, etc.
+color index cyan          default "~C \"(root|postmaster|abuse|mailer-daemon)@\" !~N !~P !~p"
+color index cyan          white "~C \"(root|postmaster|abuse|mailer-daemon)@\" ~N !~P !~p"
+# big messages
+color index brightred     default "!~N ~z 102400-"
+color index brightred     cyan    "~T !~F !~p !~P ~z 102400-"
+color index brightred     white "~N ~z 102400-"
+
+# deleted messages
+color index red           default "!~N ~D"
+color index red           white "~N ~D"
+
+# Highlights inside the body of a message.
+
+# Attribution lines
+color body magenta default "\\* [^<]+ <[^>]+> \\[[^]]+\\]:"
+color body magenta default "(^|[^[:alnum:]])on [a-z0-9 ,]+( at [a-z0-9:,. +-]+)? wrote:"
+
+# URLs
+color body brightyellow default "([a-z][a-z0-9+-]*://(((([a-z0-9_.!~*'();:&=+$,-]|%[0-9a-f][0-9a-f])*@)?((([a-z0-9]([a-z0-9-]*[a-z0-9])?)\\.)*([a-z]([a-z0-9-]*[a-z0-9])?)\\.?|[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)(:[0-9]+)?)|([a-z0-9_.!~*'()$,;:@&=+-]|%[0-9a-f][0-9a-f])+)(/([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*(;([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*)*(/([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*(;([a-z0-9_.!~*'():@&=+$,-]|%[0-9a-f][0-9a-f])*)*)*)?(\\?([a-z0-9_.!~*'();/?:@&=+$,-]|%[0-9a-f][0-9a-f])*)?(#([a-z0-9_.!~*'();/?:@&=+$,-]|%[0-9a-f][0-9a-f])*)?|(www|ftp)\\.(([a-z0-9]([a-z0-9-]*[a-z0-9])?)\\.)*([a-z]([a-z0-9-]*[a-z0-9])?)\\.?(:[0-9]+)?(/([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*(;([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*)*(/([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*(;([-a-z0-9_.!~*'():@&=+$,]|%[0-9a-f][0-9a-f])*)*)*)?(\\?([-a-z0-9_.!~*'();/?:@&=+$,]|%[0-9a-f][0-9a-f])*)?(#([-a-z0-9_.!~*'();/?:@&=+$,]|%[0-9a-f][0-9a-f])*)?)[^].,:;!)? \t\r\n<>\"]"
+
+# email addresses
+color body brightmagenta default "((@(([0-9a-z-]+\\.)*[0-9a-z-]+\\.?|#[0-9]+|\\[[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\]),)*@(([0-9a-z-]+\\.)*[0-9a-z-]+\\.?|#[0-9]+|\\[[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\.[0-9]?[0-9]?[0-9]\\]):)?[0-9a-z_.+%$-]+@(([0-9a-z-]+\\.)*[0-9a-z-]+\\.?|#[0-9]+|\\[[0-2]?[0-9]?[0-9]\\.[0-2]?[0-9]?[0-9]\\.[0-2]?[0-9]?[0-9]\\.[0-2]?[0-9]?[0-9]\\])"
+
+# PGP messages
+color  body            brightyellow    default "^gpg: Good signature .*"
+color  body            white           default "^gpg: "
+color  body            brightwhite     red     "^gpg: BAD signature from.*"
+mono   body            bold                    "^gpg: Good signature"
+mono   body            bold                    "^gpg: BAD signature from.*"
+
+# Various smilies and the like
+color body brightwhite default "<[Gg]>"                            # <g>
+color body brightwhite default "<[Bb][Gg]>"                        # <bg>
+color body brightwhite default " [;:]-*[})>{(<|]"                  # :-) etc...
+# *bold*
+color body brightblue  default "(^|[[:space:][:punct:]])\\*[^*]+\\*([[:space:][:punct:]]|$)"
+mono  body bold                "(^|[[:space:][:punct:]])\\*[^*]+\\*([[:space:][:punct:]]|$)"
+# _underline_
+color body brightblue  default "(^|[[:space:][:punct:]])_[^_]+_([[:space:][:punct:]]|$)"
+mono  body underline           "(^|[[:space:][:punct:]])_[^_]+_([[:space:][:punct:]]|$)"
+
+# Border lines.
+color body blue default "( *[-+=#*~_]){6,}"

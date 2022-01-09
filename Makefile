@@ -29,6 +29,7 @@ ifeq ($(NOROOT), )
 		endif
 		useropt+= --mount type=bind,src=$(HOME),dst=/mnt/$(HOME),readonly
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
+		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=/mnt/$(HOME)/shared_cache
 	else
 		useropt=-u `id -u`:`id -g`
 	endif

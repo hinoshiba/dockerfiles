@@ -1,0 +1,33 @@
+escape ^ta
+defscrollback 1000
+bind F eval 'scrollback 0' 'scrollback 1000' 'echo "scrollback buffer cleared"'
+startup_message off
+zombie kr
+verbose on
+deflog on
+logfile '~/shared_cache/screen-log/screenlog.%H.%Y%m%d-%02c:%s-%n.%t.log'
+logtstamp on
+logtstamp string "\n-- SCREEN [%Y/%m/%d %02c:%s] %n:%t --\n"
+hardcopydir 'screen/hardcopy'
+hardcopy_append on
+bind ^G
+caption always "%{= wk}%?%F%{= R}%:%{= g}%?[%n %t]"
+hardstatus alwayslastline "%{= wk} %-w%{=bu dr}%n %t%{-}%+w %= %{=b wb}%y/%m/%d(%D) %{=b wb}%c"
+vbell off
+vbell_msg "Bell"
+
+bind r eval 'command -c resize'
+bind ^r eval 'command -c resize'
+bind + eval 'command -c resize'
+bind - eval 'command -c resize'
+bind -c resize + eval 'resize +1' 'command -c resize'
+bind -c resize - eval 'resize -1' 'command -c resize'
+defscrollback 10000
+
+altscreen on
+cjkwidth off
+defencoding utf8
+encoding utf8 utf8
+
+term xterm-256color
+bindkey -k kB focus up
