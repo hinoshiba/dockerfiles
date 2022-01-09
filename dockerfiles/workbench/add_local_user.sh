@@ -13,6 +13,6 @@ ln -s /mnt/${LOCAL_HOME}/.vimrc /home/${LOCAL_WHOAMI}/.vimrc
 ln -s /mnt/${LOCAL_HOME}/.ssh /home/${LOCAL_WHOAMI}/.ssh
 ln -s /mnt/${LOCAL_HOME}/.screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /mnt/${LOCAL_HOME}/Downloads /home/${LOCAL_WHOAMI}/Downloads
-ln -s /mnt/${LOCAL_HOME}/share /home/${LOCAL_WHOAMI}/share
+ln -s /mnt/${LOCAL_HOME}/work /home/${LOCAL_WHOAMI}/work
 
 su -l -s /bin/bash - ${LOCAL_WHOAMI}
