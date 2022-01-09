@@ -1,5 +1,5 @@
-# USAGE: make [target=<targetpath>] [noroot=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>]
-# example: make target=golang noroot=n autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80
+# USAGE: make [target=<targetpath>] [noroot=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
+# example: make target=golang noroot=n autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 D=docker
 
 TGT=${target}
@@ -9,6 +9,7 @@ NOROOT=${noroot}
 AUTORM=${autorm}
 CREATER=${creater}
 PORT=${port}
+C_NAME=${cname}
 
 SP_WORKBENCH=workbench
 
@@ -54,6 +55,12 @@ endif
 ifneq ($(PORT), )
 	portopt=-p 127.0.0.1:$(PORT):$(PORT)
 endif
+ifneq ($(C_NAME), )
+	nameopt=$(C_NAME)
+else
+	nameopt=$(TGT)
+endif
+
 
 .PHONY: all
 all: build run ## exec "build" and "run"
@@ -71,7 +78,7 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(TGT) -it $(useropt) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
+	$(D) run --name $(nameopt) -it $(useropt) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
 
 .PHONY: attach
 attach: ## attach container
