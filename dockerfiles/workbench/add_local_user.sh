@@ -6,6 +6,8 @@ GROUP_ID=${LOCAL_GID:-9001}
 echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
 useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
+passwd -d ${LOCAL_WHOAMI}
+echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
 rm /home/${LOCAL_WHOAMI}/.bashrc
 ln -s /mnt/${LOCAL_HOME}/.bashrc /home/${LOCAL_WHOAMI}/.bashrc
