@@ -7,6 +7,7 @@ echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
 useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
 passwd -d ${LOCAL_WHOAMI}
+#usermod -L ${LOCAL_WHOAMI}
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 

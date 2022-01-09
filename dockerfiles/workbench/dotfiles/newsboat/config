@@ -11,7 +11,7 @@ save-path "~/work/Saved_RSS"
 
 # -- display
 show-read-feeds no
-feed-short-order unreadarticlecount-asc
+feed-sort-order unreadarticlecount-asc
 
 color info color82 blue
 color listnomal_unread white default
