@@ -21,12 +21,12 @@ export HOME
 ifeq ($(NOROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
 		endif
-		MOUNT=$(HOME)
+		mt=$(HOME)
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
