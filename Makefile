@@ -10,30 +10,35 @@ AUTORM=${autorm}
 CREATER=${creater}
 PORT=${port}
 
+SP_WORKBENCH=workbench
+
 SRCS := $(shell find . -type f)
 export http_proxy
 export https_proxy
 export USER
+export HOME
 
 ifeq ($(NOROOT), )
-	ifeq ($(TGT), workbench)
+	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER})
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME)
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER})
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME)
 		endif
+		MOUNT=$(HOME)
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
+endif
+ifneq ($(MOUNT), )
+	mt=--mount type=bind,src=$(MOUNT),dst=$(MOUNT)
 endif
 
 ifeq ($(AUTORM), )
 	rm=--rm
 endif
-ifneq ($(MOUNT), )
-	mt=--mount type=bind,src=$(MOUNT),dst=$(MOUNT)
-endif
+
 ifneq ($(http_proxy), )
 	use_http_proxy=--build-arg http_proxy=$(http_proxy)
 endif
