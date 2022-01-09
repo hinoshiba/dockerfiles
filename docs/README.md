@@ -39,7 +39,10 @@ dockerfiles
 		* `~/shared_cache/`
 			* n回起動であっても保存が必要なキャッシュが保存される
 				* e.g. histroyファイル, lockファイル, logファイル
-
+		* gitの設定をしておく(`~/.gitconfig`)
+		* gpgの準備をしておく(`~/gnupg`)
+			* https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
+			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
 
 ## リリース@dockerhub
 
