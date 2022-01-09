@@ -1,11 +1,11 @@
-# USAGE: make [target=<targetpath>] [noroot=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
-# example: make target=golang noroot=n autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
+# USAGE: make [target=<targetpath>] [root=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
+# example: make target=golang root=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 D=docker
 
 TGT=${target}
 ARGS=${args}
 MOUNT=${mount}
-NOROOT=${noroot}
+ROOT=${root}
 AUTORM=${autorm}
 CREATER=${creater}
 PORT=${port}
@@ -19,7 +19,7 @@ export https_proxy
 export USER
 export HOME
 
-ifeq ($(NOROOT), )
+ifeq ($(ROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
 			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
