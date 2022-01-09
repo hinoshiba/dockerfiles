@@ -31,6 +31,7 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=/mnt/$(HOME)/git
 		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=/mnt/$(HOME)/shared_cache
+		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
 	else
 		useropt=-u `id -u`:`id -g`
 	endif

@@ -43,6 +43,8 @@ dockerfiles
 		* gpgの準備をしておく(`~/gnupg`)
 			* https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
 			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
+* アップデート
+	* `make target=workbench cname=develop` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できる。それで動作確認する
 
 ## リリース@dockerhub
 

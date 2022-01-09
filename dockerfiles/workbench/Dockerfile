@@ -9,7 +9,8 @@ ENV LC_ALL ja_JP.UTF-8
 RUN apt-get update && \
     apt-get install -y  tzdata locales sudo newsboat mutt imapfilter \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
-        less bash-completion && \
+        less bash-completion make && \
+    apt-get install -y --no-install-recommends docker.io docker-compose && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
