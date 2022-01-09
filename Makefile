@@ -27,7 +27,7 @@ ifeq ($(NOROOT), )
 			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
 		endif
 		useropt+= --mount type=bind,src=$(HOME),dst=/mnt/$(HOME),readonly
-		useropt+= --mount type=bind,src=$(HOME)/share,dst=$(HOME)/share
+		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
