@@ -47,7 +47,11 @@ ifeq ($(ROOT), )
 	endif
 endif
 ifneq ($(MOUNT), )
-	mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
+	ifneq ($(shell test -d /mnt/Users && echo "is_Users"), )
+		mt= --mount type=bind,src=$(shell echo "$(MOUNT)" | sed -s "s/^\/home/\/Users/"),dst=$(MOUNT)
+	else
+		mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
+	endif
 endif
 
 ifeq ($(AUTORM), )
