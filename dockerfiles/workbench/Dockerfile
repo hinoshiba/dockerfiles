@@ -1,6 +1,8 @@
 FROM ubuntu:20.04
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
+ARG local_docker_gid
+
 ENV SHELL /bin/bash
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG ja_JP.UTF-8
@@ -11,6 +13,7 @@ RUN apt-get update && \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
         iputils-ping net-tools dnsutils && \
+    test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get install -y --no-install-recommends docker.io docker-compose && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \

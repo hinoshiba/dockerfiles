@@ -26,6 +26,7 @@ export https_proxy
 export USER
 export HOME
 
+buildopt=
 ifeq ($(ROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
@@ -33,6 +34,7 @@ ifeq ($(ROOT), )
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
 			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
+			buildopt+=--build-arg local_docker_gid=$(shell getent group docker | awk  -F: '{print $$3}')
 		endif
 		useropt+= --mount type=bind,src=$(HOME),dst=/mnt/$(HOME),readonly
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
@@ -87,7 +89,7 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
-	$(D) image build $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
+	$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
 endif
 
 
