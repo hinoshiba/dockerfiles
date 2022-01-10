@@ -1,8 +1,7 @@
 dockerfiles
 ===
 
-* 作業用コンテナをサクッと管理できるmakefileとその構成群
-	* コンテナ名オプションの、`cname=<name>`で切り替える事で複数インスタンス起動可能
+作業用コンテナをサクッと管理できるmakefileとその構成群  
 
 ## 基本的な使い方
 
@@ -27,8 +26,9 @@ dockerfiles
 	* カレントユーザを自動的にコンテナへ作成します
 		* ENTRYPOINT で作成するので、イメージ上は反映されません
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
-			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L33)
-* 動作準備
+			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L30)
+	* docker outside docker がいじれるようにしてあります。mountのpathは、host側のpathになるので気をつけてください
+* 利用準備
 	* 以下ディレクトリを掘る
 		* `~/work/`
 			* 作業データの共有を想定
@@ -40,9 +40,11 @@ dockerfiles
 			* https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
 			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
 * アップデート
-	* `make target=workbench cname=develop` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できる。それで動作確認する
+	* `make target=workbench cname=develop` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
 
 ## リリース@dockerhub
+
+本環境で作成して、最終的にdockerhubへアップロードする際の手順  
 
 1. builderの用意
 	```
