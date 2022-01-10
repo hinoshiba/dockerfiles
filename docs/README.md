@@ -2,26 +2,22 @@ dockerfiles
 ===
 
 * 作業用コンテナをサクッと管理できるmakefileとその構成群
-	* 各オプションは、makefileで支援
-	* makefileは、同時に1つだけあげる、dockerfileやdokcerimage作成 or build環境としての支援のみを想定している
+	* コンテナ名オプションの、`cname=<name>`で切り替える事で複数インスタンス起動可能
 
-## 使い方
+## 基本的な使い方
 
 1. `<repository>/dockerfiles/<image name>/Dockerfile` を作成する
 	* 含めるファイルがある場合は、`<repository>/dockerfiles/<image name>/files` 配下に入れておく
-2. `make build target=<image name> [creater=<name>]` でbuildできる
-	* 環境変数の、`http_proxy`, `https_proxy` を活用できるので必要に応じて設定しておく
-	* `creater`を指定しない場合、環境変数の、`USER` の値が入る
-		* 作成されるコンテナは、公開されている名前と被らないように`$USER/<image name>` か、`<creater>/<image name>` で作成される
-3. `make run target=<image name> [creater=<name>] [root=y] [autorm=n] [mount=<path>]` で起動できる
-	* `root=y`: uid, gidが、カレントユーザではなくrootで起動する。デフォルトは、uid, gidがカレントユーザになる
-		* 引数オプション的に活用しているので、`root=n`であっても、`root=y`で動作する。値は関係ない
-	* `autorm=n`: コンテナ停止後の自動削除を有効にする
-		* 引数オプション的に活用しているので、`autorm=y`であっても、`autorm=n`で動作する。値は関係ない
-	* `mount`: dockerのmountオプションのショートカット系。裏で`type=bind`で動作してくれる。src, dst のpathが同じ形になる
-	* `make attach target=<image name>`
-		* 起動済み同一コンテナに、アタッチする
-4. `make clean target=<image name>`
+2. `make target=<image name>`
+	* build時に、環境変数の、`http_proxy`, `https_proxy` を活用できるので必要に応じて設定しておく
+		* それらの変数は、起動後のコンテナには引き継がれない
+	* オプションについては、[オプション詳細](./options.md) を確認
+3. 作業を行う
+	* 別窓が必要になった場合、`make target=<image name>` で追加attachができる
+4. `make stop target=<image name>`
+	* イメージの停止を行う
+		* 各種コンテナは、デフォルトで、daemonモード、rmオプション有効で起動するので、データ削除に注意
+5. `make clean target=<image name>`
 	* イメージの削除を行う
 
 ### 特別な使い方: イメージ名: workbench
@@ -31,7 +27,7 @@ dockerfiles
 	* カレントユーザを自動的にコンテナへ作成します
 		* ENTRYPOINT で作成するので、イメージ上は反映されません
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
-			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/add_local_user.sh#L33)
+			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L33)
 * 動作準備
 	* 以下ディレクトリを掘る
 		* `~/work/`

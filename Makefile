@@ -11,7 +11,6 @@ SP_WORKBENCH=workbench
 
 ## args
 TGT=${target}
-ARGS=${args}
 MOUNT=${mount}
 ROOT=${root}
 AUTORM=${autorm}
@@ -109,7 +108,9 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
+ifneq ($(dopt), )
 	$(D) exec -it $(NAME) $(INIT_SHELL)
+endif
 
 .PHONY: stop
 stop: ## Force stop the target docker container.
