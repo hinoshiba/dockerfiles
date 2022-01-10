@@ -9,7 +9,8 @@ ENV LC_ALL ja_JP.UTF-8
 RUN apt-get update && \
     apt-get install -y  tzdata locales sudo newsboat mutt imapfilter \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
-        less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils && \
+        less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
+        iputils-ping net-tools dnsutils && \
     apt-get install -y --no-install-recommends docker.io docker-compose && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
