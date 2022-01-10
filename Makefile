@@ -1,7 +1,15 @@
-# USAGE: make [target=<targetpath>] [root=y] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
-# example: make target=golang root=y autorm=y mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
-D=docker
+# mydocker makefile@hinoshiba:##
+#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
+#  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
+#  =======options========  :##
+## You can add text at help menu, pattern of '#<string>: <string2>'
 
+## const
+INIT_SHELL=/bin/bash
+D=docker
+SP_WORKBENCH=workbench
+
+## args
 TGT=${target}
 ARGS=${args}
 MOUNT=${mount}
@@ -10,9 +18,9 @@ AUTORM=${autorm}
 CREATER=${creater}
 PORT=${port}
 C_NAME=${cname}
+DAEMON=${daemon}
 
-SP_WORKBENCH=workbench
-
+## import
 SRCS := $(shell find . -type f)
 export http_proxy
 export https_proxy
@@ -32,16 +40,21 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=/mnt/$(HOME)/git
 		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=/mnt/$(HOME)/shared_cache
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
+		useropt+= -d 
+		INIT_SHELL=/usr/local/bin/exec_user.sh
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
 endif
 ifneq ($(MOUNT), )
-	mt=--mount type=bind,src=$(MOUNT),dst=$(MOUNT)
+	mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
 endif
 
 ifeq ($(AUTORM), )
-	rm=--rm
+	rm= --rm
+endif
+ifeq ($(DAEMON), )
+	dopt= -d
 endif
 
 ifneq ($(http_proxy), )
@@ -56,43 +69,60 @@ else
 	builder=$(USER)
 endif
 ifneq ($(PORT), )
-	portopt=-p 127.0.0.1:$(PORT):$(PORT)
+	portopt= -p 127.0.0.1:$(PORT):$(PORT)
 endif
 ifneq ($(C_NAME), )
-	nameopt=$(C_NAME)
+	NAME=$(C_NAME)
 else
-	nameopt=$(TGT)
+	NAME=$(TGT)
 endif
+
 
 
 .PHONY: all
-all: build run ## exec "build" and "run"
-.PHONY: build
-build: $(SRCS) ## build to all container
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-	$(D) image build $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
+all: build start attach ## [Default] Exec function of 'build' -> 'start' -> 'attach'
 
-.PHONY: run
-run: $(SRCS) ## start up to all container
+.PHONY: build
+build: $(SRCS) ## Build a target docker image. If the target container already exists, skip this section.
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) run --name $(nameopt) -it $(useropt) $(rm) $(mt) $(portopt) $(builder)/$(TGT) /bin/bash
+ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
+	$(D) image build $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
+endif
+
+
+.PHONY: start
+start: $(SRCS) ## Start a target docker image. If the target container already exists, skip this section.
+ifeq ($(TGT), )
+	@echo "not set target. usage: make <operation> target=<your target>"
+	@exit 1
+endif
+ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
+	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(INIT_SHELL)
+endif
 
 .PHONY: attach
-attach: ## attach container
+attach: ## Attach the target docker container.
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) exec -it $(TGT) /bin/bash
+	$(D) exec -it $(NAME) $(INIT_SHELL)
+
+.PHONY: stop
+stop: ## Force stop the target docker container.
+ifeq ($(NAME), )
+	@echo "not set target. usage: make <operation> target=<your target>"
+	@exit 1
+endif
+ifneq ($(shell docker ps -aq -f name="$(NAME)"), )
+	$(D) rm -f $(shell docker ps -aq -f name="$(NAME)")
+endif
 
 .PHONY: clean
-clean: ## stop container and cleanup data
+clean: ## Remove the target dokcer image.
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
@@ -100,16 +130,16 @@ endif
 	$(D) rmi $(builder)/$(TGT)
 
 .PHONY: allrm
-allrm: ## cleanup all container
+allrm: ## [[Powerful Option]] Cleanup **ALL** docker container.
 	$(D) ps -aq | xargs $(D) rm
 
 .PHONY: allrmi
-allrmi: ## cleanup all images
+allrmi: ## [[Powerful Option]] Cleanup **ALL** docker images.
 	$(D) images -aq | xargs $(D) rmi
 
 .PHONY: help
 	all: help
-help: ## help
+help: ## Display the options.
 	@awk -F ':|##' '/^[^\t].+?:.*?##/ {\
 		printf "\033[36m%-30s\033[0m %s\n", $$1, $$NF \
 	}' $(MAKEFILE_LIST)
