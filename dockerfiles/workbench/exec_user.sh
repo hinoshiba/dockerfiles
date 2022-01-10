@@ -1,13 +1,21 @@
 #!/bin/bash
+set -eu
+
+function exec_usershell() {
+	su -l -s /bin/bash - ${LOCAL_WHOAMI} || exit 1
+	exit 0
+}
 
 USER_ID=${LOCAL_UID:-9001}
 GROUP_ID=${LOCAL_GID:-9001}
+
+getent passwd ${LOCAL_WHOAMI} > /dev/null && exec_usershell
 
 echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
 useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
 passwd -d ${LOCAL_WHOAMI}
-#usermod -L ${LOCAL_WHOAMI}
+usermod -L ${LOCAL_WHOAMI}
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
@@ -44,4 +52,4 @@ ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock /home/${LOCAL_WH
 
 sudo -u ${LOCAL_WHOAMI} test -d /home/${LOCAL_WHOAMI}/shared_cache/screen-log/ || mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/screen-log/
 
-su -l -s /bin/bash - ${LOCAL_WHOAMI}
+exec_usershell

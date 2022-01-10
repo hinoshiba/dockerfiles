@@ -16,7 +16,7 @@ RUN apt-get update && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8
 
-ADD ./add_local_user.sh /root/add_local_user.sh
+ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 ADD ./dotfiles /etc/dotfiles
-RUN chmod +x /root/add_local_user.sh
-ENTRYPOINT ["/root/add_local_user.sh"]
+RUN chmod +x /usr/local/bin/exec_user.sh
+ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
