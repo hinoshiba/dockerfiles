@@ -16,6 +16,9 @@ useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
 passwd -d ${LOCAL_WHOAMI}
 usermod -L ${LOCAL_WHOAMI}
+gpasswd -a ${LOCAL_WHOAMI} docker
+chown root:docker /var/run/docker.sock
+chmod 660 /var/run/docker.sock
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
@@ -23,7 +26,6 @@ rm /home/${LOCAL_WHOAMI}/.bashrc
 # built-in
 sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
-#ln -s /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/newsboat /home/${LOCAL_WHOAMI}/.newsboat
