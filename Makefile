@@ -29,17 +29,16 @@ export HOME
 ifeq ($(ROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
 		endif
 		useropt+= --mount type=bind,src=$(HOME),dst=/mnt/$(HOME),readonly
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=/mnt/$(HOME)/git
 		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=/mnt/$(HOME)/shared_cache
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-		useropt+= -d 
 		INIT_SHELL=/usr/local/bin/exec_user.sh
 	else
 		useropt=-u `id -u`:`id -g`

@@ -21,7 +21,9 @@ echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
 rm /home/${LOCAL_WHOAMI}/.bashrc
 # built-in
-ln -s /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
+sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
+sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
+#ln -s /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/newsboat /home/${LOCAL_WHOAMI}/.newsboat
