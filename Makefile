@@ -84,8 +84,11 @@ endif
 
 
 .PHONY: all
-all: build start attach ## [Default] Exec function of 'build' -> 'start' -> 'attach'
+all: repopull build start attach ## [Default] Exec function of 'build' -> 'start' -> 'attach'
 
+.PHONY: repopull
+repopull: ## Pull the remote repositroy.
+	git pull
 .PHONY: build
 build: $(SRCS) ## Build a target docker image. If the target container already exists, skip this section.
 ifeq ($(TGT), )
