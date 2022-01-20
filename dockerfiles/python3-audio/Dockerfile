@@ -24,3 +24,6 @@ RUN pip install audio-to-midi
 #    python setup.py build && \
 #    python setup.py install
 #RUN git clone https://github.com/gcunhase/wav2midi2wav.git
+
+RUN mkdir /usertmp && \
+    chmod 777 /usertmp

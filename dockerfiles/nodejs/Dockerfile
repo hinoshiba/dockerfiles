@@ -12,3 +12,5 @@ RUN apt update && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8
 
+RUN mkdir /usertmp && \
+    chmod 777 /usertmp

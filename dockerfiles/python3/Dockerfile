@@ -16,3 +16,6 @@ RUN apt update && \
 
 RUN pip install --upgrade pip
 RUN pip install requests
+
+RUN mkdir /usertmp && \
+    chmod 777 /usertmp

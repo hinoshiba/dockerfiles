@@ -14,5 +14,9 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8
+RUN mkdir /.cache && \
+    chmod 777 /.cache && \
+    mkdir /usertmp && \
+    chmod 777 /usertmp
 
 WORKDIR ${GOPATH}
