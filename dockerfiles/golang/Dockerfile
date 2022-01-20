@@ -1,4 +1,4 @@
-FROM golang:1.16.5 AS builder
+FROM golang:1.17.6 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV GOPATH /go/src
