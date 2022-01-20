@@ -12,7 +12,7 @@ RUN apt-get update && \
     apt-get install -y  tzdata locales sudo newsboat mutt imapfilter \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
-        iputils-ping net-tools dnsutils && \
+        iputils-ping net-tools dnsutils rsync && \
     test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get install -y --no-install-recommends docker.io docker-compose && \
     apt-get clean && \
