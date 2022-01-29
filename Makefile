@@ -36,10 +36,20 @@ ifeq ($(ROOT), )
 			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
 			buildopt+=--build-arg local_docker_gid=$(shell getent group docker | awk  -F: '{print $$3}')
 		endif
-		useropt+= --mount type=bind,src=$(HOME),dst=/mnt/$(HOME),readonly
-		useropt+= --mount type=bind,src=$(HOME)/work,dst=/mnt/$(HOME)/work
-		useropt+= --mount type=bind,src=$(HOME)/git,dst=/mnt/$(HOME)/git
-		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=/mnt/$(HOME)/shared_cache
+		## wr
+		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
+		useropt+= --mount type=bind,src=$(HOME)/git,dst=$(HOME)/git
+		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=$(HOME)/shared_cache
+
+		## ro
+		useropt+= --mount type=bind,src=$(HOME)/.ssh,dst=$(HOME)/.ssh,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gnupg/openpgp-revocs.d,dst=$(HOME)/.gnupg/openpgp-revocs.d,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gnupg/private-keys-v1.d,dst=$(HOME)/.gnupg/private-keys-v1.d,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx,dst=$(HOME)/.gnupg/pubring.kbx,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx~,dst=$(HOME)/.gnupg/pubring.kbx~,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
+		useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig,ro
+		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
 		INIT_SHELL=/usr/local/bin/exec_user.sh
 	else
@@ -47,11 +57,7 @@ ifeq ($(ROOT), )
 	endif
 endif
 ifneq ($(MOUNT), )
-	ifneq ($(shell test -d /mnt/Users && echo "is_Users"), )
-		mt= --mount type=bind,src=$(shell echo "$(MOUNT)" | sed -s "s/^\/home/\/Users/"),dst=$(MOUNT)
-	else
-		mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
-	endif
+	mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
 endif
 
 ifeq ($(AUTORM), )
