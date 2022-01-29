@@ -2,8 +2,8 @@
 set -eu
 
 function exec_usershell() {
-	su -l -s /bin/bash - ${LOCAL_WHOAMI} || exit 1
-	exit 0
+	cd "${LOCAL_HOME}"
+	exec sudo -u ${LOCAL_WHOAMI} /bin/bash
 }
 
 USER_ID=${LOCAL_UID:-9001}
@@ -44,7 +44,6 @@ ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock /home/${LOCAL_WH
 sudo -u ${LOCAL_WHOAMI} test -d /home/${LOCAL_WHOAMI}/shared_cache/screen-log/ || mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/screen-log/
 
 ## permission
-
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} -R /home/${LOCAL_WHOAMI}/.gnupg || true
 find /home/${LOCAL_WHOAMI}/.gnupg -type d -exec chmod 700 {} \;
 find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
