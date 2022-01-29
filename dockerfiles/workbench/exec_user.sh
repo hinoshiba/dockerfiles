@@ -22,7 +22,7 @@ chmod 660 /var/run/docker.sock
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
-rm /home/${LOCAL_WHOAMI}/.bashrc
+rm /home/${LOCAL_WHOAMI}/.bashrc || true
 # built-in
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${LOCAL_HOME}"
 test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI}" && ln -s "${LOCAL_HOME}" "/home/${LOCAL_WHOAMI}" && usermod -d "${LOCAL_HOME}" "${LOCAL_WHOAMI}")
@@ -41,7 +41,7 @@ test -f /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock || sudo -u ${L
 ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
 ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
 
-sudo -u ${LOCAL_WHOAMI} test -d /home/${LOCAL_WHOAMI}/shared_cache/screen-log/ || mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/screen-log/
+test -d /home/${LOCAL_WHOAMI}/shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/screen-log/
 
 ## permission
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} -R /home/${LOCAL_WHOAMI}/.gnupg || true

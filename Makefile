@@ -114,6 +114,7 @@ ifeq ($(TGT), )
 endif
 ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
 	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(INIT_SHELL)
+	sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
 
 .PHONY: attach
