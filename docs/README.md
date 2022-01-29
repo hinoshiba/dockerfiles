@@ -41,6 +41,9 @@ dockerfiles
 			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
 * アップデート
 	* `make target=workbench cname=develop` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
+* 便利なセットアップ
+	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
+
 
 ## リリース@dockerhub
 
