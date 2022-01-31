@@ -28,7 +28,7 @@ dockerfiles
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
 			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L30)
 	* docker outside docker がいじれるようにしてあります。mountのpathは、host側のpathになるので気をつけてください
-* 利用準備
+* 利用準備(ないと起動がこける)
 	* 以下ディレクトリを掘る
 		* `~/work/`
 			* 作業データの共有を想定
@@ -39,8 +39,12 @@ dockerfiles
 		* gpgの準備をしておく(`~/gnupg`)
 			* https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
 			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
+		* .muttrc.add の準備をしておく(`~/.muttrc.add`)
+			* [muttrcのaddについて](./workbench/muttrc.add.md)
+		* .muttrc.signature の準備をしておく (`~/.muttrc.signature)
+			* メールの署名。そのままメールへ転機される
 * アップデート
-	* `make target=workbench cname=develop` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
+	* `make target=workbench cname=wbtest creater=developer` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
 * 便利なセットアップ
 	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
 

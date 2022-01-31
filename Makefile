@@ -49,6 +49,8 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx~,dst=$(HOME)/.gnupg/pubring.kbx~,ro
 		useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
 		useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig,ro
+		useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
+		useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
 		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
 		INIT_SHELL=/usr/local/bin/exec_user.sh

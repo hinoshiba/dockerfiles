@@ -1,19 +1,7 @@
-set imap_user = "username@example.com"
-set imap_pass = "password"
-set ssl_starttls=yes
-set folder = "imaps://outlook.office365.com:993"
-set smtp_url = "smtp://username@example.com@smtp.office365.com:587/"
-set smtp_pass = "password"
 
 set editor = "vim"
 set copy="yes"
 set mbox_type="Maildir"
-set realname="username@example.com"
-set use_from="yes"
-set from="username@example.com"
-set envelope_from="yes"
-my_hdr Return-Path: username@example.com
-my_hdr X-addheader: ILoveVim
 set nomove
 
 color header green black "^Date:"
@@ -28,7 +16,6 @@ set send_charset="iso-2022-jp:utf-8"
 
 set spoolfile = "+INBOX"
 set imap_check_subscribed
-set hostname = outlook.office365.com
 set mail_check = 120
 set timeout = 300
 set imap_keepalive = 300
@@ -37,7 +24,7 @@ set record = "+送信済みアイテム"
 set header_cache=~/.mutt/cache/headers
 set message_cachedir=~/.mutt/cache/bodies
 set certificate_file=~/.mutt/certificates
-set signature =~/.mutt/signature
+set signature =~/.muttrc.signature
 set move = no
 set include
 set auto_tag = yes
