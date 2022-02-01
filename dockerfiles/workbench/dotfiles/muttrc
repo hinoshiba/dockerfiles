@@ -1,4 +1,5 @@
 
+my_hdr X-Mailer: mutt(http://www.mutt.org/)
 set editor = "vim"
 set copy="yes"
 set mbox_type="Maildir"
@@ -19,11 +20,11 @@ set imap_check_subscribed
 set mail_check = 120
 set timeout = 300
 set imap_keepalive = 300
-set postponed = "+下書き"
-set record = "+送信済みアイテム"
-set header_cache=~/.mutt/cache/headers
-set message_cachedir=~/.mutt/cache/bodies
-set certificate_file=~/.mutt/certificates
+set postponed = "+Draft"
+set record = "+Sent"
+set header_cache=~/shared_cache/.mutt/cache/headers
+set message_cachedir=~/shared_cache/.mutt/cache/bodies
+set certificate_file=~/shared_cache/.mutt/certificates
 set signature =~/.muttrc.signature
 set move = no
 set include

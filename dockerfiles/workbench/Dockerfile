@@ -9,7 +9,7 @@ ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
 RUN apt-get update && \
-    apt-get install -y  tzdata locales sudo newsboat mutt imapfilter \
+    apt-get install -y  tzdata locales sudo newsboat mutt \
         git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
         iputils-ping net-tools dnsutils rsync && \
