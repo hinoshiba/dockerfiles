@@ -32,7 +32,7 @@ dockerfiles
 	* 以下ディレクトリを掘る
 		* `~/work/`
 			* 作業データの共有を想定
-		* `~/shared_cache/`
+		* `~/.shared_cache/`
 			* n回起動であっても保存が必要なキャッシュが保存される
 				* e.g. histroyファイル, lockファイル, logファイル
 		* gitの設定をしておく(`~/.gitconfig`)

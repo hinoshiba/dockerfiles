@@ -22,9 +22,9 @@ set timeout = 300
 set imap_keepalive = 300
 set postponed = "+Draft"
 set record = "+Sent"
-set header_cache=~/shared_cache/.mutt/cache/headers
-set message_cachedir=~/shared_cache/.mutt/cache/bodies
-set certificate_file=~/shared_cache/.mutt/certificates
+set header_cache=~/.shared_cache/mutt/cache/headers
+set message_cachedir=~/.shared_cache/mutt/cache/bodies
+set certificate_file=~/.shared_cache/mutt/certificates
 set signature =~/.muttrc.signature
 set move = no
 set include

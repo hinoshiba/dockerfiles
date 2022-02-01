@@ -35,13 +35,13 @@ ln -s /etc/dotfiles/newsboat /home/${LOCAL_WHOAMI}/.newsboat
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 
 # shared directory
-test -d /home/${LOCAL_WHOAMI}/shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/newsboat/
-test -f /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db
-test -f /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock
-ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
-ln -s /home/${LOCAL_WHOAMI}/shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
+test -d /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/
+test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db
+test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock
+ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
+ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
 
-test -d /home/${LOCAL_WHOAMI}/shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/shared_cache/screen-log/
+test -d /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/
 
 ## permission
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} -R /home/${LOCAL_WHOAMI}/.gnupg || true

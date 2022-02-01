@@ -39,7 +39,7 @@ ifeq ($(ROOT), )
 		## wr
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=$(HOME)/git
-		useropt+= --mount type=bind,src=$(HOME)/shared_cache,dst=$(HOME)/shared_cache
+		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
 
 		## ro
 		useropt+= --mount type=bind,src=$(HOME)/.ssh,dst=$(HOME)/.ssh,ro
