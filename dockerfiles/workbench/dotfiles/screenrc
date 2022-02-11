@@ -32,3 +32,6 @@ encoding utf8 utf8
 
 term xterm-256color
 bindkey -k kB focus up
+
+sessionname main
+layout save default
