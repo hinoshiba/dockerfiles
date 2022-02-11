@@ -53,6 +53,6 @@ find /home/${LOCAL_WHOAMI}/.gnupg -type d -exec chmod 700 {} \;
 find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
 
 ## configfile build
-test -f /home/${LOCAL_WHOAMI}/.muttrc || (sudo -u ${LOCAL_WHOAMI} cp /home/${LOCAL_WHOAMI}/.muttrc.add /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} chmod 600 /home/${LOCAL_WHOAMI}/.muttrc)
+test -f /home/${LOCAL_WHOAMI}/.muttrc || test -s /home/${LOCAL_WHOAMI}/.muttrc.add && (sudo -u ${LOCAL_WHOAMI} cp /home/${LOCAL_WHOAMI}/.muttrc.add /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} chmod 600 /home/${LOCAL_WHOAMI}/.muttrc)
 
 exec_usershell
