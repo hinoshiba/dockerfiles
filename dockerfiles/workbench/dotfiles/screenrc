@@ -5,7 +5,7 @@ startup_message off
 zombie kr
 verbose on
 deflog on
-logfile /home/$USER/shared_cache/screen-log/screenlog.%H.%Y%m%d-%02c:%s-%n.%t.log
+logfile /home/$USER/.shared_cache/screen-log/screenlog.%H.%Y%m%d-%02c:%s-%n.%t.log
 logfile flush secs
 logtstamp on
 logtstamp string "\n-- SCREEN [%Y/%m/%d %02c:%s] %n:%t --\n"
