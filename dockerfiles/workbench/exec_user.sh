@@ -40,6 +40,9 @@ test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db || sudo -u ${LOCAL
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
+test -d /home ${LOCAL_WHOAMI}/.shared_cache/bash/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/bash/
+test -f /home ${LOCAL_WHOAMI}/.shared_cache/bash/bash_history || (sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history && chmod 600 /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history)
+ln -s /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history /home/${LOCAL_WHOAMI}/.bash_history
 
 #test -d /home/${LOCAL_WHOAMI}/.shared_cache/vim/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/vim/
 #test -f /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo
