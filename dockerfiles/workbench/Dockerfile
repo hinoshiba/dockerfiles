@@ -25,6 +25,8 @@ RUN cd /usr/local/src && \
     find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/'
 
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
-ADD ./dotfiles /etc/dotfiles
 RUN chmod +x /usr/local/bin/exec_user.sh
+ADD ./scripts/clone.sh /usr/local/bin/clone.sh
+RUN chmod +x /usr/local/bin/clone.sh
+ADD ./dotfiles /etc/dotfiles
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
