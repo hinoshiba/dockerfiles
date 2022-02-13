@@ -44,6 +44,12 @@ let g:indent_guides_enable_on_vim_startup = 1
 colorscheme murphy
 colorscheme industry
 
+"like a "set viminfo=n~/.shared_cache/vim/viminfo"
+augroup quitcmd
+	autocmd!
+	autocmd VimLeave * :silent !cp ~/.viminfo ~/.shared_cache/vim/viminfo
+augroup END
+
 function! ZenkakuSpace()
 	highlight ZenkakuSpace cterm=underline ctermfg=lightblue guibg=darkgray
 endfunction
