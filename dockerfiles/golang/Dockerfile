@@ -1,7 +1,6 @@
 FROM golang:1.17.6 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
-ENV GOPATH /go/src
 ENV GO111MODULE=off
 
 ENV LANG ja_JP.UTF-8
