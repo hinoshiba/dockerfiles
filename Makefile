@@ -97,7 +97,9 @@ all: repopull build start attach ## [Default] Exec function of 'build' -> 'start
 
 .PHONY: repopull
 repopull: ## Pull the remote repositroy.
+ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
 	git pull
+endif
 .PHONY: build
 build: $(SRCS) ## Build a target docker image. If the target container already exists, skip this section.
 ifeq ($(TGT), )
@@ -107,7 +109,6 @@ endif
 ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
 	$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
 endif
-
 
 .PHONY: start
 start: $(SRCS) ## Start a target docker image. If the target container already exists, skip this section.
