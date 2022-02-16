@@ -90,10 +90,8 @@ else
 	NAME=$(TGT)
 endif
 
-
-
 .PHONY: all
-all: repopull build start attach ## [Default] Exec function of 'build' -> 'start' -> 'attach'
+all: repopull start attach ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
 
 .PHONY: repopull
 repopull: ## Pull the remote repositroy.
@@ -111,7 +109,10 @@ ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
 endif
 
 .PHONY: start
-start: $(SRCS) ## Start a target docker image. If the target container already exists, skip this section.
+start: $(SRCS) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
+ifeq ($(shell docker images -aq "$(builder)/$(TGT)"), )
+	make build
+endif
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
