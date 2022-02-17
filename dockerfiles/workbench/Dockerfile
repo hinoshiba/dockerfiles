@@ -21,7 +21,7 @@ RUN apt-get update && \
     locale-gen ja_JP.UTF-8
 
 RUN cd /usr/local/src && \
-    wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v0.0.3/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && tar zxvf kai-kun.tar.gz && \
+    wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v0.0.4/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && tar zxvf kai-kun.tar.gz && \
     find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/'
 
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
