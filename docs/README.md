@@ -77,3 +77,10 @@ dockerfiles
 	docker buildx stop <buildername>
 	docker buildx rm <buildername>
 	```
+
+## クライアント側のおすすめ設定
+
+* `ctrl - p` を素早く利用する
+	* docker execのdetachキーになっているので、入れ替えると反応が素早くなる
+	* `~/.docker/config.json`
+		* `"detachKeys": "ctrl-\\"` を追記
