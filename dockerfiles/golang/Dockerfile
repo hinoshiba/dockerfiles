@@ -1,7 +1,7 @@
 FROM golang:1.17.6 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
-ENV GO111MODULE=off
+ENV GO111MODULE=on
 
 ENV LANG ja_JP.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
