@@ -18,7 +18,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
-    locale-gen ja_JP.UTF-8
+    locale-gen ja_JP.UTF-8 && \
+    update-alternatives --set editor /usr/bin/vim
 
 RUN cd /usr/local/src && \
     wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v0.0.4/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && tar zxvf kai-kun.tar.gz && \
