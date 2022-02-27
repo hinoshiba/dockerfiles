@@ -1,8 +1,12 @@
 
+source "gpg -d ~/.muttrc.passwords.gpg |"
+
 my_hdr X-Mailer: mutt(http://www.mutt.org/)
 set editor = "vim"
 set copy="yes"
 set mbox_type="Maildir"
+set use_from="yes"
+set envelope_from="yes
 set nomove
 
 color header green black "^Date:"

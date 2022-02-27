@@ -28,21 +28,7 @@ dockerfiles
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
 			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L30)
 	* docker outside docker がいじれるようにしてあります。mountのpathは、host側のpathになるので気をつけてください
-* 利用準備(ないと起動がこける)
-	* 以下ディレクトリを掘る
-		* `~/work/`
-			* 作業データの共有を想定
-		* `~/.shared_cache/`
-			* n回起動であっても保存が必要なキャッシュが保存される
-				* e.g. histroyファイル, lockファイル, logファイル
-		* gitの設定をしておく(`~/.gitconfig`)
-		* gpgの準備をしておく(`~/gnupg`)
-			* https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
-			* https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
-		* .muttrc.add の準備をしておく(`~/.muttrc.add`)
-			* [muttrcのaddについて](./workbench/muttrc.add.md)
-		* .muttrc.signature の準備をしておく (`~/.muttrc.signature)
-			* メールの署名。そのままメールへ転機される
+* [利用準備](./workbench/setup.md) をした環境で利用できる
 * アップデート
 	* `make target=workbench cname=wbtest creater=developer` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
 * 便利なセットアップ
@@ -77,10 +63,3 @@ dockerfiles
 	docker buildx stop <buildername>
 	docker buildx rm <buildername>
 	```
-
-## クライアント側のおすすめ設定
-
-* `ctrl - p` を素早く利用する
-	* docker execのdetachキーになっているので、入れ替えると反応が素早くなる
-	* `~/.docker/config.json`
-		* `"detachKeys": "ctrl-\\"` を追記
