@@ -19,11 +19,15 @@ color body red black "[-a-zA-Z0-9_.]+@[-a-zA-Z0-9_.]+"
 unignore Date
 set send_charset="iso-2022-jp:utf-8"
 
+set imap_check_subscribed="yes"
+set imap_list_subscribed="yes"
+set timeout=15
+set mail_check=90
+set imap_keepalive=180
+set imap_idle
+
+unset mark_old
 set spoolfile = "+INBOX"
-set imap_check_subscribed
-set mail_check = 120
-set timeout = 300
-set imap_keepalive = 300
 set postponed = "+Draft"
 set record = "+Sent"
 set header_cache=~/.shared_cache/mutt/cache/headers
