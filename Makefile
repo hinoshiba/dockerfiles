@@ -1,6 +1,7 @@
 # mydocker makefile@hinoshiba:##
 #  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
+#  sample: ## make target=tor gui=firefox
 #  =======options========  :##
 ## You can add text at help menu, pattern of '#<string>: <string2>'
 
@@ -8,6 +9,7 @@
 INIT_SHELL=/bin/bash
 D=docker
 SP_WORKBENCH=workbench
+SP_TOR=tor
 
 ## args
 TGT=${target}
@@ -18,6 +20,7 @@ CREATER=${creater}
 PORT=${port}
 C_NAME=${cname}
 DAEMON=${daemon}
+GUI=${gui}
 
 ## import
 SRCS := $(shell find . -type f)
@@ -118,9 +121,16 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
+
 ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
+ifeq ($(TGT), $(SP_TOR))
+	@echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
+	docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
+	@exit 0
+else
 	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(INIT_SHELL)
 	sleep 1 ## Magic sleep. Wait for container to stabilize.
+endif
 endif
 
 .PHONY: attach
@@ -130,7 +140,9 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 ifneq ($(dopt), )
+ifneq ($(TGT), $(SP_TOR))
 	$(D) exec -it $(NAME) $(INIT_SHELL)
+endif
 endif
 
 .PHONY: stop
