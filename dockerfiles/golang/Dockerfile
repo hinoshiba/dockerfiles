@@ -17,5 +17,6 @@ RUN mkdir /.cache && \
     chmod 777 /.cache && \
     mkdir /usertmp && \
     chmod 777 /usertmp
+RUN go get golang.org/x/tools
 
 WORKDIR ${GOPATH}
