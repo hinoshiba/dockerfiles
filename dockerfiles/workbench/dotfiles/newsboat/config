@@ -12,6 +12,7 @@ save-path "~/work/Saved_RSS"
 # -- display
 show-read-feeds no
 feed-sort-order unreadarticlecount-asc
+always-display-description true
 
 color info color82 blue
 color listnormal_unread white default

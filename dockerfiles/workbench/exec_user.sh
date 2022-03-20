@@ -31,8 +31,11 @@ sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/
 
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
-ln -s /etc/dotfiles/newsboat /home/${LOCAL_WHOAMI}/.newsboat
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
+
+test -d /home/${LOCAL_WHOAMI}/.newsboat || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.newsboat
+ln -s /etc/dotfiles/newsboat/config /home/${LOCAL_WHOAMI}/.newsboat/config
+sed -e "s/{local-rss}/file:\/\/\/home\/${LOCAL_WHOAMI}\/.shared_cache\/feed-cache\/rss\//g" /etc/dotfiles/newsboat/urls.base > /home/${LOCAL_WHOAMI}/.newsboat/urls
 
 # shared directory
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/
