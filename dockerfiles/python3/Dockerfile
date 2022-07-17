@@ -1,4 +1,4 @@
-FROM python:3.9.10 AS builder
+FROM python:3.10.5 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 
