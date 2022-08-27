@@ -1,12 +1,12 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>]
+#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
 ## You can add text at help menu, pattern of '#<string>: <string2>'
 
 ## const
-INIT_SHELL=/bin/bash
+DEFAULT_CMD=/bin/bash
 D=docker
 SP_WORKBENCH=workbench
 SP_TOR=tor
@@ -21,6 +21,7 @@ PORT=${port}
 C_NAME=${cname}
 DAEMON=${daemon}
 GUI=${gui}
+CMD=${cmd}
 
 ## import
 SRCS := $(shell find . -type f)
@@ -28,6 +29,12 @@ export http_proxy
 export https_proxy
 export USER
 export HOME
+
+ifeq ($(CMD), )
+	command=$(DEFAULT_CMD)
+else
+	command=$(CMD)
+endif
 
 buildopt=
 ifeq ($(ROOT), )
@@ -58,7 +65,7 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
 		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-		INIT_SHELL=/usr/local/bin/exec_user.sh
+		command=/usr/local/bin/exec_user.sh
 	else
 		useropt=-u `id -u`:`id -g`
 	endif
@@ -128,7 +135,7 @@ ifeq ($(TGT), $(SP_TOR))
 	docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
 	@exit 0
 else
-	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(INIT_SHELL)
+	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(command)
 	sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
 endif
@@ -141,7 +148,7 @@ ifeq ($(TGT), )
 endif
 ifneq ($(dopt), )
 ifneq ($(TGT), $(SP_TOR))
-	$(D) exec -it $(NAME) $(INIT_SHELL)
+	$(D) exec -it $(NAME) $(command)
 endif
 endif
 
