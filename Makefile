@@ -10,6 +10,7 @@ DEFAULT_CMD=/bin/bash
 D=docker
 SP_WORKBENCH=workbench
 SP_TOR=tor
+PATH_MTX=.mtx/
 
 ## args
 TGT=${target}
@@ -24,7 +25,7 @@ GUI=${gui}
 CMD=${cmd}
 
 ## import
-SRCS := $(shell find . -type f)
+TGT_SRCS := $(shell find ./dockerfiles/$(TGT) -type f)
 export http_proxy
 export https_proxy
 export USER
@@ -109,21 +110,19 @@ repopull: ## Pull the remote repositroy.
 ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
 	git pull
 endif
-.PHONY: build
-build: $(SRCS) ## Build a target docker image. If the target container already exists, skip this section.
+
+$(PATH_MTX)$(TGT): $(TGT_SRCS)
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
-	$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/.
-endif
+	$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT)
+
+.PHONY: build
+build: $(PATH_MTX)$(TGT) ## Build a target docker image. If the target container already exists, skip this section.
 
 .PHONY: start
-start: $(SRCS) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
-ifeq ($(shell docker images -aq "$(builder)/$(TGT)"), )
-	make build
-endif
+start: $(PATH_MTX)$(TGT) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
 ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
@@ -168,7 +167,8 @@ ifeq ($(TGT), )
 	@echo "not set target. usage: make <operation> target=<your target>"
 	@exit 1
 endif
-	$(D) rmi $(builder)/$(TGT)
+	$(D) rmi $(builder)/$(TGT) || :
+	rm $(PATH_MTX)$(TGT) || :
 
 .PHONY: allrm
 allrm: ## [[Powerful Option]] Cleanup **ALL** docker container.
