@@ -25,7 +25,7 @@ GUI=${gui}
 CMD=${cmd}
 
 ## import
-TGT_SRCS := $(shell find ./dockerfiles/$(TGT) -type f)
+TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f)
 export http_proxy
 export https_proxy
 export USER
