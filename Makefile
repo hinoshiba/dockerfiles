@@ -122,7 +122,9 @@ ifeq ($(TGT), $(SP_TOR))
 	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
 else
 	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(command)
+ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
+endif
 endif
 
 .PHONY: attach
