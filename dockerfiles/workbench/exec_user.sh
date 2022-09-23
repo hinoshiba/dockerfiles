@@ -37,6 +37,9 @@ test -d /home/${LOCAL_WHOAMI}/.newsboat || sudo -u ${LOCAL_WHOAMI} mkdir -p /hom
 ln -s /etc/dotfiles/newsboat/config /home/${LOCAL_WHOAMI}/.newsboat/config
 sed -e "s/{local-rss}/file:\/\/\/home\/${LOCAL_WHOAMI}\/.shared_cache\/feed-cache\/rss\//g" /etc/dotfiles/newsboat/urls.base > /home/${LOCAL_WHOAMI}/.newsboat/urls
 
+test -d /home/${LOCAL_WHOAMI}/.ssh || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.ssh -m 700
+cd /home/${LOCAL_WHOAMI}/.host.ssh/ && find . -maxdepth 1 -mindepth 1 -print | xargs -I{} sh -c "ln -s /home/${LOCAL_WHOAMI}/.host.ssh/{} /home/${LOCAL_WHOAMI}/.ssh/{}"
+
 # shared directory
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db
