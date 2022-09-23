@@ -103,80 +103,61 @@ else
 endif
 
 .PHONY: all
-all: repopull start attach ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
+all: check_health repopull start ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
+	make -C . attach
 
 .PHONY: repopull
-repopull: ## Pull the remote repositroy.
-ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
-	git pull
-endif
-
-$(PATH_MTX)$(TGT): $(TGT_SRCS)
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-	$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT)
+repopull: check_health ## Pull the remote repositroy.
+	test -n "$(CONTAINER_ID)" || git pull
 
 .PHONY: build
-build: $(PATH_MTX)$(TGT) ## Build a target docker image. If the target container already exists, skip this section.
+build: check_health check_target $(PATH_MTX)$(TGT) ## Build a target docker image. If the target container already exists, skip this section.
 
 .PHONY: start
-start: $(PATH_MTX)$(TGT) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-
-ifeq ($(shell docker ps -aq -f name="$(NAME)"), )
+start: check_health check_target $(PATH_MTX)$(TGT) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
 ifeq ($(TGT), $(SP_TOR))
-	@echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
-	docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
-	@exit 0
+	test -n "$(CONTAINER_ID)" || echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
+	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
 else
-	$(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(command)
-	sleep 1 ## Magic sleep. Wait for container to stabilize.
-endif
+	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT) $(command)
+	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
 
 .PHONY: attach
-attach: ## Attach the target docker container.
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-ifneq ($(dopt), )
-ifneq ($(TGT), $(SP_TOR))
-	$(D) exec -it $(NAME) $(command)
-endif
-endif
+attach: check_health check_target ## Attach the target docker container.
+	test -z "$(CONTAINER_ID)" || $(D) exec -it $(NAME) $(command)
 
 .PHONY: stop
-stop: ## Force stop the target docker container.
-ifeq ($(NAME), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
-ifneq ($(shell docker ps -aq -f name="$(NAME)"), )
-	$(D) rm -f $(shell docker ps -aq -f name="$(NAME)")
-endif
+stop: check_health check_target ## Force stop the target docker container.
+	test -z "$(CONTAINER_ID)" || $(D) rm -f $(CONTAINER_ID)
 
 .PHONY: clean
-clean: ## Remove the target dokcer image.
-ifeq ($(TGT), )
-	@echo "not set target. usage: make <operation> target=<your target>"
-	@exit 1
-endif
+clean: check_health check_target ## Remove the target dokcer image.
 	$(D) rmi $(builder)/$(TGT) || :
 	rm $(PATH_MTX)$(TGT) || :
 
 .PHONY: allrm
-allrm: ## [[Powerful Option]] Cleanup **ALL** docker container.
+allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
 	$(D) ps -aq | xargs $(D) rm
 
 .PHONY: allrmi
-allrmi: ## [[Powerful Option]] Cleanup **ALL** docker images.
+allrmi: check_health ## [[Powerful Option]] Cleanup **ALL** docker images.
 	$(D) images -aq | xargs $(D) rmi
+
+.PHONY: check_health
+check_health:
+	@$(D) version > /dev/null || (echo "[Makefile Killing]: cannot running this script. Cannot connect to docker daemon."; exit 1)
+	$(eval CONTAINER_ID := $(shell docker ps -aq -f name="$(NAME)"))
+
+.PHONY: check_target
+check_target:
+ifeq ($(TGT), )
+	@echo "not set target. usage: make <operation> target=<your target>"
+	@exit 1
+endif
+
+$(PATH_MTX)$(TGT): $(TGT_SRCS)
+	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT)
 
 .PHONY: help
 	all: help
