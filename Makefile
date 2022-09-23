@@ -147,7 +147,7 @@ allrmi: check_health ## [[Powerful Option]] Cleanup **ALL** docker images.
 .PHONY: check_health
 check_health:
 	@$(D) version > /dev/null || (echo "[Makefile Killing]: cannot running this script. Cannot connect to docker daemon."; exit 1)
-	$(eval CONTAINER_ID := $(shell docker ps -aq -f name="$(NAME)"))
+	$(eval CONTAINER_ID?=$$(shell docker ps -aq -f name="$(NAME)"))
 
 .PHONY: check_target
 check_target:
