@@ -104,17 +104,19 @@ endif
 
 .PHONY: all
 all: check_health repopull start ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
+ifneq ($(dopt), )
 	make -C . attach
+endif
 
 .PHONY: repopull
 repopull: check_health ## Pull the remote repositroy.
 	test -n "$(CONTAINER_ID)" || git pull
 
 .PHONY: build
-build: check_health check_target $(PATH_MTX)$(TGT) ## Build a target docker image. If the target container already exists, skip this section.
+build: check_health check_target $(PATH_MTX)$(TGT).$(builder) ## Build a target docker image. If the target container already exists, skip this section.
 
 .PHONY: start
-start: check_health check_target $(PATH_MTX)$(TGT) ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
+start: check_health check_target build ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
 ifeq ($(TGT), $(SP_TOR))
 	test -n "$(CONTAINER_ID)" || echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
 	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor" /work/run.sh $(GUI)
@@ -156,8 +158,8 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 
-$(PATH_MTX)$(TGT): $(TGT_SRCS)
-	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT)
+$(PATH_MTX)$(TGT).$(builder): $(TGT_SRCS)
+	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT).$(builder)
 
 .PHONY: help
 	all: help
