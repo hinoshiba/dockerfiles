@@ -138,7 +138,7 @@ stop: check_health check_target ## Force stop the target docker container.
 .PHONY: clean
 clean: check_health check_target ## Remove the target dokcer image.
 	$(D) rmi $(builder)/$(TGT) || :
-	rm $(PATH_MTX)$(TGT) || :
+	rm $(PATH_MTX)$(TGT).$(builder) || :
 
 .PHONY: allrm
 allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
