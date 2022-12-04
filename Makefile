@@ -142,10 +142,12 @@ clean: check_health check_target ## Remove the target dokcer image.
 
 .PHONY: allrm
 allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
+	$(D) container prune
 	$(D) ps -aq | xargs $(D) rm
 
 .PHONY: allrmi
 allrmi: check_health ## [[Powerful Option]] Cleanup **ALL** docker images.
+	$(D) image prune
 	$(D) images -aq | xargs $(D) rmi
 
 .PHONY: check_health
