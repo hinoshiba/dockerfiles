@@ -1,5 +1,5 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>]
+#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
@@ -23,6 +23,7 @@ C_NAME=${cname}
 DAEMON=${daemon}
 GUI=${gui}
 CMD=${cmd}
+AUTOREBUILD=${autorebuild}
 
 ## import
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
@@ -101,6 +102,11 @@ ifneq ($(C_NAME), )
 else
 	NAME=$(TGT)
 endif
+ifneq ($(AUTOREBUILD), )
+	VERSION=latest
+else
+	VERSION=$(shell date '+%Y%U')
+endif
 
 .PHONY: all
 all: check_health repopull start ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
@@ -113,7 +119,7 @@ repopull: check_health ## Pull the remote repositroy.
 	test -n "$(CONTAINER_ID)" || git pull
 
 .PHONY: build
-build: check_health check_target $(PATH_MTX)$(TGT).$(builder) ## Build a target docker image. If the target container already exists, skip this section.
+build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Build a target docker image. If the target container already exists, skip this section.
 
 .PHONY: start
 start: check_health check_target build ## Start a target docker image. If the target container already exists, skip this section. And auto exec 'make build' when have not image.
@@ -138,7 +144,7 @@ stop: check_health check_target ## Force stop the target docker container.
 .PHONY: clean
 clean: check_health check_target ## Remove the target dokcer image.
 	$(D) rmi $(builder)/$(TGT) || :
-	rm $(PATH_MTX)$(TGT).$(builder) || :
+	rm $(PATH_MTX)$(TGT).$(builder)* || :
 
 .PHONY: allrm
 allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
@@ -162,8 +168,8 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 
-$(PATH_MTX)$(TGT).$(builder): $(TGT_SRCS)
-	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT).$(builder)
+$(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
+	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
 
 .PHONY: help
 	all: help
