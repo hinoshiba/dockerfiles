@@ -138,7 +138,7 @@ build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Buil
 start: check_health check_target ## Start a target docker image. If the target container already exists, skip this section.
 ifeq ($(TGT), $(SP_TOR))
 	test -n "$(CONTAINER_ID)" || echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
-	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 $(builder)/tor:$(TGT) /work/run.sh $(GUI)
+	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor:$(tag_opt)" /work/run.sh $(GUI)
 else
 	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
 ifneq ($(dopt), )
