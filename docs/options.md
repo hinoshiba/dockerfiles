@@ -6,6 +6,7 @@
 |オプション|説明|使用例|
 |:---:|:---|:---:|
 |`target=<name>`|原則必須オプションです。<br> 起動ターゲットを指定します。<br> [Dockerfileの格納PATH](../dockerfiles/) 名と一致するものが`name`に入ります。|`target=workbench`|
+|`tag=<version>`|起動ターゲットのバージョンを指定します。<br>デフォルトは、`latest`を指定します。自動生成されるバージョンは、`date '+%Y%U'`フォーマットで指定されています。|`tag=202301`|
 |`mount=<path>`|コンテナにマウントしたいpathをfull-path指定します。<br> コンテナの同一pathへ**書き込み有りで**マウントされます。|`mount=/var/service/work/`|
 |`port=<port>`|コンテナからホストに解放したいポートを指定します。<br> `127.0.0.1:<port>` でホスト側から接続できるようになります。|`port=80`|
 |`creater=<name>`|イメージの作成者タグに使用します。<br> 指定がない場合、環境変数`USER`値を使用します。|`creater=john`|

@@ -10,6 +10,8 @@ dockerfiles
 2. `make target=<image name>`
 	* build時に、環境変数の、`http_proxy`, `https_proxy` を活用できるので必要に応じて設定しておく
 		* それらの変数は、起動後のコンテナには引き継がれない
+	* build時には、週単位でtagがつき、latestが更新される
+		* 強制的に古い環境を利用する場合は、`start attach` で個別起動し、`TAG`オプションでバージョンを指定
 	* オプションについては、[オプション詳細](./options.md) を確認
 3. 作業を行う
 	* 別窓が必要になった場合、`make target=<image name>` で追加attachができる
