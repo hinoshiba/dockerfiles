@@ -1,5 +1,5 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n]
+#  usage: ## make [target=<targetpath>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
@@ -24,6 +24,7 @@ DAEMON=${daemon}
 GUI=${gui}
 CMD=${cmd}
 AUTOREBUILD=${autorebuild}
+NOCACHE=${nocache}
 
 ## import
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
@@ -36,6 +37,12 @@ ifeq ($(CMD), )
 	command=$(DEFAULT_CMD)
 else
 	command=$(CMD)
+endif
+
+ifeq ($(NOCACHE), )
+	nocache_opt= --no-cache
+else
+	nocache_opt= 
 endif
 
 buildopt=
@@ -143,8 +150,8 @@ stop: check_health check_target ## Force stop the target docker container.
 
 .PHONY: clean
 clean: check_health check_target ## Remove the target dokcer image.
-	$(D) rmi $(builder)/$(TGT) || :
-	rm $(PATH_MTX)$(TGT).$(builder)* || :
+	$(D) rmi -f $(shell docker images --filter "reference=$(builder)/$(TGT)" -q) && \
+	rm $(PATH_MTX)$(TGT).$(builder)*
 
 .PHONY: allrm
 allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
@@ -169,7 +176,10 @@ ifeq ($(TGT), )
 endif
 
 $(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
-	@$(D) image build $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
+	@$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
+		$(D) tag $(builder)/$(TGT):$(VERSION) $(builder)/$(TGT):latest && \
+		touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
+
 
 .PHONY: help
 	all: help
