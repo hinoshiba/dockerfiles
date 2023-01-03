@@ -109,14 +109,14 @@ else
 endif
 
 .PHONY: all
-all: check_health repopull start ## [Default] Exec function of 'repopull' -> 'start' -> 'attach'
+all: check_health start ## [Default] Exec function of  'start' -> 'attach'
 ifneq ($(dopt), )
 	make -C . attach
 endif
 
 .PHONY: repopull
-repopull: check_health ## Pull the remote repositroy.
-	test -n "$(CONTAINER_ID)" || git pull
+repopull: ## Pull the remote repositroy.
+	git pull
 
 .PHONY: build
 build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Build a target docker image. If the target container already exists, skip this section.
