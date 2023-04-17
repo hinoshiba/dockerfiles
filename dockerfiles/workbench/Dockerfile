@@ -48,6 +48,8 @@ RUN mkdir -p /tmp/install && cd /tmp/install && \
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh
 ADD ./scripts/clone.sh /usr/local/bin/clone.sh
+ADD ./scripts/work.sh /usr/local/bin/work
 RUN chmod +x /usr/local/bin/clone.sh
+RUN chmod +x /usr/local/bin/work
 ADD ./dotfiles /etc/dotfiles
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
