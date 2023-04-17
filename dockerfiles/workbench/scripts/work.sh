@@ -7,6 +7,7 @@ DIR=$(pwd)
 
 if [ $# -ne 1 ]; then
 	echo "usage: work.sh <target>"
+	exit 1
 fi
 
 target="${1}"
