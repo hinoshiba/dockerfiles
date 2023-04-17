@@ -44,7 +44,9 @@ ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh
 ADD ./scripts/clone.sh /usr/local/bin/clone.sh
 ADD ./scripts/work.sh /usr/local/bin/work
+ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 RUN chmod +x /usr/local/bin/clone.sh
 RUN chmod +x /usr/local/bin/work
+RUN chmod +x /usr/local/bin/dockerfiles
 ADD ./dotfiles /etc/dotfiles
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
