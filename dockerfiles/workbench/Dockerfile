@@ -36,11 +36,6 @@ RUN mkdir -p /tmp/install && cd /tmp/install && \
 
     wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v${VERSION_KAIKUN}/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && \
     tar zxvf kai-kun.tar.gz && \
-    wget -nv --show-progress --progress=bar:force:noscroll "https://releases.hashicorp.com/terraform/${VERSION_TERRAFORM}/terraform_${VERSION_TERRAFORM}_linux_${arch}.zip" -O terraform.zip && \
-    unzip terraform.zip && \
-    wget -nv --show-progress --progress=bar:force:noscroll "https://github.com/aquasecurity/tfsec/releases/download/v${VERSION_TFSEC}/tfsec_${VERSION_TFSEC}_linux_${arch}.tar.gz" -O tfsec.tar.gz && \
-    tar zxvf tfsec.tar.gz && \
-
     find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/' && \
     rm -rf /tmp/install
 
