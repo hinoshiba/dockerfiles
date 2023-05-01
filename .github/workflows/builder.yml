@@ -8,6 +8,8 @@ jobs:
     imgbuild:
       runs-on: ubuntu-latest
       steps:
+      - name: Checkout from repository.
+        uses: actions/checkout@v2
       - name: Move to CURDIR
         run: cd dockerfiles/workbench
       - name: Set up Docker Buildx.
