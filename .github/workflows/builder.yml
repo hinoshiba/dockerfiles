@@ -1,4 +1,9 @@
 name: imgbuild
+on:
+  push:
+    branches:
+      - main
+      - 'AddBuilder'
 jobs:
     imgbuild:
       runs-on: ubuntu-latest
