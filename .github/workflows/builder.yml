@@ -24,10 +24,71 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub.
+
+      - name: Build and Push to Docker Hub for workbench.
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/workbench
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for golang.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/golang
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for kali.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/kali
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for nodejs.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/nodejs
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for python3.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/python3
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for research.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/research
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+
+      - name: Build and Push to Docker Hub for tor.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/tor
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
