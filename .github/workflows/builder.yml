@@ -28,5 +28,5 @@ jobs:
           context: dockerfiles/workbench
           push: true
           tags: |
-            hinoshiba/workbench:latest
-            hinoshiba/workbench:${{ steps.date.outputs.weekid }}
+            workbench:latest
+            workbench:${{ steps.date.outputs.weekid }}
