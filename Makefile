@@ -11,6 +11,7 @@ D=docker
 SP_WORKBENCH=workbench
 SP_TOR=tor
 PATH_MTX=.mtx/
+DEFAULT_BUILDER=hinoshiba
 
 ## args
 TGT=${target}
@@ -103,7 +104,7 @@ endif
 ifneq ($(CREATER), )
 	builder=$(CREATER)
 else
-	builder=$(USER)
+	builder=$(DEFAULT_BUILDER)
 endif
 ifneq ($(PORT), )
 	portopt= -p 127.0.0.1:$(PORT):$(PORT)
@@ -120,7 +121,7 @@ else
 endif
 
 .PHONY: all
-all: check_health build start ## [Default] Exec function of  'build' -> 'start' -> 'attach'
+all: check_health start ## [Default] Exec function of  'build' -> 'start' -> 'attach'
 ifneq ($(dopt), )
 	make -C . attach
 endif

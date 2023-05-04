@@ -4,6 +4,8 @@ on:
     branches:
       - main
       - 'AddBuilder'
+  schedule:
+    - cron: '0 0 * * *' # 毎週日曜日に実行
 env:
   MYNAME: hinoshiba
 jobs:
