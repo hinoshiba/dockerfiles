@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - 'AddBuilder'
   schedule:
     - cron: '0 0 * * *' # 毎週日曜日に実行
 env:
@@ -39,26 +38,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/golang
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
-
-      - name: Build and Push to Docker Hub for kali.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/kali
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
-
-      - name: Build and Push to Docker Hub for nodejs.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/nodejs
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
