@@ -29,4 +29,4 @@ jobs:
           push: true
           tags: |
             hinoshiba/workbench:latest
-            hinoshiba/workbench:${{ steps.date.outputs.weekid }})
+            hinoshiba/workbench:${{ steps.date.outputs.weekid }}
