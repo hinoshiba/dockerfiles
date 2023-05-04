@@ -27,9 +27,6 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     update-alternatives --set editor /usr/bin/vim.basic
 
 ENV VERSION_KAIKUN=0.0.4
-ENV VERSION_TERRAFORM=1.2.0
-ENV VERSION_TFSEC=1.21.2
-
 
 RUN mkdir -p /tmp/install && cd /tmp/install && \
     arch=$(dpkg --print-architecture) && \

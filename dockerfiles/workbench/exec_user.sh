@@ -12,6 +12,7 @@ GROUP_ID=${LOCAL_GID:-9001}
 getent passwd ${LOCAL_WHOAMI} > /dev/null && exec_usershell
 
 echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
+test -z "${LOCAL_DOCKER_GID}" || groupmod -g "${LOCAL_DOCKER_GID}" docker
 useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
 passwd -d ${LOCAL_WHOAMI}
