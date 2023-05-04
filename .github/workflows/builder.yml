@@ -4,6 +4,8 @@ on:
     branches:
       - main
       - 'AddBuilder'
+env:
+  MYNAME: hinoshiba
 jobs:
     imgbuild:
       runs-on: ubuntu-latest
@@ -26,5 +28,5 @@ jobs:
           context: dockerfiles/workbench
           push: true
           tags: |
-            workbench:latest
-            workbench:${{ steps.date.outputs.weekid }})
+            ${{ env.MYNAME }}/workbench:latest
+            ${{ env.MYNAME }}/workbench:${{ steps.date.outputs.weekid }})
