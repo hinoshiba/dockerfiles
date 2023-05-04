@@ -11,6 +11,7 @@ D=docker
 SP_WORKBENCH=workbench
 SP_TOR=tor
 PATH_MTX=.mtx/
+DEFAULT_BUILDER=hinoshiba
 
 ## args
 TGT=${target}
@@ -46,15 +47,13 @@ else
 	nocache_opt= 
 endif
 
-buildopt=
 ifeq ($(ROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname) -e LOCAL_DOCKER_GID="" 
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname)
-			buildopt+=--build-arg local_docker_gid=$(shell getent group docker | awk  -F: '{print $$3}')
+			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname) -e LOCAL_DOCKER_GID=$(shell getent group docker | awk  -F: '{print $$3}')
 		endif
 		## wr
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
@@ -105,7 +104,7 @@ endif
 ifneq ($(CREATER), )
 	builder=$(CREATER)
 else
-	builder=$(USER)
+	builder=$(DEFAULT_BUILDER)
 endif
 ifneq ($(PORT), )
 	portopt= -p 127.0.0.1:$(PORT):$(PORT)
@@ -122,7 +121,7 @@ else
 endif
 
 .PHONY: all
-all: check_health build start ## [Default] Exec function of  'build' -> 'start' -> 'attach'
+all: check_health start ## [Default] Exec function of  'build' -> 'start' -> 'attach'
 ifneq ($(dopt), )
 	make -C . attach
 endif
@@ -182,7 +181,7 @@ ifeq ($(TGT), )
 endif
 
 $(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
-	@$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) $(buildopt) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
+	@$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
 		$(D) tag $(builder)/$(TGT):$(VERSION) $(builder)/$(TGT):latest && \
 		touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
 
