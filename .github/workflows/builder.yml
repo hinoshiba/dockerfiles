@@ -24,4 +24,4 @@ jobs:
           push: true
           tags: |
             workbench:latest
-            workbench:$(date '+%Y%U')
+            workbench:$(date +'%Y%U')
