@@ -21,7 +21,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/workbench
-        push: true
-        tags: |
-          workbench:latest
-          workbench:$(date '+%Y%U')
+          push: true
+          tags: |
+            workbench:latest
+            workbench:$(date '+%Y%U')
