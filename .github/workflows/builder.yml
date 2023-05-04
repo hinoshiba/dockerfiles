@@ -41,8 +41,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+            ${{ env.MYNAME}}/golang:latest
+            ${{ env.MYNAME}}/golang:${{ steps.date.outputs.weekid }}
 
       - name: Build and Push to Docker Hub for python3.
         uses: docker/build-push-action@v2
@@ -51,8 +51,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+            ${{ env.MYNAME}}/python3:latest
+            ${{ env.MYNAME}}/python3:${{ steps.date.outputs.weekid }}
 
       - name: Build and Push to Docker Hub for research.
         uses: docker/build-push-action@v2
@@ -61,8 +61,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+            ${{ env.MYNAME}}/research:latest
+            ${{ env.MYNAME}}/research:${{ steps.date.outputs.weekid }}
 
       - name: Build and Push to Docker Hub for tor.
         uses: docker/build-push-action@v2
@@ -71,5 +71,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
+            ${{ env.MYNAME}}/tor:latest
+            ${{ env.MYNAME}}/tor:${{ steps.date.outputs.weekid }}
