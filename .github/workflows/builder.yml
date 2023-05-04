@@ -2,9 +2,9 @@ name: imgbuild
 on:
   push:
     branches:
-      - main
+      - master
   schedule:
-    - cron: '0 0 * * *' # 毎週日曜日に実行
+    - cron: '0 0 * * *'
 env:
   MYNAME: hinoshiba
 jobs:
