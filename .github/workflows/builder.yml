@@ -27,6 +27,7 @@ jobs:
         with:
           context: dockerfiles/workbench
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
-            workbench:latest
-            workbench:${{ steps.date.outputs.weekid }}
+            ${{ env.MYNAME}}/workbench:latest
+            ${{ env.MYNAME}}/workbench:${{ steps.date.outputs.weekid }}
