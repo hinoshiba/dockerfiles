@@ -12,7 +12,7 @@ jobs:
     setup:
       runs-on: ubuntu-latest
       outputs:
-        Weekid: ${{ steps.step1.outputs.Weekid }}
+        Weekid: ${{ steps.date.outputs.Weekid }}
       steps:
       - name: Get current week-id
         id: date
