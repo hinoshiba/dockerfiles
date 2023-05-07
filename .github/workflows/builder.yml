@@ -14,7 +14,7 @@ jobs:
       steps:
       - name: Get current week-id
         id: date
-        run: echo "WEEKID=$(date +'%Y%U')" >> $GITHUB_ENV
+        run: echo "weekid=$(date +'%Y%U')" >> $GITHUB_OUTPUT
       - name: Checkout from repository.
         uses: actions/checkout@v2
       - name: Set up Docker Buildx.
@@ -37,7 +37,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ env.WEEKID }}
+            ${{ env.MYNAME}}/workbench:${{ needs.setup.outputs.weekid }}
 
     imgbuild-golang:
       runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.MYNAME}}/golang:latest
-            ${{ env.MYNAME}}/golang:${{ env.WEEKID }}
+            ${{ env.MYNAME}}/golang:${{ needs.setup.outputs.weekid }}
 
     imgbuild-python3:
       runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.MYNAME}}/python3:latest
-            ${{ env.MYNAME}}/python3:${{ env.WEEKID }}
+            ${{ env.MYNAME}}/python3:${{ needs.setup.outputs.weekid }}
 
     imgbuild-research:
       runs-on: ubuntu-latest
@@ -79,7 +79,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.MYNAME}}/research:latest
-            ${{ env.MYNAME}}/research:${{ env.WEEKID }}
+            ${{ env.MYNAME}}/research:${{ needs.setup.outputs.weekid }}
 
     imgbuild-tor:
       runs-on: ubuntu-latest
@@ -93,4 +93,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.MYNAME}}/tor:latest
-            ${{ env.MYNAME}}/tor:${{ env.WEEKID }}
+            ${{ env.MYNAME}}/tor:${{ needs.setup.outputs.weekid }}
