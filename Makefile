@@ -133,8 +133,12 @@ repopull: ## Pull the remote repositroy.
 .PHONY: build
 build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Build a target docker image. If the target container already exists, skip this section.
 
+.PHONY: pull
+pull: check_health check_target
+	docker pull $(builder)/$(TGT):$(tag_opt) || :
+
 .PHONY: start
-start: check_health check_target ## Start a target docker image. If the target container already exists, skip this section.
+start: check_health check_target pull ## Start a target docker image. If the target container already exists, skip this section.
 ifeq ($(TGT), $(SP_TOR))
 	test -n "$(CONTAINER_ID)" || echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
 	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor:$(tag_opt)" /work/run.sh $(GUI)
