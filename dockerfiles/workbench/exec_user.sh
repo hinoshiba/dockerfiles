@@ -39,7 +39,7 @@ ln -s /etc/dotfiles/newsboat/config /home/${LOCAL_WHOAMI}/.newsboat/config
 sed -e "s/{local-rss}/file:\/\/\/home\/${LOCAL_WHOAMI}\/.shared_cache\/feed-cache\/rss\//g" /etc/dotfiles/newsboat/urls.base > /home/${LOCAL_WHOAMI}/.newsboat/urls
 
 test -d /home/${LOCAL_WHOAMI}/.ssh || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.ssh -m 700
-cd /home/${LOCAL_WHOAMI}/.host.ssh/ && find . -maxdepth 1 -mindepth 1 -print | xargs -I{} sh -c "ln -s /home/${LOCAL_WHOAMI}/.host.ssh/{} /home/${LOCAL_WHOAMI}/.ssh/{}"
+test -d /home/${LOCAL_WHOAMI}/.host.ssh && cd /home/${LOCAL_WHOAMI}/.host.ssh/ && find . -maxdepth 1 -mindepth 1 -print | xargs -I{} sh -c "ln -s /home/${LOCAL_WHOAMI}/.host.ssh/{} /home/${LOCAL_WHOAMI}/.ssh/{}"
 
 # shared directory
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/
@@ -47,8 +47,8 @@ test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db || sudo -u ${LOCAL
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
-test -d /home ${LOCAL_WHOAMI}/.shared_cache/bash/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/bash/
-test -f /home ${LOCAL_WHOAMI}/.shared_cache/bash/bash_history || (sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history && chmod 600 /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history)
+test -d /home/${LOCAL_WHOAMI}/.shared_cache/bash/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/bash/
+test -f /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history || (sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history && chmod 600 /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history)
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history /home/${LOCAL_WHOAMI}/.bash_history
 
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/vim/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/vim/
@@ -58,11 +58,11 @@ ln -s /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo /home/${LOCAL_WHOAMI}/.vim
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/
 
 ## permission
-chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} -R /home/${LOCAL_WHOAMI}/.gnupg || true
-find /home/${LOCAL_WHOAMI}/.gnupg -type d -exec chmod 700 {} \;
-find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
+test -d /home/${LOCAL_WHOAMI}/.gnupg && chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} -R /home/${LOCAL_WHOAMI}/.gnupg || true
+test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type d -exec chmod 700 {} \;
+test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
 
 ## configfile build
-test -f /home/${LOCAL_WHOAMI}/.muttrc || test -s /home/${LOCAL_WHOAMI}/.muttrc.add && (sudo -u ${LOCAL_WHOAMI} cp /home/${LOCAL_WHOAMI}/.muttrc.add /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} chmod 600 /home/${LOCAL_WHOAMI}/.muttrc)
+test -f /home/${LOCAL_WHOAMI}/.muttrc.add && test -f /home/${LOCAL_WHOAMI}/.muttrc || test -s /home/${LOCAL_WHOAMI}/.muttrc.add && (sudo -u ${LOCAL_WHOAMI} cp /home/${LOCAL_WHOAMI}/.muttrc.add /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} chmod 600 /home/${LOCAL_WHOAMI}/.muttrc)
 
 exec_usershell

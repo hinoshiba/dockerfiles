@@ -61,18 +61,33 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
 
 		## ro
-		useropt+= --mount type=bind,src=$(HOME)/.ssh,dst=$(HOME)/.host.ssh,ro
-		useropt+= --mount type=bind,src=$(HOME)/.ssh/known_hosts,dst=$(HOME)/.host.ssh/known_hosts
-		useropt+= --mount type=bind,src=$(HOME)/.gnupg/openpgp-revocs.d,dst=$(HOME)/.gnupg/openpgp-revocs.d,ro
-		useropt+= --mount type=bind,src=$(HOME)/.gnupg/private-keys-v1.d,dst=$(HOME)/.gnupg/private-keys-v1.d,ro
-		useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx,dst=$(HOME)/.gnupg/pubring.kbx,ro
-		useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx~,dst=$(HOME)/.gnupg/pubring.kbx~,ro
-		useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
-		useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig,ro
-		useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
-		useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
-		useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
-		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
+		ifeq ($(whildcard $(HOME)/.ssh),)
+			useropt+= --mount type=bind,src=$(HOME)/.ssh,dst=$(HOME)/.host.ssh,ro
+			useropt+= --mount type=bind,src=$(HOME)/.ssh/known_hosts,dst=$(HOME)/.host.ssh/known_hosts
+		endif
+		ifeq ($(whildcard $(HOME)/.gnupg),)
+			useropt+= --mount type=bind,src=$(HOME)/.gnupg/openpgp-revocs.d,dst=$(HOME)/.gnupg/openpgp-revocs.d,ro
+			useropt+= --mount type=bind,src=$(HOME)/.gnupg/private-keys-v1.d,dst=$(HOME)/.gnupg/private-keys-v1.d,ro
+			useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx,dst=$(HOME)/.gnupg/pubring.kbx,ro
+			useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx~,dst=$(HOME)/.gnupg/pubring.kbx~,ro
+			useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
+		endif
+		ifeq ($(whildcard $(HOME)/.gitconfig),)
+			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig,ro
+		endif
+		ifeq ($(whildcard $(HOME)/.muttrc.add),)
+			useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
+		endif
+		ifeq ($(whildcard $(HOME)/.muttrc.signature),)
+			useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
+		endif
+		ifeq ($(whildcard $(HOME)/.muttrc.passwords.gpg),)
+			useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
+		endif
+		ifeq ($(whildcard $(HOME)/Downloads),)
+			useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
+		endif
+
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
 		command=/usr/local/bin/exec_user.sh
 	else
@@ -148,6 +163,16 @@ ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
 endif
+
+.PHONY: install
+install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache
+
+$(HOME)/work $(HOME)/git $(HOME)/.shared_cache:
+	mkdir ${@}
+
+.PHONY: uninstall
+uninstall:
+	rmdir $(HOME)/work $(HOME)/git $(HOME)/.shared_cache
 
 .PHONY: attach
 attach: check_health check_target ## Attach the target docker container.
