@@ -11,3 +11,7 @@ RUN apt-get update && \
                        less vim-nox grep netbase openssl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /tmphome && \
+    chmod 777 /tmphome
+WORKDIR /tmphome

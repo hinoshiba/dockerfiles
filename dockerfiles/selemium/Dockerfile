@@ -22,4 +22,6 @@ RUN apt-get update && \
     pip install --upgrade pip && \
     pip install selenium
 
-WORKDIR /work
+RUN mkdir /tmphome && \
+    chmod 777 /tmphome
+WORKDIR /tmphome

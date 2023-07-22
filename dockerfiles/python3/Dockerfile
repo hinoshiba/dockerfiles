@@ -1,6 +1,5 @@
-FROM python:3.10.11 AS builder
+FROM python:3.10.12 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
-
 
 ENV LANG ja_JP.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
@@ -17,5 +16,6 @@ RUN apt update && \
 RUN pip install --upgrade pip
 RUN pip install requests
 
-RUN mkdir /usertmp && \
-    chmod 777 /usertmp
+RUN mkdir /tmphome && \
+    chmod 777 /tmphome
+WORKDIR /tmphome

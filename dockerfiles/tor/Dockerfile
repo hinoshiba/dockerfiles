@@ -17,5 +17,7 @@ ADD ./tsocks.conf /etc/tsocks.conf
 
 RUN chmod 777 /work/run.sh
 
+RUN mkdir /tmphome && \
+    chmod 777 /tmphome
 WORKDIR /work
 CMD ["/work/run.sh"]

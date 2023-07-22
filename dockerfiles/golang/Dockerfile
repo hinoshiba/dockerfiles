@@ -15,7 +15,7 @@ RUN apt update && \
     locale-gen ja_JP.UTF-8
 RUN mkdir /.cache && \
     chmod 777 /.cache && \
-    mkdir /usertmp && \
-    chmod 777 /usertmp
+    mkdir /tmphome && \
+    chmod 777 /tmphome
 
-WORKDIR ${GOPATH}
+WORKDIR /tmphome
