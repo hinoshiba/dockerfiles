@@ -123,3 +123,5 @@ export VISUAL=vim
 export EDITOR=vim
 unset LESSEDIT
 alias clone="source /usr/local/bin/clone.sh"
+alias python3="/usr/local/bin/work-git python3"
+alias golang="/usr/local/bin/work-git golang"

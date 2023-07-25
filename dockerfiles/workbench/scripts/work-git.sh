@@ -12,6 +12,6 @@ fi
 
 target="${1}"
 
-cd "${DOCKERFILE_PATH}" && make target=${target}
+cd "${DOCKERFILE_PATH}" && make target=${target} mount=${HOME}/git
 make stop target=${target} || :
 cd "${DIR}"
