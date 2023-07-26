@@ -63,6 +63,29 @@ jobs:
             ${{ env.MYNAME}}/golang:latest
             ${{ env.MYNAME}}/golang:${{ needs.setup.outputs.Weekid }}
 
+    imgbuild-rust:
+      runs-on: ubuntu-latest
+      needs: setup
+      steps:
+      - name: Checkout from repository.
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx.
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and Push to Docker Hub for golang.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/rust
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.MYNAME}}/rust:latest
+            ${{ env.MYNAME}}/rust:${{ needs.setup.outputs.Weekid }}
+
     imgbuild-python3:
       runs-on: ubuntu-latest
       needs: setup
