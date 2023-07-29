@@ -31,6 +31,7 @@ sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
 
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
+cp -rf /var/dotfiles/.vim /home/${LOCAL_WHOAMI}/.vim && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.vim
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 

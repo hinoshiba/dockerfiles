@@ -30,22 +30,26 @@ ENV VERSION_KAIKUN=0.0.4
 
 RUN mkdir -p /tmp/install && cd /tmp/install && \
     arch=$(dpkg --print-architecture) && \
-
     wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v${VERSION_KAIKUN}/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && \
     tar zxvf kai-kun.tar.gz && \
     find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/' && \
     rm -rf /tmp/install
 
-
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh
+
 ADD ./scripts/clone.sh /usr/local/bin/clone.sh
 ADD ./scripts/work.sh /usr/local/bin/work
 ADD ./scripts/work-git.sh /usr/local/bin/work-git
 ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
-RUN chmod +x /usr/local/bin/clone.sh
-RUN chmod +x /usr/local/bin/work
-RUN chmod +x /usr/local/bin/work-git
-RUN chmod +x /usr/local/bin/dockerfiles
+RUN chmod +x /usr/local/bin/clone.sh && \
+    chmod +x /usr/local/bin/work && \
+    chmod +x /usr/local/bin/work-git && \
+    chmod +x /usr/local/bin/dockerfiles
+
 ADD ./dotfiles /etc/dotfiles
+RUN mkdir /var/dotfiles && \
+    vim -E -s -c "source /etc/dotfiles/vimrc | NeoBundleInstall | qa" && \
+    mv ~/.vim /var/dotfiles/.vim
+
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
