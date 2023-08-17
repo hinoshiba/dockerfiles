@@ -9,7 +9,7 @@ if [ $# -ne 1 ]; then
 	exec ${SHELL}
 fi
 
-target=$(echo "${1}" | sed -e 's/^.*@//' -e 's/:/\//' -e 's/\.git$//')
+target=$(echo "${1}" | sed -e 's/^.*@//' -e 's/^https:\/\///' -e 's/:/\//' -e 's/\.git$//')
 
 target_dir=$(dirname "${PATH_ROOT}${target}")
 echo "${PATH_ROOT}${target}"
