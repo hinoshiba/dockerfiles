@@ -19,7 +19,7 @@
 
 全て指定すると、以下のようなイメージになります。  
 ```bash
-$ make target=workbench mount=/var/service/work port=80 creater=john cname=develop autorm=n daemon=n root=y cmd="/usr/bin/init.sh workdir=/var/service/work run"
+$ make target=workbench mount=/var/service/work port=80 creater=john cname=develop autorm=n daemon=n root=y workdir=/var/service/work cmd="/usr/bin/init.sh run"
 ```
 
 # 使用例
