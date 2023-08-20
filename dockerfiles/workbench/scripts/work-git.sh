@@ -13,7 +13,7 @@ fi
 target="${1}"
 
 if [[ "$(pwd)" =~ "${HOME}/git/".*$ ]]; then
-	cd "${DOCKERFILE_PATH}" && make target=${target} mount=${HOME}/git workdir=$(pwd)
+	cd "${DOCKERFILE_PATH}" && make target=${target} mount=${HOME}/git workdir="${DIR}"
 else
 	cd "${DOCKERFILE_PATH}" && make target=${target} mount=${HOME}/git
 fi
