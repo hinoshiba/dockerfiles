@@ -15,10 +15,11 @@
 |`daemon=n`|起動したコンテナのデーモンオプションを無効化します。<br> 指定無し時は、デーモンオプションが有効です。<br>値は見ていません。`daemon=y`であっても、`daemon=n`の挙動をします。|-|
 |`root=y`|起動したコンテナのアタッチユーザをrootにします。<br> 指定無し時は、ローカルユーザのuidを用いてアタッチします。<br>値は見ていません。`root=n`であっても、`root=y`の挙動をします。|-|
 |`cmd=<cmd>`|起動したコンテナで実行するコマンドを指定します。<br>コマンドへ引数を与える場合は、`cmd="<cmd> <arg1> <arg2>"`のように`"`で囲います。<br>デフォルトは、/bin/bashです。|`cmd="/usr/bin/init.sh run"`|
+|`workdir=<work directory>`|起動したコンテナが作業場所とするディレクトリを指定します。<br>dockerの-wと等しいです。|`workdir=/var/service/work/`|
 
 全て指定すると、以下のようなイメージになります。  
 ```bash
-$ make target=workbench mount=/var/service/work port=80 creater=john cname=develop autorm=n daemon=n root=y cmd="/usr/bin/init.sh run"
+$ make target=workbench mount=/var/service/work port=80 creater=john cname=develop autorm=n daemon=n root=y cmd="/usr/bin/init.sh workdir=/var/service/work run"
 ```
 
 # 使用例

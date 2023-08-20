@@ -1,5 +1,5 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n]
+#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n] [workdir=<work dir>]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
@@ -27,6 +27,7 @@ GUI=${gui}
 CMD=${cmd}
 AUTOREBUILD=${autorebuild}
 NOCACHE=${nocache}
+WK_DIR=${workdir}
 
 ## import
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
@@ -98,6 +99,10 @@ ifneq ($(MOUNT), )
 	mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
 endif
 
+ifneq ($(WK_DIR), )
+	wkdir= -w $(WK_DIR)
+endif
+
 ifeq ($(AUTORM), )
 	rm= --rm
 endif
@@ -158,7 +163,7 @@ ifeq ($(TGT), $(SP_TOR))
 	test -n "$(CONTAINER_ID)" || echo "[INFO] you need exec 'sudo xhost - && sudo xhost + local' before this command."
 	test -n "$(CONTAINER_ID)" || docker run -it -v ~/.Xauthority:/root/.Xauthority --rm -e DISPLAY=host.docker.internal:0 "$(builder)/tor:$(tag_opt)" /work/run.sh $(GUI)
 else
-	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
+	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
