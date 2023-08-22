@@ -64,6 +64,11 @@ test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type 
 test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
 
 ## configfile build
-test -f /home/${LOCAL_WHOAMI}/.muttrc.add && test -f /home/${LOCAL_WHOAMI}/.muttrc || test -s /home/${LOCAL_WHOAMI}/.muttrc.add && (sudo -u ${LOCAL_WHOAMI} cp /home/${LOCAL_WHOAMI}/.muttrc.add /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> /home/${LOCAL_WHOAMI}/.muttrc && sudo -u ${LOCAL_WHOAMI} chmod 600 /home/${LOCAL_WHOAMI}/.muttrc)
+tgt="/home/${LOCAL_WHOAMI}/.muttrc"
+test -f ${tgt}.add && test -f ${tgt} || test -s ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
+
+tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
+test -f ${tgt}.add && test -f ${tgt} || (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
+test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global push.default current
 
 exec_usershell
