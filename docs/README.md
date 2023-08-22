@@ -31,8 +31,8 @@ dockerfiles
 			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L30)
 	* docker outside docker がいじれるようにしてあります。mountのpathは、host側のpathになるので気をつけてください
 * [利用準備](./workbench/setup.md) をした環境で利用できる
-* アップデート
-	* `make target=workbench cname=wbtest creater=developer daemon=n` のように、コンテナ名オプションを活用することで、編集場所と同時に起動できます。アップデート確認できます
+* 編集
+	* `make target=workbench localimg=y daemon=n` のように、オプションを指定することで、localモードで動作しつつ、debugが容易
 * 便利なセットアップ
 	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
 

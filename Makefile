@@ -1,5 +1,5 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n] [workdir=<work dir>]
+#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n] [workdir=<work dir>] [localimg=y]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
@@ -28,6 +28,7 @@ CMD=${cmd}
 AUTOREBUILD=${autorebuild}
 NOCACHE=${nocache}
 WK_DIR=${workdir}
+USE_LOCALIMG=${localimg}
 
 ## import
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
@@ -46,6 +47,11 @@ ifeq ($(NOCACHE), )
 	nocache_opt= --no-cache
 else
 	nocache_opt= 
+endif
+
+ifneq ($(USE_LOCALIMG), )
+	CREATER=localhost
+	C_NAME=localhost
 endif
 
 ifeq ($(ROOT), )
@@ -155,7 +161,9 @@ build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Buil
 
 .PHONY: pull
 pull: check_health check_target
+ifeq ($(USE_LOCALIMG), )
 	docker pull $(builder)/$(TGT):$(tag_opt) || :
+endif
 
 .PHONY: start
 start: check_health check_target pull ## Start a target docker image. If the target container already exists, skip this section.
