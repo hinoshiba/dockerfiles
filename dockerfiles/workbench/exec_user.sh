@@ -69,6 +69,6 @@ test -f ${tgt}.add && test -f ${tgt} || test -s ${tgt}.add && (sudo -u ${LOCAL_W
 
 tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
 test -f ${tgt}.add && test -f ${tgt} || (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
-test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global push.default current
+test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global alias.push-with-set-upstream "push --set-upstream origin $(git symbolic-ref --short HEAD)"
 
 exec_usershell
