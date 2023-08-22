@@ -74,7 +74,7 @@ ifeq ($(ROOT), )
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
 		endif
 		ifeq ($(whildcard $(HOME)/.gitconfig),)
-			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig,ro
+			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig.add,ro
 		endif
 		ifeq ($(whildcard $(HOME)/.muttrc.add),)
 			useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
