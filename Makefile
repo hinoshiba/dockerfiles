@@ -200,15 +200,23 @@ clean: check_health check_target ## Remove the target dokcer image.
 	$(D) rmi -f $(shell docker images --filter "reference=$(builder)/$(TGT)" -q) && \
 	rm $(PATH_MTX)$(TGT).$(builder)*
 
+.PHONY: allclean
+allclean: are_you_sure ## [[Powerful Option]] Cleanup **ALL** docker object
+	make -C . allrm allrmi allrmo
+
 .PHONY: allrm
 allrm: check_health ## [[Powerful Option]] Cleanup **ALL** docker container.
-	$(D) container prune
-	$(D) ps -aq | xargs $(D) rm
+	$(D) container prune || :
+	$(D) ps -aq | xargs $(D) rm || :
 
 .PHONY: allrmi
 allrmi: check_health ## [[Powerful Option]] Cleanup **ALL** docker images.
-	$(D) image prune
-	$(D) images -aq | xargs $(D) rmi
+	$(D) image prune || :
+	$(D) images -aq | xargs $(D) rmi -f || :
+
+.PHONY: allrmo
+allrmo: ## [[Powerful Option]] Cleanup **ALL** docker object
+	$(D) system prune --volumes
 
 .PHONY: check_health
 check_health:
@@ -227,6 +235,10 @@ $(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
 		$(D) tag $(builder)/$(TGT):$(VERSION) $(builder)/$(TGT):latest && \
 		touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
 
+.PHONY: are_you_sure
+are_you_sure:
+	@echo -n "Are you sure? [y/N]: "
+	@read -r answer && test "$$answer" = "y"
 
 .PHONY: help
 	all: help
