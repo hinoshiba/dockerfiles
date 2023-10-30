@@ -1,4 +1,4 @@
-FROM rust:1.71.0 AS Builder
+FROM rust:1.73.0 AS Builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV GO111MODULE=on
