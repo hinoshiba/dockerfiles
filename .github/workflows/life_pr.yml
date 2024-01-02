@@ -52,6 +52,7 @@ jobs:
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
             echo "iambody" >> .tmp/issue.md
+            cat .tmp/issue.md
         if: steps.is_eol.outcome == 'failure'
       - name: check issue template
         run: |
