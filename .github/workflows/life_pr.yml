@@ -51,7 +51,7 @@ jobs:
       - name: Regist status of EOL.
         id: not_eol
         run: |
-            test "false" == "${{steps.latest_env.outputs.Eol}}" || test "${{steps.latest_env.outputs.Eol}} <  $(date -u +'%Y-%m-%d')" && exit 1
+            test "false" == "${{steps.latest_env.outputs.Eol}}" || (test "${{steps.latest_env.outputs.Eol}} <  $(date -u +'%Y-%m-%d')" && exit 1)
         continue-on-error: true
       - name: Make a issue body.
         run: |
@@ -77,7 +77,7 @@ jobs:
       - name: Regist status of Support.
         id: support
         run: |
-            test "null" == "${{steps.latest_env.outputs.Support}}" || test "${{steps.latest_env.outputs.Support}} <  $(date -u +'%Y-%m-%d')" && exit 1
+            test "null" == "${{steps.latest_env.outputs.Support}}" || (test "${{steps.latest_env.outputs.Support}} < $(date -u +'%Y-%m-%d')" && exit 1)
         continue-on-error: true
       - name: Make a issue body.
         run: |
