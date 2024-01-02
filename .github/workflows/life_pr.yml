@@ -11,12 +11,11 @@ jobs:
       runs-on: ubuntu-latest
       strategy:
         matrix:
-          - <<: *default_product
-            <<: *default_version
-          - PRODUCT: golang
-            VERSION: 1.20
-          - PRODUCT: python
-            VERSION: 3.11
+          include:
+            - PRODUCT: golang
+              VERSION: 1.20
+            - PRODUCT: python
+              VERSION: 3.11
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
