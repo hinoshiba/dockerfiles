@@ -22,15 +22,15 @@ jobs:
       - name: Check a latest version.
         id: env
         run: |
-            curl -L -s --request GET --url https://endoflife.date/api/${PRODUCT}/${CYCLE}.json --header 'Accept: application/json' > /tmp/version.json
+            curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/${{matrix.CYCLE}}.json --header 'Accept: application/json' > /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq '.latest')" >> "$GITHUB_OUTPUT"
             echo "IsEol=$(cat /tmp/version.json | jq '.eol')" >> "$GITHUB_OUTPUT"
       - name: Update
         id: need_update
         run: |
-            cp dockerfiles/${PRODUCT}/Dockerfile /tmp/Dockerfile_bk
-            version=${{steps.env.outputs.Version}}; sed -i 's/${PRODUCT}:[0-9.]*\s/${PRODUCT}:'${version}' /' dockerfiles/${PRODUCT}/Dockerfile
-            diff -q /tmp/Dockerfile_bk dockerfiles/${PRODUCT}/Dockerfile
+            cp dockerfiles/${{matrix.PRODUCT}}/Dockerfile /tmp/Dockerfile_bk
+            version=${{steps.env.outputs.Version}}; sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${version}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
+            diff -q /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
         continue-on-error: true
       - name: CreatePR
         uses: peter-evans/create-pull-request@v5
