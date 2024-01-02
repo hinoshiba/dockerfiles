@@ -9,11 +9,6 @@ on:
 jobs:
     check:
       runs-on: ubuntu-latest
-      defaults:
-        run:
-          env:
-            PRODUCT: &default_product
-            VERSION: &default_version
       strategy:
         matrix:
           - <<: *default_product
