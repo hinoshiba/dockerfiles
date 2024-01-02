@@ -40,6 +40,7 @@ jobs:
             ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}} is detected!
             detail >> https://endoflife.date/${{matrix.PRODUCT}}
           commit-message: "by life_pr.yml"
+          branch: Update/${{matrix.PRODUCT}}:${{steps.latest_env.outputs.Version}}
         if: steps.diff_check.outcome == 'failure'
       - name: checkoel
         id: not_eol
