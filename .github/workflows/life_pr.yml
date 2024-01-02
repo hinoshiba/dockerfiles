@@ -13,7 +13,7 @@ jobs:
         matrix:
           include:
             - PRODUCT: golang
-              VERSION: 1.20
+              VERSION: 1.20.0
             - PRODUCT: python
               VERSION: 3.11
       steps:
@@ -25,13 +25,13 @@ jobs:
             curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/${{matrix.VERSION}}.json --header 'Accept: application/json' > /tmp/version.json
             cat /tmp/version.json
             grep -q "latest" /tmp/version.json
-            echo "Version=$(cat /tmp/version.json | jq '.latest')" >> "$GITHUB_OUTPUT"
-            echo "IsEol=$(cat /tmp/version.json | jq '.eol')" >> "$GITHUB_OUTPUT"
+            echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
+            echo "IsEol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
       - name: Make a latest dockerfile.
         id: diff_check
         run: |
             cp dockerfiles/${{matrix.PRODUCT}}/Dockerfile /tmp/Dockerfile_bk
-            version=${{steps.latest_env.outputs.Version}}; sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${version}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
+            sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${{steps.latest_env.outputs.Version}}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
             diff -q /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
         continue-on-error: true
       - name: Create a Pull Request.
