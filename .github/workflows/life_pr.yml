@@ -58,7 +58,7 @@ jobs:
             echo "${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
             echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
             cat .tmp/issue.md
-        if: steps.not_eol.outcome == 'failure'
+        #if: steps.not_eol.outcome == 'failure'
       - name: Create the issue.
         uses: JasonEtco/create-an-issue@v2
         env:
@@ -67,4 +67,4 @@ jobs:
           update_existing: true
           search_existing: all
           filename: .tmp/issue.md
-        if: steps.not_eol.outcome == 'failure'
+        #if: steps.not_eol.outcome == 'failure'
