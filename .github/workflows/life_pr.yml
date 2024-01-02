@@ -49,7 +49,6 @@ jobs:
         run: |
             mkdir .tmp
             echo "title: test" >> .tmp/issue.md
-            echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
             echo "iambody" >> .tmp/issue.md
             cat .tmp/issue.md
