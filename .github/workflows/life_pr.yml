@@ -26,7 +26,7 @@ jobs:
             cat /tmp/version.json
             grep -q "latest" /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
-            echo "IsEol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
+            echo "Eol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
       - name: Make a latest dockerfile.
         id: diff_check
         run: |
@@ -46,20 +46,22 @@ jobs:
         if: steps.diff_check.outcome == 'failure'
       - name: Regist status of EOL.
         id: not_eol
-        run: test "false" == "${{steps.env.outputs.IsEol}}" || exit 1
+        run: |
+            test "false" == "${{steps.env.outputs.Eol}}" && exit 0
+            test "${{steps.env.outputs.Eol}}" <  $(date -u +'%Y-%m-%d')" && exit 1
         continue-on-error: true
       - name: Make a issue body.
         run: |
             mkdir .tmp
             echo "---" >> .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}}" >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out or EOL." >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
             echo "${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
             echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
             cat .tmp/issue.md
-        #if: steps.not_eol.outcome == 'failure'
+        if: steps.not_eol.outcome == 'failure'
       - name: Create the issue.
         uses: JasonEtco/create-an-issue@v2
         env:
@@ -68,4 +70,4 @@ jobs:
           update_existing: true
           search_existing: all
           filename: .tmp/issue.md
-        #if: steps.not_eol.outcome == 'failure'
+        if: steps.not_eol.outcome == 'failure'
