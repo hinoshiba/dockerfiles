@@ -23,6 +23,7 @@ jobs:
         id: latest_env
         run: |
             curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/${{matrix.VERSION}}.json --header 'Accept: application/json' > /tmp/version.json
+            cat /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq '.latest')" >> "$GITHUB_OUTPUT"
             echo "IsEol=$(cat /tmp/version.json | jq '.eol')" >> "$GITHUB_OUTPUT"
       - name: Make a latest dockerfile.
