@@ -1,0 +1,27 @@
+name: life check
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - master
+      - AddActions4life
+env:
+  MYNAME: hinoshiba
+jobs:
+    setup:
+      runs-on: ubuntu-latest
+      outputs:
+        Weekid: ${{ steps.date.outputs.Weekid }}
+      steps:
+      - name: Get current week-id
+        id: date
+        run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
+    check:
+      runs-on: ubuntu-latest
+      needs: setup
+      steps:
+      - name: Checkout from repository.
+        uses: actions/checkout@v2
+      - name:
+        run: curl --request GET --url https://endoflife.date/api/go/1.21.json --header 'Accept: application/json'
