@@ -13,7 +13,7 @@ jobs:
         matrix:
           include:
             - PRODUCT: golang
-              VERSION: 1.20.0
+              VERSION: "1.20"
             - PRODUCT: python
               VERSION: 3.7
       steps:
@@ -33,7 +33,7 @@ jobs:
         run: |
             cp dockerfiles/${{matrix.PRODUCT}}/Dockerfile /tmp/Dockerfile_bk
             sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${{steps.latest_env.outputs.Version}}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
-            diff -q /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
+            diff /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
         continue-on-error: true
       - name: Create a Pull Request.
         uses: peter-evans/create-pull-request@v5
