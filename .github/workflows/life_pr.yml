@@ -33,7 +33,7 @@ jobs:
             version=${{steps.latest_env.outputs.Version}}; sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${version}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
             diff -q /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
         continue-on-error: true
-      - name: CreatePR
+      - name: Create a Pull Request.
         uses: peter-evans/create-pull-request@v5
         with:
           title: '[NewVersion] ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}'
@@ -43,11 +43,11 @@ jobs:
           commit-message: "by life_pr.yml"
           branch: Update/${{matrix.PRODUCT}}:${{steps.latest_env.outputs.Version}}
         if: steps.diff_check.outcome == 'failure'
-      - name: checkoel
+      - name: Regist status of EOL.
         id: not_eol
-        run: test "false" == "${{steps.env.outputs.IsEol}}" && exit 1
+        run: test "false" == "${{steps.env.outputs.IsEol}}" || exit 1
         continue-on-error: true
-      - name: CreateIssueTemplate
+      - name: Make a issue body.
         run: |
             mkdir .tmp
             echo "---" >> .tmp/issue.md
@@ -59,7 +59,7 @@ jobs:
             echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
             cat .tmp/issue.md
         if: steps.not_eol.outcome == 'failure'
-      - name: CreateIssue
+      - name: Create the issue.
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
