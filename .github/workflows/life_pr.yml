@@ -53,7 +53,7 @@ jobs:
         continue-on-error: true
       - name: Make a issue body.
         run: |
-            mkdir .tmp
+            mkdir -p .tmp
             echo "---" >> .tmp/issue.md
             echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
       - name: Make a issue body.
         run: |
-            mkdir .tmp
+            mkdir -p .tmp
             echo "---" >> .tmp/issue.md
             echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out." >> .tmp/issue.md
             echo "labels: support_out" >> .tmp/issue.md
