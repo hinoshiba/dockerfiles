@@ -33,3 +33,5 @@ jobs:
         run: echo "${{steps.env.outputs.Version}}"
       - name: TestPrint
         run: version=${{steps.env.outputs.Version}}; sed -e 's/golang:[0-9.]*\s/golang:'${version}' /' dockerfiles/golang/Dockerfile
+      - name: die
+        run: test "false" == "${{steps.env.outputs.IsEol}}" && exit 1
