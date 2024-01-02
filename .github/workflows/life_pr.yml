@@ -53,6 +53,10 @@ jobs:
             echo "---" >> .tmp/issue.md
             echo "iambody" >> .tmp/issue.md
         if: steps.is_eol.outcome == 'failure'
+      - name: check issue template
+        run: |
+            cat .tmp/issue.md
+        if: steps.is_eol.outcome == 'failure'
       - name: CreateIssue
         uses: JasonEtco/create-an-issue@v2
         env:
