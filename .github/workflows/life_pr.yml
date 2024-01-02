@@ -25,4 +25,4 @@ jobs:
         uses: actions/checkout@v2
       - name: Check a latest version.
         run: |
-           curl --request GET --url https://endoflife.date/api/go/1.21.json --header 'Accept: application/json'
+           curl -s --request GET --url https://endoflife.date/api/go/1.21.json --header 'Accept: application/json' | jq '.latest'
