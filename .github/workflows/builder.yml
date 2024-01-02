@@ -131,7 +131,7 @@ jobs:
             ${{ env.MYNAME}}/java:latest
             ${{ env.MYNAME}}/java:${{ needs.setup.outputs.Weekid }}
 
-    imgbuild-python3:
+    imgbuild-python:
       runs-on: ubuntu-latest
       needs: setup
       steps:
@@ -144,15 +144,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for python3.
+      - name: Build and Push to Docker Hub for python.
         uses: docker/build-push-action@v2
         with:
-          context: dockerfiles/python3
+          context: dockerfiles/python
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/python3:latest
-            ${{ env.MYNAME}}/python3:${{ needs.setup.outputs.Weekid }}
+            ${{ env.MYNAME}}/python:latest
+            ${{ env.MYNAME}}/python:${{ needs.setup.outputs.Weekid }}
 
     imgbuild-nginx:
       runs-on: ubuntu-latest
