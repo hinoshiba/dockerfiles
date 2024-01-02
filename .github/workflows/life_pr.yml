@@ -15,7 +15,9 @@ jobs:
             - PRODUCT: golang
               VERSION: "1.20"
             - PRODUCT: python
-              VERSION: "3.10"
+              VERSION: "3.11"
+            - PRODUCT: rust
+              VERSION: "1.73"
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
