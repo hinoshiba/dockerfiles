@@ -2,10 +2,6 @@ name: life check
 on:
   schedule:
     - cron: "0 0 * * *"
-  push:
-    branches:
-      - master
-      - AddActions4life
 jobs:
     check:
       runs-on: ubuntu-latest
@@ -17,7 +13,7 @@ jobs:
             - PRODUCT: python
               VERSION: "3.11"
             - PRODUCT: rust
-              VERSION: "1.73"
+              VERSION: "1.75"
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
