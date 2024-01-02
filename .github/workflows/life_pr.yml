@@ -43,7 +43,7 @@ jobs:
         if: steps.diff_check.outcome == 'failure'
       - name: checkoel
         id: not_eol
-        run: test "false" == "${{steps.env.outputs.IsEol}}" && exit 1
+        run: test "false" == "${{steps.env.outputs.IsEol}}" || exit 1
         continue-on-error: true
       - name: CreateIssueTemplate
         run: |
