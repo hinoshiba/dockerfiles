@@ -23,5 +23,6 @@ jobs:
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
-      - name:
-        run: curl --request GET --url https://endoflife.date/api/go/1.21.json --header 'Accept: application/json'
+      - name: Check a latest version.
+        run: |
+           curl --request GET --url https://endoflife.date/api/go/1.21.json --header 'Accept: application/json'
