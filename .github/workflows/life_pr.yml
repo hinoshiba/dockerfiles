@@ -32,4 +32,4 @@ jobs:
       - name: Print
         run: echo "${{steps.env.outputs.Version}}"
       - name: TestPrint
-        run: sed -e 's/golang:[0-9.]*\s/golang:${{steps.env.outputs.Version}} /' dockerfiles/golang/Dockerfile
+        run: version=${{steps.env.outputs.Version}} sed -e 's/golang:[0-9.]*\s/golang:${version} /' dockerfiles/golang/Dockerfile
