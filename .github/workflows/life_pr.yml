@@ -52,7 +52,7 @@ jobs:
         id: not_eol
         run: |
             date -u +'%Y-%m-%d'
-            test "false" == "${{steps.latest_env.outputs.Eol}}" || (test "${{steps.latest_env.outputs.Eol}} <  $(date -u +'%Y-%m-%d')" && exit 1)
+            test "false" == "${{steps.latest_env.outputs.Eol}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Eol}}" ]]
         continue-on-error: true
       - name: Make a issue body.
         run: |
@@ -79,7 +79,7 @@ jobs:
         id: support
         run: |
             date -u +'%Y-%m-%d'
-            test "null" == "${{steps.latest_env.outputs.Support}}" || (test "${{steps.latest_env.outputs.Support}} < $(date -u +'%Y-%m-%d')" && exit 1)
+            test "null" == "${{steps.latest_env.outputs.Support}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Support}} ]]
         continue-on-error: true
       - name: Make a issue body.
         run: |
