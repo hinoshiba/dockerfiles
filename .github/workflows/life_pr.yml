@@ -6,36 +6,37 @@ on:
     branches:
       - master
       - AddActions4life
-env:
-  PRODUCT: golang
-  CYCLE: 1.20
 jobs:
-    setup:
-      runs-on: ubuntu-latest
-      outputs:
-        Weekid: ${{ steps.date.outputs.Weekid }}
-      steps:
-      - name: Get current week-id
-        id: date
-        run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
     check:
       runs-on: ubuntu-latest
-      needs: setup
+      defaults:
+        run:
+          env:
+            PRODUCT: &default_product
+            VERSION: &default_version
+      strategy:
+        matrix:
+          - <<: *default_product
+            <<: *default_version
+          - PRODUCT: golang
+            VERSION: 1.20
+          - PRODUCT: python
+            VERSION: 3.11
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
       - name: Check a latest version.
         id: env
         run: |
-            curl -L -s --request GET --url https://endoflife.date/api/${{ env.PRODUCT}}/1.21.json --header 'Accept: application/json' > /tmp/version.json
+            curl -L -s --request GET --url https://endoflife.date/api/${PRODUCT}/${CYCLE}.json --header 'Accept: application/json' > /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq '.latest')" >> "$GITHUB_OUTPUT"
             echo "IsEol=$(cat /tmp/version.json | jq '.eol')" >> "$GITHUB_OUTPUT"
       - name: Update
         id: need_update
         run: |
-            cp dockerfiles/${{ env.PRODUCT}}/Dockerfile /tmp/Dockerfile_bk
-            version=${{steps.env.outputs.Version}}; sed -i 's/${{ env.PRODUCT}}:[0-9.]*\s/${{ env.PRODUCT}}:'${version}' /' dockerfiles/${{ env.PRODUCT}}/Dockerfile
-            diff -q /tmp/Dockerfile_bk dockerfiles/${{ env.PRODUCT}}/Dockerfile
+            cp dockerfiles/${PRODUCT}/Dockerfile /tmp/Dockerfile_bk
+            version=${{steps.env.outputs.Version}}; sed -i 's/${PRODUCT}:[0-9.]*\s/${PRODUCT}:'${version}' /' dockerfiles/${PRODUCT}/Dockerfile
+            diff -q /tmp/Dockerfile_bk dockerfiles/${PRODUCT}/Dockerfile
         continue-on-error: true
       - name: CreatePR
         uses: peter-evans/create-pull-request@v5
