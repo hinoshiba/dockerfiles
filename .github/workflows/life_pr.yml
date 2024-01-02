@@ -48,7 +48,9 @@ jobs:
       - name: CreateIssueTemplate
         run: |
             mkdir .tmp
+            echo "---" >> .tmp/issue.md
             echo "title: test" >> .tmp/issue.md
+            echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
             echo "iambody" >> .tmp/issue.md
             cat .tmp/issue.md
