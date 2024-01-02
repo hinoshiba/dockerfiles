@@ -19,6 +19,9 @@ jobs:
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
+      - name: Check to exist the target.
+        run: |
+          test -f dockerfiles/${{matrix.PRODUCT}}/Dockerfile
       - name: Check a latest version.
         id: latest_env
         run: |
@@ -54,7 +57,7 @@ jobs:
       - name: Make a issue body.
         run: |
             mkdir -p .tmp
-            echo "---" >> .tmp/issue.md
+            echo "---" > .tmp/issue.md
             echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
@@ -81,7 +84,7 @@ jobs:
       - name: Make a issue body.
         run: |
             mkdir -p .tmp
-            echo "---" >> .tmp/issue.md
+            echo "---" > .tmp/issue.md
             echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out." >> .tmp/issue.md
             echo "labels: support_out" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
