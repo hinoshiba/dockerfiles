@@ -31,3 +31,5 @@ jobs:
             echo "IsEol=$(cat /tmp/version.json | jq '.eol')" >> "$GITHUB_OUTPUT"
       - name: Print
         run: echo "${{steps.env.outputs.Version}}"
+      - name: TestPrint
+        run: sed -e 's/golang:[0-9.]*\s/${{golang}}:${{steps.env.outputs.Version}} /' dockerfiles/golang/Dockerfile
