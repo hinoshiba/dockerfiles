@@ -37,7 +37,7 @@ $ make target=nginx port=80 cname=develop daemon=n root=y
 
 ### 手元のpythonを雑に試したい
 ```bash
-$ make target=python3 mount=/home/john/src/pythoncodes/
+$ make target=python mount=/home/john/src/pythoncodes/
 ```
 
 `root=y`オプションをつけないことにより、手元のソースコードに対する一時ファイルの作成などが、同一uidで実行でき、権限問題に悩まされなくなります。  

@@ -41,7 +41,7 @@ jobs:
       - name: Create a Pull Request.
         uses: peter-evans/create-pull-request@v5
         with:
-          title: '[TEST] [NewVersion] ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}'
+          title: '[NewVersion] ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}'
           body: |
             ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}} is detected!
             detail >> https://endoflife.date/${{matrix.PRODUCT}}
