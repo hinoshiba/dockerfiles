@@ -27,6 +27,7 @@ jobs:
             grep -q "latest" /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
             echo "Eol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
+            echo "Support=$(cat /tmp/version.json | jq -r '.support')" >> "$GITHUB_OUTPUT"
       - name: Make a latest dockerfile.
         id: diff_check
         run: |
@@ -54,7 +55,7 @@ jobs:
         run: |
             mkdir .tmp
             echo "---" >> .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out or EOL." >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
@@ -71,3 +72,30 @@ jobs:
           search_existing: open
           filename: .tmp/issue.md
         if: steps.not_eol.outcome == 'failure'
+      - name: Regist status of Support.
+        id: support
+        run: |
+            test "null" == "${{steps.env.outputs.Support}}" && exit 0
+            test "${{steps.env.outputs.Support}}" <  $(date -u +'%Y-%m-%d')" && exit 1
+        continue-on-error: true
+      - name: Make a issue body.
+        run: |
+            mkdir .tmp
+            echo "---" >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out." >> .tmp/issue.md
+            echo "labels: support_out" >> .tmp/issue.md
+            echo "assignees: hinoshiba" >> .tmp/issue.md
+            echo "---" >> .tmp/issue.md
+            echo "${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
+            echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
+            cat .tmp/issue.md
+        if: steps.support.outcome == 'failure'
+      - name: Create the issue.
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          update_existing: true
+          search_existing: open
+          filename: .tmp/issue.md
+        if: steps.support.outcome == 'failure'
