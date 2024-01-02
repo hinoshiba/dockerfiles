@@ -47,10 +47,11 @@ jobs:
         continue-on-error: true
       - name: CreateIssueTemplate
         run: |
-            echo "title: test" >> /tmp/issue.md
-            echo "assignees: hinoshiba" >> /tmp/issue.md
-            echo "---" >> /tmp/issue.md
-            echo "iambody" >> /tmp/issue.md
+            mkdir .tmp
+            echo "title: test" >> .tmp/issue.md
+            echo "assignees: hinoshiba" >> .tmp/issue.md
+            echo "---" >> .tmp/issue.md
+            echo "iambody" >> .tmp/issue.md
         if: steps.is_eol.outcome == 'failure'
       - name: CreateIssue
         uses: JasonEtco/create-an-issue@v2
@@ -59,5 +60,5 @@ jobs:
         with:
           update_existing: true
           search_existing: all
-          filename: /tmp/issue.md
+          filename: .tmp/issue.md
         if: steps.is_eol.outcome == 'failure'
