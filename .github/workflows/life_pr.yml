@@ -52,7 +52,7 @@ jobs:
         run: |
             mkdir .tmp
             echo "---" >> .tmp/issue.md
-            echo "title: [TEST][EOL] ${{matrix.PRODUCT}}/${{matrix.VERSION}}" >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}}" >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
