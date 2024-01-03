@@ -68,31 +68,32 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
 
 		## ro
-		ifeq ($(whildcard $(HOME)/.ssh),)
+		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
+		ifneq ("$(wildcard $(HOME)/.ssh/.*)","")
 			useropt+= --mount type=bind,src=$(HOME)/.ssh,dst=$(HOME)/.host.ssh,ro
 			useropt+= --mount type=bind,src=$(HOME)/.ssh/known_hosts,dst=$(HOME)/.host.ssh/known_hosts
 		endif
-		ifeq ($(whildcard $(HOME)/.gnupg),)
+		ifneq ("$(wildcard $(HOME)/.gnupg/.*)","")
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/openpgp-revocs.d,dst=$(HOME)/.gnupg/openpgp-revocs.d,ro
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/private-keys-v1.d,dst=$(HOME)/.gnupg/private-keys-v1.d,ro
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx,dst=$(HOME)/.gnupg/pubring.kbx,ro
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/pubring.kbx~,dst=$(HOME)/.gnupg/pubring.kbx~,ro
 			useropt+= --mount type=bind,src=$(HOME)/.gnupg/trustdb.gpg,dst=$(HOME)/.gnupg/trustdb.gpg,ro
 		endif
-		ifeq ($(whildcard $(HOME)/.gitconfig),)
+		ifneq ("$(wildcard $(HOME)/.gitconfig)","")
 			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig.add,ro
 		endif
-		ifeq ($(whildcard $(HOME)/.muttrc.add),)
+		ifneq ("$(wildcard $(HOME)/.muttrc.add)","")
 			useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
 		endif
-		ifeq ($(whildcard $(HOME)/.muttrc.signature),)
+		ifneq ("$(wildcard $(HOME)/.muttrc.signature)","")
 			useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
 		endif
-		ifeq ($(whildcard $(HOME)/.muttrc.passwords.gpg),)
+		ifneq ("$(wildcard $(HOME)/.muttrc.passwords.gpg)","")
 			useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
 		endif
-		ifeq ($(whildcard $(HOME)/Downloads),)
-			useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
+		ifneq ("$(wildcard $(HOME)/.docker.credential.gpg)","")
+			useropt+= --mount type=bind,src=$(HOME)/.docker.credential.gpg,dst=$(HOME)/.docker.credential.gpg,ro
 		endif
 
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
@@ -178,9 +179,9 @@ endif
 endif
 
 .PHONY: install
-install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache
+install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads
 
-$(HOME)/work $(HOME)/git $(HOME)/.shared_cache:
+$(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads:
 	mkdir ${@}
 
 .PHONY: uninstall
