@@ -14,6 +14,8 @@ jobs:
               VERSION: "3.11"
             - PRODUCT: rust
               VERSION: "1.75"
+            - PRODUCT: node
+              VERSION: "20"
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
