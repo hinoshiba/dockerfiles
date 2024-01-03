@@ -3,15 +3,33 @@ workbench 利用準備
 
 # 1. 設定ファイルの設置
 
-## 1.1. SSH設定ファイルの設置(`~/.ssh`)
+必要に応じて、任意のもののみ追加  
 
-## 1.2. PGPの設定(`~/.gnupg`)
+## 1.1. docker.credential.gpg の用意
+dockerのtokenを暗号化したもの
+
+1. 認証情報ファイルの作成
+	```bash
+	echo -n "<username>:<token>" > ~/.docker.credential
+	```
+2. PGPで暗号化する
+	```bash
+	gpg -r <id> -e ~/.docker.credential
+	```
+3. 平文ファイルを削除する
+	```bash
+	rm ~/.docker.credential
+	```
+
+## 1.2. SSH設定ファイルの設置(`~/.ssh`)
+
+## 1.3. PGPの設定(`~/.gnupg`)
 * https://www.hinoshiba.com/public_docs/it/ope/create_gpg.html
 
-## 1.3. gitの設定(`~/.gitconfig` の設置)
+## 1.4. gitの設定(`~/.gitconfig` の設置)
 * https://www.hinoshiba.com/public_docs/it/ope/append_gpg_onGit.html
 
-## 1.4. muttの追加設定の用意
+## 1.5. muttの追加設定の用意
 
 1. `~/.muttrc.passwords.gpg` を作成する
 	1. `~/.muttrc.passwords` を作成し、パスフレーズを登録する
