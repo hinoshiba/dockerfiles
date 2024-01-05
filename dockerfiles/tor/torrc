@@ -1,9 +1,0 @@
-ExcludeNodes {jp},{us},{gb},{ca},{au},{nz},{dk},{fr},{nl},{no},{de},{be},{it},{es},{il},{sg},{kr},{se},127.0.0.1,SlowServer
-
-ExcludeExitNodes {jp},{us},{gb},{at},{ca},{au},{nz},{dk},{fr},{nl},{no},{de},{be},{it},{es},{il},{sg},{kr},{se},{bg},{cz},{fi},{hu},{ie},{lv},{lt},{lu},{ro},{se},{ch},{ru},{hk},127.0.0.1
-
-StrictNodes 1
-SocksPort 0.0.0.0:9150
-DNSPort 0.0.0.0:8853
-
-NumEntryGuards 15
