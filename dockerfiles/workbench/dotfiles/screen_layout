@@ -1,0 +1,10 @@
+split
+resize +10
+screen -t "vim" 0 vim
+screen -t "bash" 1 /bin/bash
+select 0
+focus
+redisplay
+select 1
+focus
+redisplay

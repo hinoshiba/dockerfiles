@@ -65,6 +65,13 @@ dockerのtokenを暗号化したもの
 3. `~/.muttrc.signature`
 	* 任意の、メール末尾の文字列
 
+## 1.6. screenレイアウトの作成
+
+1. `~/.screen_layout` を作成する
+	* layout 用として読み込みを行うscreenカスタマイズを指定できます
+	* 未作成の場合、[標準のテンプレート](../../dockerfiles/workbench/dotfiles/screen_layout)が読み込まれます
+		* 作成するサンプルとしても、参考に.
+
 # 2. 作業用ディレクトリを掘る
 
 |path|説明|

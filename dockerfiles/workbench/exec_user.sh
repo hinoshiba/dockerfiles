@@ -71,4 +71,7 @@ tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
 test -f ${tgt}.add && test -f ${tgt} || (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
 test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global alias.push-with-set-upstream '!git push --set-upstream origin $(git symbolic-ref --short HEAD)'
 
+tgt="/home/${LOCAL_WHOAMI}/.screen_layout"
+test -f ${tgt} || ln -s /etc/dotfiles/screen_layout /home/${LOCAL_WHOAMI}/.screen_layout
+
 exec_usershell
