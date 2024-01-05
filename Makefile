@@ -95,6 +95,9 @@ ifeq ($(ROOT), )
 		ifneq ("$(wildcard $(HOME)/.docker.credential.gpg)","")
 			useropt+= --mount type=bind,src=$(HOME)/.docker.credential.gpg,dst=$(HOME)/.docker.credential.gpg,ro
 		endif
+		ifneq ("$(wildcard $(HOME)/.screen_layout)","")
+			useropt+= --mount type=bind,src=$(HOME)/.screen_layout,dst=$(HOME)/.screen_layout,ro
+		endif
 
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
 		command=/usr/local/bin/exec_user.sh

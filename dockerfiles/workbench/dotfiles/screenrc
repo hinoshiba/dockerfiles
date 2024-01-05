@@ -24,14 +24,16 @@ bind - eval 'command -c resize'
 bind -c resize + eval 'resize +1' 'command -c resize'
 bind -c resize - eval 'resize -1' 'command -c resize'
 defscrollback 10000
+termcapinfo xterm* ti@:te@
 
 altscreen on
 cjkwidth off
+defutf8 on
 defencoding utf8
 encoding utf8 utf8
 
 term xterm-256color
 bindkey -k kB focus up
 
-sessionname main
+source .screen_layout
 layout save default
