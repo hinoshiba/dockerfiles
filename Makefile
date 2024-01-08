@@ -185,11 +185,11 @@ endif
 install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads
 
 $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads:
-	mkdir ${@}
+	mkdir -p ${@}
 
 .PHONY: uninstall
 uninstall:
-	rmdir $(HOME)/work $(HOME)/git $(HOME)/.shared_cache
+	rmdir $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads
 
 .PHONY: attach
 attach: check_health check_target ## Attach the target docker container.

@@ -23,7 +23,7 @@ chmod 660 /var/run/docker.sock
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
-rm /home/${LOCAL_WHOAMI}/.bashrc || true
+rm /home/${LOCAL_WHOAMI}/.bashrc || :
 # built-in
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${LOCAL_HOME}"
 test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI}" && ln -s "${LOCAL_HOME}" "/home/${LOCAL_WHOAMI}" && usermod -d "${LOCAL_HOME}" "${LOCAL_WHOAMI}")
@@ -65,10 +65,10 @@ test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type 
 
 ## configfile build
 tgt="/home/${LOCAL_WHOAMI}/.muttrc"
-test -f ${tgt}.add && test -f ${tgt} || test -s ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
+test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
 
 tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
-test -f ${tgt}.add && test -f ${tgt} || (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
+test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
 test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global alias.push-with-set-upstream '!git push --set-upstream origin $(git symbolic-ref --short HEAD)'
 
 tgt="/home/${LOCAL_WHOAMI}/.screen_layout"
