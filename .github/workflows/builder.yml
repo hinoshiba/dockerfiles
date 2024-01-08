@@ -8,6 +8,18 @@ on:
 env:
   MYNAME: hinoshiba
 jobs:
+  builder:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - IMGNAME: workbench
+          - IMGNAME: golang
+          - IMGNAME: rust
+          - IMGNAME: python
+          - IMGNAME: node
+          - IMGNAME: nginx
+          - IMGNAME: research
     setup:
       runs-on: ubuntu-latest
       outputs:
@@ -17,7 +29,7 @@ jobs:
         id: date
         run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
 
-    imgbuild-workbehcn:
+    build:
       runs-on: ubuntu-latest
       needs: setup
       steps:
@@ -30,151 +42,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for workbench.
+      - name: Build and Push to Docker Hub.
         uses: docker/build-push-action@v2
         with:
-          context: dockerfiles/workbench
+          context: dockerfiles/${{matrix.IMGNAME}}
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/workbench:latest
-            ${{ env.MYNAME}}/workbench:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-golang:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for golang.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/golang
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/golang:latest
-            ${{ env.MYNAME}}/golang:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-rust:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for golang.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/rust
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/rust:latest
-            ${{ env.MYNAME}}/rust:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-python:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for python.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/python
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/python:latest
-            ${{ env.MYNAME}}/python:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-node:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for node.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/node
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/node:latest
-            ${{ env.MYNAME}}/node:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-nginx:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for nginx.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/nginx
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/nginx:latest
-            ${{ env.MYNAME}}/nginx:${{ needs.setup.outputs.Weekid }}
-
-    imgbuild-research:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub for research.
-        uses: docker/build-push-action@v2
-        with:
-          context: dockerfiles/research
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME}}/research:latest
-            ${{ env.MYNAME}}/research:${{ needs.setup.outputs.Weekid }}
-
+            ${{ env.MYNAME}}/${{matrix.IMGNAME}}:latest
+            ${{ env.MYNAME}}/${{matrix.IMGNAME}}:${{ needs.setup.outputs.Weekid }}
