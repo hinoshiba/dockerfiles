@@ -1,10 +1,9 @@
 name: imgbuild
 on:
-  schedule:
-    - cron: "0 0 * * 6"
-  push:
-    branches:
-      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
 env:
   MYNAME: hinoshiba
 jobs:
@@ -21,24 +20,13 @@ jobs:
           - IMGNAME: nginx
           - IMGNAME: research
     steps:
-      - name: Get current week-id
-        id: date
-        run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
       - name: Checkout from repository.
         uses: actions/checkout@v2
       - name: Set up Docker Buildx.
         uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and Push to Docker Hub.
+      - name: Build test.
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
-          push: true
+          push: false
           platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
-            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:${{ steps.date.outputs.Weekid }}
