@@ -23,7 +23,7 @@ chmod 660 /var/run/docker.sock
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
-rm /home/${LOCAL_WHOAMI}/.bashrc || true
+rm /home/${LOCAL_WHOAMI}/.bashrc || :
 # built-in
 chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${LOCAL_HOME}"
 test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI}" && ln -s "${LOCAL_HOME}" "/home/${LOCAL_WHOAMI}" && usermod -d "${LOCAL_HOME}" "${LOCAL_WHOAMI}")
