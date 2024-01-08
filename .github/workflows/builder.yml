@@ -21,19 +21,10 @@ jobs:
           - IMGNAME: node
           - IMGNAME: nginx
           - IMGNAME: research
-    setup:
-      runs-on: ubuntu-latest
-      outputs:
-        Weekid: ${{ steps.date.outputs.Weekid }}
-      steps:
+    steps:
       - name: Get current week-id
         id: date
         run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
-
-    build:
-      runs-on: ubuntu-latest
-      needs: setup
-      steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
       - name: Set up Docker Buildx.
@@ -50,5 +41,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.MYNAME}}/${{matrix.IMGNAME}}:latest
-            ${{ env.MYNAME}}/${{matrix.IMGNAME}}:${{ needs.setup.outputs.Weekid }}
+            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
+            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:${{ steps.date.outputs.Weekid }}
