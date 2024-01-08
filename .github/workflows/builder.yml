@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - ImproveBuilder
 env:
   MYNAME: hinoshiba
 jobs:
