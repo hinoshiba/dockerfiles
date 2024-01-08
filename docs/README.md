@@ -36,32 +36,3 @@ dockerfiles
 * 便利なセットアップ
 	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
 
-
-## リリース@dockerhub
-
-本環境で作成して、最終的にdockerhubへアップロードする際の手順  
-
-1. builderの用意
-	```
-	docker buildx create --name <buildername>
-	docker buildx use <buildername>
-	docker buildx inspect --bootstrap
-	```
-2. login
-	* `docker login`
-3. build and push
-	```
-	docker buildx build --platform <platoform1,platoform2> -t <username>/<image name>:<version> --push ./dockerfiles/<image name>/.
-	# docker buildx build --platform linux/arm64,linux/amd64,linux/386,linux/s390x,linux/arm/v7,linux/arm/v6 -t <username>/<image name>:<version> --push ./dockerfiles/<image name>/.
-	```
-4. logout
-	* `docker logout`
-1. tag付け対象削除
-	* `docker rmi <username>/<image name>:<version>`
-3. builderの削除
-	```
-	docker buildx use default
-	docker buildx inspect --bootstrap
-	docker buildx stop <buildername>
-	docker buildx rm <buildername>
-	```
