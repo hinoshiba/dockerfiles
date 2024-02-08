@@ -20,6 +20,7 @@ jobs:
           - IMGNAME: node
           - IMGNAME: nginx
           - IMGNAME: research
+          - IMGNAME: cvemaker
     steps:
       - name: Get current week-id
         id: date
