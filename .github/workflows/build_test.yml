@@ -19,6 +19,7 @@ jobs:
           - IMGNAME: node
           - IMGNAME: nginx
           - IMGNAME: research
+          - IMGNAME: cvemaker
     steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
