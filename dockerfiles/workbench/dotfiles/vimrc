@@ -15,6 +15,7 @@ NeoBundle 'scrooloose/nerdtree'
 NeoBundle 'nathanaelkane/vim-indent-guides'
 NeoBundle 'bronson/vim-trailing-whitespace'
 NeoBundle 'mmai/vim-markdown-wiki'
+NeoBundle 'dense-analysis/ale'
 call neobundle#end()
 
 filetype plugin indent on
@@ -81,3 +82,15 @@ augroup END
 
 execute "set colorcolumn=" . join(range(81, 9999), ',')
 hi ColorColumn ctermbg=90 guibg=#2f4f4f
+
+let g:ale_enabled = 1
+let g:ale_lint_on_text_changed = 'always'
+let g:ale_lint_on_save = 1
+let g:ale_sign_column_always = 1
+let g:ale_sign_error = ">>"
+let g:ale_sign_warning = '--'
+
+highlight ALEErrorSign ctermbg=red ctermfg=white
+highlight ALEWarningSign ctermbg=yellow ctermfg=black
+
+let g:ale_python_pylint_options = '--disable=import-error'
