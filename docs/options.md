@@ -27,7 +27,7 @@ $ make target=workbench mount=/var/service/work port=80 creater=john cname=devel
 
 ### 起動中のコンテナの横に別インスタンスとしてテストイメージをトライアンドエラーしたい場合
 ```bash
-$ make target=nginx port=80 cname=develop daemon=n root=y
+$ make target=python port=80 cname=develop daemon=n root=y
 ```
 
 `cname`の値を指定することで、既存インスタンスとは別に起動できます。  

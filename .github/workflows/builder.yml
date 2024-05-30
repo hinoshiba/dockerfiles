@@ -18,7 +18,6 @@ jobs:
           - IMGNAME: rust
           - IMGNAME: python
           - IMGNAME: node
-          - IMGNAME: nginx
           - IMGNAME: research
           - IMGNAME: cvemaker
     steps:
