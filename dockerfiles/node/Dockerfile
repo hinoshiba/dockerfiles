@@ -1,4 +1,4 @@
-FROM node:20.13.1 AS builder
+FROM node:20.14.0 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV LANG ja_JP.UTF-8
