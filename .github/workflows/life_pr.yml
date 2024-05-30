@@ -38,6 +38,16 @@ jobs:
             sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${{steps.latest_env.outputs.Version}}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
             diff /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
         continue-on-error: true
+      - name: Set up Docker Buildx for build test.
+        uses: docker/setup-buildx-action@v2
+        if: steps.diff_check.outcome == 'failure'
+      - name: Build test.
+        uses: docker/build-push-action@v2
+        with:
+          context: dockerfiles/${{matrix.PRODUCT}}
+          push: false
+          platforms: linux/amd64,linux/arm64
+        if: steps.diff_check.outcome == 'failure'
       - name: Create a Pull Request.
         uses: peter-evans/create-pull-request@v5
         with:
