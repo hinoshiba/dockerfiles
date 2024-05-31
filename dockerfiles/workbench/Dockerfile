@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS Builder
+FROM ubuntu:24.04 AS Builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ARG local_docker_gid
@@ -10,11 +10,12 @@ ENV LC_ALL ja_JP.UTF-8
 
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
-    apt-get install -y  tzdata locales sudo newsboat mutt \
-        git vim screen telnet python3 netcat nmap net-tools tcpdump curl wget \
+    apt-get install -y  tzdata locales sudo mutt \
+        git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
-        python3-pip golang \
+        python3 python3-pip python3-xyzservices flake8 pylint mypy black isort\
+        golang \
         ca-certificates curl gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
@@ -35,8 +36,6 @@ RUN mkdir -p /tmp/install && cd /tmp/install && \
     tar zxvf kai-kun.tar.gz && \
     find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/' && \
     rm -rf /tmp/install
-
-RUN pip install flake8 pylint mypy black isort
 
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh

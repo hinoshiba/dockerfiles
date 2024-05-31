@@ -1,4 +1,0 @@
-https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss-analyzed.xml "脆弱性情報"
-{local-rss}/org/GIGAZINE/index.xml "test01"
-{local-rss}/org/nvd-rss/index.xml "test02"
-{local-rss}/filtered/02/index.xml "test02"

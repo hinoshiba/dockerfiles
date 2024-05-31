@@ -87,11 +87,3 @@ dockerのtokenを暗号化したもの
 # 4. 各種設定ファイルの変更(任意)
 
 * [workbench/dotfiles](../../dockerfiles/workbench/dotfiles) が基本設定なので、好みの設定に変更します
-
-## 特殊設定: news読み込み設定
-
-1. 任意のニュースURLを設定しておく
-	* [workbench/dotfiles/newsboat/urls.base](../../dockerfiles/workbench/dotfiles/newsboat/urls.base)
-		* `{local-rss}` が、`~/.shared_cache/feed-cache/rss` を指し示す文字列に変換されます
-			* `~/.shared_cache/feed-cache/rss` 配下にfeedを設置することで自ら生成したfeedも活用できます
-			* `~/.shared_cache/feed-cache/rss/filtered/01/index.xml`を指定する場合、`{local-rss}/filtererd/01/index.xml` をレコードに追加します
