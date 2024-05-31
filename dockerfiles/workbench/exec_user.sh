@@ -35,19 +35,10 @@ cp -rf /var/dotfiles/.vim /home/${LOCAL_WHOAMI}/.vim && chown -R ${LOCAL_WHOAMI}
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 
-test -d /home/${LOCAL_WHOAMI}/.newsboat || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.newsboat
-ln -s /etc/dotfiles/newsboat/config /home/${LOCAL_WHOAMI}/.newsboat/config
-sed -e "s/{local-rss}/file:\/\/\/home\/${LOCAL_WHOAMI}\/.shared_cache\/feed-cache\/rss\//g" /etc/dotfiles/newsboat/urls.base > /home/${LOCAL_WHOAMI}/.newsboat/urls
-
 test -d /home/${LOCAL_WHOAMI}/.ssh || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.ssh -m 700
 test -d /home/${LOCAL_WHOAMI}/.host.ssh && cd /home/${LOCAL_WHOAMI}/.host.ssh/ && find . -maxdepth 1 -mindepth 1 -print | xargs -I{} sh -c "ln -s /home/${LOCAL_WHOAMI}/.host.ssh/{} /home/${LOCAL_WHOAMI}/.ssh/{}"
 
 # shared directory
-test -d /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/
-test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db
-test -f /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock
-ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db /home/${LOCAL_WHOAMI}/.newsboat/cache.db
-ln -s /home/${LOCAL_WHOAMI}/.shared_cache/newsboat/cache.db.lock /home/${LOCAL_WHOAMI}/.newsboat/cache.db.lock
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/bash/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/bash/
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history || (sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history && chmod 600 /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history)
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/bash/bash_history /home/${LOCAL_WHOAMI}/.bash_history
