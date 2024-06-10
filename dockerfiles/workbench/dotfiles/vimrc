@@ -28,7 +28,7 @@ set number
 set syntax=markdown
 set foldmethod=marker
 set cursorcolumn
-"set expandtab
+set noexpandtab
 set tabstop=4
 set shiftwidth=4
 set list
