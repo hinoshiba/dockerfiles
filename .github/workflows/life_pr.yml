@@ -32,7 +32,7 @@ jobs:
         id: diff_check
         run: |
             cp version/${{matrix.PRODUCT}}/strict /tmp/strict_bk
-            echo -n "${{steps.latest_env.outputs.Version}}" > version/${{matrix.PRODUCT}}/strict
+            echo "${{steps.latest_env.outputs.Version}}" > version/${{matrix.PRODUCT}}/strict
             diff /tmp/strict_bk version/${{matrix.PRODUCT}}/strict
         continue-on-error: true
       - name: Set up Docker Buildx for build test.
