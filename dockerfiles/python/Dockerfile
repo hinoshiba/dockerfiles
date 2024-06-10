@@ -1,4 +1,4 @@
-FROM python:3.12.3 AS builder
+FROM python:3.12.4 AS builder
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV LANG ja_JP.UTF-8
