@@ -1,4 +1,5 @@
-FROM rust:1.78.0 AS Builder
+ARG strict
+FROM rust:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV GO111MODULE=on

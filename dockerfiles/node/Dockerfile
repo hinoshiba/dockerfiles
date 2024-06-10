@@ -1,4 +1,5 @@
-FROM node:20.14.0 AS builder
+ARG strict
+FROM node:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV LANG ja_JP.UTF-8

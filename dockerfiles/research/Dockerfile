@@ -1,4 +1,5 @@
-FROM ubuntu:22.04 AS Builder
+ARG strict
+FROM ubuntu:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV SHELL /bin/bash

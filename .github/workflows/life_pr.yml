@@ -9,23 +9,19 @@ jobs:
         matrix:
           include:
             - PRODUCT: golang
-              VERSION: "1.21"
             - PRODUCT: python
-              VERSION: "3.12"
             - PRODUCT: rust
-              VERSION: "1.78"
             - PRODUCT: node
-              VERSION: "20"
       steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
       - name: Check to exist the target.
         run: |
-          test -f dockerfiles/${{matrix.PRODUCT}}/Dockerfile
+          test -f version/${{matrix.PRODUCT}}/strict
       - name: Check a latest version.
         id: latest_env
         run: |
-            curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/${{matrix.VERSION}}.json --header 'Accept: application/json' > /tmp/version.json
+            curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major).json --header 'Accept: application/json' > /tmp/version.json
             cat /tmp/version.json
             grep -q "latest" /tmp/version.json
             echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
@@ -34,9 +30,9 @@ jobs:
       - name: Make a latest dockerfile.
         id: diff_check
         run: |
-            cp dockerfiles/${{matrix.PRODUCT}}/Dockerfile /tmp/Dockerfile_bk
-            sed -i 's/${{matrix.PRODUCT}}:[0-9.]*\s/${{matrix.PRODUCT}}:'${{steps.latest_env.outputs.Version}}' /' dockerfiles/${{matrix.PRODUCT}}/Dockerfile
-            diff /tmp/Dockerfile_bk dockerfiles/${{matrix.PRODUCT}}/Dockerfile
+            cp version/${{matrix.PRODUCT}}/strict /tmp/strict_bk
+            echo -n "${{steps.latest_env.outputs.Version}}" > version/${{matrix.PRODUCT}}/strict
+            diff /tmp/strict_bk version/${{matrix.PRODUCT}}/strict
         continue-on-error: true
       - name: Set up Docker Buildx for build test.
         uses: docker/setup-buildx-action@v2
@@ -67,11 +63,11 @@ jobs:
         run: |
             mkdir -p .tmp
             echo "---" > .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
             echo "labels: EOL" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
-            echo "${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
+            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
             echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
             cat .tmp/issue.md
         if: steps.not_eol.outcome == 'failure'
@@ -93,11 +89,11 @@ jobs:
         run: |
             mkdir -p .tmp
             echo "---" > .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/${{matrix.VERSION}} is support out." >> .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is support out." >> .tmp/issue.md
             echo "labels: support_out" >> .tmp/issue.md
             echo "assignees: hinoshiba" >> .tmp/issue.md
             echo "---" >> .tmp/issue.md
-            echo "${{matrix.PRODUCT}}/${{matrix.VERSION}} is EOL." >> .tmp/issue.md
+            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
             echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
             cat .tmp/issue.md
         if: steps.support.outcome == 'failure'

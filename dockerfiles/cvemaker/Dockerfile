@@ -1,4 +1,5 @@
-FROM python:3
+ARG major
+FROM python:${major}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV LANG ja_JP.UTF-8
