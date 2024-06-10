@@ -1,9 +1,6 @@
 name: imgbuild
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
 env:
   MYNAME: hinoshiba
 jobs:
@@ -22,6 +19,15 @@ jobs:
     steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
+      - name: Get LANG_TYPE
+        id: LANG
+        run: |
+          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
+          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
+      - name: Get Version
+        id: VERSION
+        run: |
+          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx.
         uses: docker/setup-buildx-action@v2
       - name: Build test.
@@ -30,3 +36,5 @@ jobs:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: false
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}

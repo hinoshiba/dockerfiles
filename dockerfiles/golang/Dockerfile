@@ -1,4 +1,5 @@
-FROM golang:1.21.11 AS builder
+ARG strict
+FROM golang:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV GO111MODULE=on

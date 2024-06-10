@@ -1,4 +1,5 @@
-FROM ubuntu:24.04 AS Builder
+ARG strict
+FROM ubuntu:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ARG local_docker_gid

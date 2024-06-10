@@ -170,10 +170,9 @@ endif
 
 .PHONY: start
 start: check_health check_target pull ## Start a target docker image. If the target container already exists, skip this section.
-test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
+	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
-endif
 endif
 
 .PHONY: install
@@ -229,8 +228,10 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 
+L_TYPE=$(shell cat dockerfiles/$(TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$$/\1/p')
+L_TAG=$(shell cat dockerfiles/$(TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\$${\([^}]*\)}.*$$/\1/p')
 $(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
-	@$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
+	$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) --build-arg $(L_TAG)=$(shell cat version/$(L_TYPE)/$(L_TAG)) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
 		$(D) tag $(builder)/$(TGT):$(VERSION) $(builder)/$(TGT):latest && \
 		touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
 

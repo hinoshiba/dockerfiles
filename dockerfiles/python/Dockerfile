@@ -1,4 +1,5 @@
-FROM python:3.12.4 AS builder
+ARG strict
+FROM python:${strict}
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ENV LANG ja_JP.UTF-8
