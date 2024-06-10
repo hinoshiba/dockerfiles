@@ -41,8 +41,8 @@ jobs:
       - name: Get LANG_TYPE
         id: LANG
         run: |
-          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
-          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
+          echo "TYPE=$(cat dockerfiles/${{matrix.PRODUCT}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
+          echo "TAG=$(cat dockerfiles/${{matrix.PRODUCT}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
       - name: Get Version
         id: VERSION
         run: |
