@@ -28,7 +28,7 @@ jobs:
             echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
             echo "Eol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
             echo "Support=$(cat /tmp/version.json | jq -r '.support')" >> "$GITHUB_OUTPUT"
-      - name: Make a latest dockerfile.
+      - name: Update version.
         id: diff_check
         run: |
             cp version/${{matrix.PRODUCT}}/strict /tmp/strict_bk
@@ -38,12 +38,23 @@ jobs:
       - name: Set up Docker Buildx for build test.
         uses: docker/setup-buildx-action@v2
         if: steps.diff_check.outcome == 'failure'
+      - name: Get LANG_TYPE
+        id: LANG
+        run: |
+          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
+          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
+      - name: Get Version
+        id: VERSION
+        run: |
+          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
       - name: Build test.
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/${{matrix.PRODUCT}}
           push: false
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
         if: steps.diff_check.outcome == 'failure'
       - name: Create a Pull Request.
         uses: peter-evans/create-pull-request@v5
