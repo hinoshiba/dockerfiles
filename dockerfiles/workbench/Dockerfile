@@ -52,7 +52,7 @@ ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
 RUN chmod +x /usr/local/bin/clone.sh && \
     chmod +x /usr/local/bin/work && \
-    chmod +x /usr/local/bin/templte && \
+    chmod +x /usr/local/bin/template && \
     chmod +x /usr/local/bin/work-git && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
