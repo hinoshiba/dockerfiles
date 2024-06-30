@@ -12,11 +12,16 @@ fi
 
 target="${1}"
 
-cp ${TEMPLATES}/${target}/Makefile ./
+cp -i ${TEMPLATES}/${target}/Makefile ./
 
 case "${target}" in
 	python)
 		echo "__pycache__/** " >> .gitignore
+		;;
+	go)
+		echo "bin/" >> .gitignore
+		echo "vendor/" >> .gitignore
+		echo "go.sum" >> .gitignore
 		;;
 esac
 
