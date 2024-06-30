@@ -41,14 +41,18 @@ RUN mkdir -p /tmp/install && cd /tmp/install && \
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh
 
+ADD ./templates /usr/local/src/templates
+
 ADD ./scripts/clone.sh /usr/local/bin/clone.sh
 ADD ./scripts/work.sh /usr/local/bin/work
+ADD ./scripts/template.sh /usr/local/bin/template
 ADD ./scripts/work-git.sh /usr/local/bin/work-git
 ADD ./scripts/work-cve-maker.sh /usr/local/bin/work-cve-maker
 ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
 RUN chmod +x /usr/local/bin/clone.sh && \
     chmod +x /usr/local/bin/work && \
+    chmod +x /usr/local/bin/template && \
     chmod +x /usr/local/bin/work-git && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
