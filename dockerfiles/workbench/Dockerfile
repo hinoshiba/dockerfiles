@@ -22,31 +22,31 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-compose-plugin && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
-    locale-gen ja_JP.UTF-8 && \
-    update-alternatives --set editor /usr/bin/vim.basic
-
-RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
+    wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
     rm -rf /usr/local/go && tar xzf go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz -C /usr/local && \
     rm -rf go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
-    export PATH="${PATH}:/usr/local/go/bin"
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    export PATH="${PATH}:/usr/local/go/bin" && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     . "$HOME/.cargo/env" && \
     rustup toolchain add $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) && \
     rustup default $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) && \
-    rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer
-
-RUN mkdir /tmp/py && cd /tmp/py && \
+    rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer && \
+    mkdir /tmp/py && cd /tmp/py && \
     wget https://www.python.org/ftp/python/$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)/Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
     tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
     cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
     ./configure --enable-optimizations && \
     sudo make install && \
+    cd && rm -rf /tmp/py && \
     python3 -m ensurepip --upgrade && \
-    pip3 install flake8 pylint mypy black isort xyzservices
+    pip3 install flake8 pylint mypy black isort xyzservices && \
+    apt-get purge -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget && \
+    apt-get -y autoremove && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
+    locale-gen ja_JP.UTF-8 && \
+    update-alternatives --set editor /usr/bin/vim.basic
 
 ENV VERSION_KAIKUN=0.0.4
 
