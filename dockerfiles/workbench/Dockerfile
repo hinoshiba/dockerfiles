@@ -13,7 +13,7 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
     apt-get install -y  tzdata locales sudo mutt \
         git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
-        less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils \
+        less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
         python3 python3-pip python3-xyzservices flake8 pylint mypy black isort\
         golang \
@@ -28,6 +28,12 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
     update-alternatives --set editor /usr/bin/vim.basic
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    . "$HOME/.cargo/env" && \
+    rustup toolchain add 1.78.0 && \
+    rustup default 1.78.0 && \
+    rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer
 
 ENV VERSION_KAIKUN=0.0.4
 
