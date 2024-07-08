@@ -15,7 +15,7 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
         git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
-        build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget \
+        build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev \
         ca-certificates curl gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
@@ -40,7 +40,7 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     cd && rm -rf /tmp/py && \
     python3 -m ensurepip --upgrade && \
     pip3 install flake8 pylint mypy black isort xyzservices && \
-    apt-get purge -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget && \
+    apt-get purge -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
