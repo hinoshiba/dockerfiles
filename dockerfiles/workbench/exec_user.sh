@@ -30,6 +30,9 @@ test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI
 sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
 
+mv /root/.cargo /home/${LOCAL_WHOAMI}/.cargo && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.cargo
+mv /root/.rustup /home/${LOCAL_WHOAMI}/.rustup && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.rustup
+
 ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 cp -rf /var/dotfiles/.vim /home/${LOCAL_WHOAMI}/.vim && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.vim
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
