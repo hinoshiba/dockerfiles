@@ -36,9 +36,10 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
     cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
     ./configure --enable-optimizations && \
-    sudo make install && \
+    make install && \
     cd && rm -rf /tmp/py && \
     python3 -m ensurepip --upgrade && \
+    pip3 install --upgrade pip && \
     pip3 install flake8 pylint mypy black isort xyzservices && \
     apt-get purge -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev && \
     apt-get -y autoremove && \
