@@ -116,6 +116,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
+PATH=${PATH}:/usr/local/go/bin
 . "${HOME}/.cargo/env"
 
 export GPG_TTY=$(tty)
