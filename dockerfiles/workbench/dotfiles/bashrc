@@ -115,6 +115,10 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+PATH=${PATH}:/usr/local/go/bin
+. "${HOME}/.cargo/env"
+
 export GPG_TTY=$(tty)
 export SHELL=/bin/bash
 export LANG=ja_JP.UTF-8
