@@ -1,11 +1,11 @@
 ARG strict
-FROM ubuntu:${strict} as builder
+FROM ubuntu:${strict} AS builder
 ENV SHELL /bin/bash
 RUN apt-get update && \
     apt-get install -y bash-completion curl wget git \
         build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
 
-FROM builder as py_builder
+FROM builder AS py_builder
 RUN wget https://www.python.org/ftp/python/$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)/Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
     tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
     cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
@@ -21,19 +21,19 @@ RUN wget https://www.python.org/ftp/python/$(curl -s https://raw.githubuserconte
     mv /usr/local/bin/python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major)-config /usr/local/bin/python3-config && \
     mv /usr/local/lib/python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) /usr/local/lib/python3
 
-FROM builder as rust_builder
+FROM builder AS rust_builder
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none --profile minimal -y && \
     . "$HOME/.cargo/env" && \
     rustup toolchain add $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) --profile minimal && \
     rustup default $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) && \
     rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer
 
-FROM builder as go_builder
+FROM builder AS go_builder
 RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
     rm -rf /usr/local/go && tar xzf go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz -C /usr/local && \
     export PATH="${PATH}:/usr/local/go/bin"
 
-FROM builder as kai_builder
+FROM builder AS kai_builder
 ENV VERSION_KAIKUN=0.0.4
 RUN mkdir -p /tmp/install && cd /tmp/install && \
     arch=$(dpkg --print-architecture) && \
@@ -43,7 +43,7 @@ RUN mkdir -p /tmp/install && cd /tmp/install && \
     rm -rf /tmp/install
 
 ARG strict
-FROM ubuntu:${strict} as main
+FROM ubuntu:${strict} AS main
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
 ARG local_docker_gid
