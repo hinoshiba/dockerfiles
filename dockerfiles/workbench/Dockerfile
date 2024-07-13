@@ -5,22 +5,6 @@ RUN apt-get update && \
     apt-get install -y bash-completion curl wget git \
         build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev
 
-FROM builder AS py_builder
-RUN wget https://www.python.org/ftp/python/$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)/Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
-    tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
-    cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
-    ./configure --enable-optimizations && \
-    make -j$(nproc) && \
-    make altinstall && \
-    ls /usr/local/bin && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices && \
-    rm -rf /usr/local/bin/python3-config && \
-    rm -rf /usr/local/bin/python3 && \
-    mv /usr/local/bin/python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) /usr/local/bin/python3 && \
-    mv /usr/local/bin/python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major)-config /usr/local/bin/python3-config && \
-    mv /usr/local/lib/python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) /usr/local/lib/python3
-
 FROM builder AS rust_builder
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none --profile minimal -y && \
     . "$HOME/.cargo/env" && \
@@ -59,24 +43,28 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
         git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
+        build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev \
         ca-certificates gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y --no-install-recommends docker-ce docker-ce-cli docker-compose-plugin && \
-    apt-get purge -y docker-ce && \
+    wget https://www.python.org/ftp/python/$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)/Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
+    tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
+    cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
+    ./configure --enable-optimizations && \
+    make -j$(nproc) && \
+    make install && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices && \
+    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
     update-alternatives --set editor /usr/bin/vim.basic
-
-COPY --from=py_builder /usr/local/bin/python3 /usr/local/bin/python3
-COPY --from=py_builder /usr/local/bin/python3-config /usr/local/bin/python3-config
-COPY --from=py_builder /usr/local/bin/pip3 /usr/local/bin/pip3
-COPY --from=py_builder /usr/local/lib/python3/site-packages /usr/local/lib/python3/site-packages
 
 COPY --from=rust_builder /root/.cargo /root/.cargo
 COPY --from=rust_builder /root/.rustup /root/.rustup
