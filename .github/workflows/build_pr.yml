@@ -31,7 +31,7 @@ jobs:
       - name: has diff for the image ?
         id: diff_check
         run: |
-          git diff --name-only HEAD HEAD^ | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
+          git diff --name-only "HEAD" "HEAD^" | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
         continue-on-error: true
       - name: Get LANG_TYPE
         id: LANG
