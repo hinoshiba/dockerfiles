@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
+      - name: Fetch master
+        run: git fetch origin master
       - name: has diff for the image ?
         id: diff_check
         run: |
