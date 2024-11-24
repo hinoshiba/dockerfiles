@@ -24,6 +24,7 @@ jobs:
         run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
       - name: Checkout from repository.
         uses: actions/checkout@v2
+        with:
           fetch-depth: 0
       - name: has diff for the image ?
         id: diff_check
