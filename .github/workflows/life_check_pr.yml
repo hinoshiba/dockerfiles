@@ -65,3 +65,55 @@ jobs:
           commit-message: "by life_pr.yml"
           branch: Update/${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}
         if: steps.diff_check.outcome == 'failure'
+      - name: Regist status of EOL.
+        id: not_eol
+        run: |
+            test "false" == "${{steps.latest_env.outputs.Eol}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Eol}}" ]]
+        continue-on-error: true
+      - name: Make a issue body.
+        run: |
+            mkdir -p .tmp
+            echo "---" > .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
+            echo "labels: EOL" >> .tmp/issue.md
+            echo "assignees: hinoshiba" >> .tmp/issue.md
+            echo "---" >> .tmp/issue.md
+            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
+            echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
+            cat .tmp/issue.md
+        if: steps.not_eol.outcome == 'failure'
+      - name: Create the issue.
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          update_existing: true
+          search_existing: open
+          filename: .tmp/issue.md
+        if: steps.not_eol.outcome == 'failure'
+      - name: Regist status of Support.
+        id: support
+        run: |
+            test "null" == "${{steps.latest_env.outputs.Support}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Support}}" ]]
+        continue-on-error: true
+      - name: Make a issue body.
+        run: |
+            mkdir -p .tmp
+            echo "---" > .tmp/issue.md
+            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is support out." >> .tmp/issue.md
+            echo "labels: support_out" >> .tmp/issue.md
+            echo "assignees: hinoshiba" >> .tmp/issue.md
+            echo "---" >> .tmp/issue.md
+            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
+            echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
+            cat .tmp/issue.md
+        if: steps.support.outcome == 'failure'
+      - name: Create the issue.
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          update_existing: true
+          search_existing: open
+          filename: .tmp/issue.md
+        if: steps.support.outcome == 'failure'
