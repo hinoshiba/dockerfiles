@@ -1,4 +1,4 @@
-name: file_check
+name: version file check
 on:
   pull_request:
 jobs:
