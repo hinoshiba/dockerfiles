@@ -63,7 +63,7 @@ test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u $
 
 tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
 test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
-test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global alias.push-with-set-upstream '!git push --set-upstream origin $(git symbolic-ref --short HEAD)'
+test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global --add --bool push.autoSetupRemote true
 
 tgt="/home/${LOCAL_WHOAMI}/.screen_layout"
 test -f ${tgt} || ln -s /etc/dotfiles/screen_layout /home/${LOCAL_WHOAMI}/.screen_layout
