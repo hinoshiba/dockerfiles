@@ -46,7 +46,7 @@ jobs:
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: false
-          load: true
+          #load: true
           platforms: linux/amd64,linux/arm64
           build-args: |
             ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
