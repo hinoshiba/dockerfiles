@@ -54,4 +54,4 @@ jobs:
         if: steps.diff_check.outcome == 'success'
       - name: Run test.
         run: |
-          make localhost=y target=${{ matrix.IMGNAME }}
+          docker run ${{ matrix.IMGNAME }}
