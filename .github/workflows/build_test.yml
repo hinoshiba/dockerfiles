@@ -24,7 +24,8 @@ jobs:
       - name: has diff for the image ?
         id: diff_check
         run: |
-          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
+          #git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
+          exit 0
         continue-on-error: true
       - name: Get LANG_TYPE
         id: LANG
@@ -55,3 +56,4 @@ jobs:
       - name: Run test.
         run: |
           docker run ${{ matrix.IMGNAME }}
+        if: steps.diff_check.outcome == 'success'
