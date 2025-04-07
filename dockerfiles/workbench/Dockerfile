@@ -59,11 +59,11 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     make install && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash && \
-    \. "$HOME/.nvm/nvm.sh" && \
-    nvm install $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
+    apt-get install -y nodejs npm && \
+    npm install n -g && \
+    n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
     npm install -g @devcontainers/cli && \
-    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev && \
+    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
