@@ -69,7 +69,8 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
-    update-alternatives --set editor /usr/bin/vim.basic
+    update-alternatives --set editor /usr/bin/vim.basic && \
+    userdel -r ubuntu
 
 COPY --from=rust_builder /root/.cargo /root/.cargo
 COPY --from=rust_builder /root/.rustup /root/.rustup
