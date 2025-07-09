@@ -33,6 +33,7 @@ USE_LOCALIMG=${localimg}
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
 export http_proxy
 export https_proxy
+export SSH_AUTH_SOCK
 export USER
 export HOME
 
@@ -129,6 +130,13 @@ ifneq ($(http_proxy), )
 endif
 ifneq ($(https_proxy), )
 	use_https_proxy=--build-arg https_proxy=$(https_proxy)
+endif
+ifneq ($(SSH_AUTH_SOCK),)
+    ifneq ($(shell uname), Darwin)
+        useropt+= --mount type=bind,src=$(SSH_AUTH_SOCK),dst=$(SSH_AUTH_SOCK) --env SSH_AUTH_SOCK=$(SSH_AUTH_SOCK) 
+    else
+        useropt+= --mount type=bind,src=$(SSH_AUTH_SOCK),dst=/run/host-services/ssh-auth.sock --env SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock 
+    endif
 endif
 ifneq ($(CREATER), )
 	builder=$(CREATER)
