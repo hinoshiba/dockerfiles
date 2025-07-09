@@ -133,9 +133,9 @@ ifneq ($(https_proxy), )
 endif
 ifneq ($(SSH_AUTH_SOCK),)
     ifneq ($(shell uname), Darwin)
-        useropt+= --mount type=bind,src=$(SSH_AUTH_SOCK),dst=$(SSH_AUTH_SOCK) --env SSH_AUTH_SOCK=$(SSH_AUTH_SOCK) 
+        useropt+= --mount type=bind,src="$(SSH_AUTH_SOCK)",dst="$(SSH_AUTH_SOCK)" --env SSH_AUTH_SOCK="$(SSH_AUTH_SOCK)" 
     else
-        useropt+= --mount type=bind,src=$(SSH_AUTH_SOCK),dst=/run/host-services/ssh-auth.sock --env SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock 
+        useropt+= --mount type=bind,src=/run/host-services/ssh-auth.sock,dst=/run/host-services/ssh-auth.sock --env SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock 
     endif
 endif
 ifneq ($(CREATER), )
