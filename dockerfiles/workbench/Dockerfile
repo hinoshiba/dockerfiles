@@ -58,7 +58,7 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     make -j$(nproc) && \
     make install && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
     apt-get install -y nodejs npm && \
     npm install n -g && \
     n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
