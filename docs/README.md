@@ -36,3 +36,4 @@ dockerfiles
 * 便利なセットアップ
 	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
 
+abcdefg
