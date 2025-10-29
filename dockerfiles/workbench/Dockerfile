@@ -10,7 +10,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --defau
     . "$HOME/.cargo/env" && \
     rustup toolchain add $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) --profile minimal && \
     rustup default $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) && \
-    rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer
+    rustup component add clippy rustfmt rust-analyzer rust-src rust-docs
 
 FROM builder AS go_builder
 RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
