@@ -83,15 +83,6 @@ ifeq ($(ROOT), )
 		ifneq ("$(wildcard $(HOME)/.gitconfig)","")
 			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig.add,ro
 		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.add)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
-		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.signature)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
-		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.passwords.gpg)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
-		endif
 		ifneq ("$(wildcard $(HOME)/.docker.credential.gpg)","")
 			useropt+= --mount type=bind,src=$(HOME)/.docker.credential.gpg,dst=$(HOME)/.docker.credential.gpg,ro
 		endif

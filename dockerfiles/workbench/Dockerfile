@@ -40,7 +40,7 @@ ENV LC_ALL ja_JP.UTF-8
 
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
-    apt-get install -y  tzdata locales sudo mutt \
+    apt-get install -y  tzdata locales sudo \
         git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
