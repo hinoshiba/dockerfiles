@@ -52,6 +52,9 @@ test -d /home/${LOCAL_WHOAMI}/.shared_cache/vim/ || sudo -u ${LOCAL_WHOAMI} mkdi
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo /home/${LOCAL_WHOAMI}/.viminfo
 
+test -d /home/${LOCAL_WHOAMI}/.shared_cache/.codex/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/.codex/
+ln -s /home/${LOCAL_WHOAMI}/.shared_cache/.codex /home/${LOCAL_WHOAMI}/.codex
+
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/
 
 ## permission
