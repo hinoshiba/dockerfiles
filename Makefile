@@ -33,6 +33,7 @@ USE_LOCALIMG=${localimg}
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
 export http_proxy
 export https_proxy
+export SSH_AUTH_SOCK
 export USER
 export HOME
 
@@ -82,15 +83,6 @@ ifeq ($(ROOT), )
 		ifneq ("$(wildcard $(HOME)/.gitconfig)","")
 			useropt+= --mount type=bind,src=$(HOME)/.gitconfig,dst=$(HOME)/.gitconfig.add,ro
 		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.add)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.add,dst=$(HOME)/.muttrc.add,ro
-		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.signature)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.signature,dst=$(HOME)/.muttrc.signature,ro
-		endif
-		ifneq ("$(wildcard $(HOME)/.muttrc.passwords.gpg)","")
-			useropt+= --mount type=bind,src=$(HOME)/.muttrc.passwords.gpg,dst=$(HOME)/.muttrc.passwords.gpg,ro
-		endif
 		ifneq ("$(wildcard $(HOME)/.docker.credential.gpg)","")
 			useropt+= --mount type=bind,src=$(HOME)/.docker.credential.gpg,dst=$(HOME)/.docker.credential.gpg,ro
 		endif
@@ -129,6 +121,13 @@ ifneq ($(http_proxy), )
 endif
 ifneq ($(https_proxy), )
 	use_https_proxy=--build-arg https_proxy=$(https_proxy)
+endif
+ifneq ($(SSH_AUTH_SOCK),)
+    ifneq ($(shell uname), Darwin)
+        useropt+= --mount type=bind,src="$(SSH_AUTH_SOCK)",dst="$(SSH_AUTH_SOCK)" --env SSH_AUTH_SOCK="$(SSH_AUTH_SOCK)" 
+    else
+        useropt+= --mount type=bind,src=/run/host-services/ssh-auth.sock,dst=/run/host-services/ssh-auth.sock --env SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock 
+    endif
 endif
 ifneq ($(CREATER), )
 	builder=$(CREATER)

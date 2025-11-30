@@ -57,7 +57,7 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[0;32m\][container@${LOCAL_HOSTNAME}] \[\033[0;33m\]\u@\h\[\033[00m\]: \[\033[0;31m\]\w \e[34m$(__git_ps1 "(%s)")\[\033[0m\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[0;32m\][container@${LOCAL_HOSTNAME}] \[\033[0;33m\]\u@\h\[\033[00m\]: \[\033[0;31m\]\w \[\033[0;34m\]$(__git_ps1 "(%s)")\[\033[0m\]$ '
 else
     PS1='${debian_chroot:+($debian_chroot)}[container@${LOCAL_HOSTNAME}] \u@\h: \w $(__git_ps1 "(%s)")\$ '
 fi
@@ -130,7 +130,7 @@ alias clone="source /usr/local/bin/clone.sh"
 alias python="/usr/local/bin/work-git python"
 alias golang="/usr/local/bin/work-git golang"
 alias rust="/usr/local/bin/work-git rust"
-alias node="/usr/local/bin/work-git node"
+alias node-container="/usr/local/bin/work-git node"
 alias cve-maker="/usr/local/bin/work-cve-maker"
 alias research="/usr/local/bin/work research"
 alias docker="/usr/local/bin/docker-with-make-config.sh"

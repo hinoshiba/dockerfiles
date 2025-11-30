@@ -14,6 +14,7 @@ RUN apt-get update && \
     locale-gen ja_JP.UTF-8
 
 RUN pip install --upgrade pip && \
+    pip install capstone && \
     pip install cve-maker
 
 RUN mkdir /tmphome && \

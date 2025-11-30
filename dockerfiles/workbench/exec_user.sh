@@ -30,6 +30,9 @@ test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI
 sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
 
+test -n "${SSH_AUTH_SOCK:-}" && sudo -u ${LOCAL_WHOAMI} echo "export SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> /home/${LOCAL_WHOAMI}/.bashrc
+test -n "${SSH_AUTH_SOCK:-}" && chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${SSH_AUTH_SOCK}"
+
 mv /root/.cargo /home/${LOCAL_WHOAMI}/.cargo && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.cargo
 mv /root/.rustup /home/${LOCAL_WHOAMI}/.rustup && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.rustup
 
@@ -38,8 +41,7 @@ cp -rf /var/dotfiles/.vim /home/${LOCAL_WHOAMI}/.vim && chown -R ${LOCAL_WHOAMI}
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
 
-test -d /home/${LOCAL_WHOAMI}/.ssh || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.ssh -m 700
-test -d /home/${LOCAL_WHOAMI}/.host.ssh && cd /home/${LOCAL_WHOAMI}/.host.ssh/ && find . -maxdepth 1 -mindepth 1 -print | xargs -I{} sh -c "ln -s /home/${LOCAL_WHOAMI}/.host.ssh/{} /home/${LOCAL_WHOAMI}/.ssh/{}"
+test -d /home/${LOCAL_WHOAMI}/.host.ssh && ln -s /home/${LOCAL_WHOAMI}/.host.ssh /home/${LOCAL_WHOAMI}/.ssh
 
 # shared directory
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/bash/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/bash/
@@ -50,6 +52,9 @@ test -d /home/${LOCAL_WHOAMI}/.shared_cache/vim/ || sudo -u ${LOCAL_WHOAMI} mkdi
 test -f /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo || sudo -u ${LOCAL_WHOAMI} touch /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo
 ln -s /home/${LOCAL_WHOAMI}/.shared_cache/vim/viminfo /home/${LOCAL_WHOAMI}/.viminfo
 
+test -d /home/${LOCAL_WHOAMI}/.shared_cache/.codex/ || sudo -u ${LOCAL_WHOAMI} mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/.codex/
+ln -s /home/${LOCAL_WHOAMI}/.shared_cache/.codex /home/${LOCAL_WHOAMI}/.codex
+
 test -d /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/ || sudo -u ${LOCAL_WHOAMI}  mkdir -p /home/${LOCAL_WHOAMI}/.shared_cache/screen-log/
 
 ## permission
@@ -58,9 +63,6 @@ test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type 
 test -d /home/${LOCAL_WHOAMI}/.gnupg && find /home/${LOCAL_WHOAMI}/.gnupg -type f -exec chmod 600 {} \;
 
 ## configfile build
-tgt="/home/${LOCAL_WHOAMI}/.muttrc"
-test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} cat /etc/dotfiles/muttrc >> ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
-
 tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
 test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
 test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global --add --bool push.autoSetupRemote true

@@ -10,7 +10,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --defau
     . "$HOME/.cargo/env" && \
     rustup toolchain add $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) --profile minimal && \
     rustup default $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/rust/strict) && \
-    rustup component add clippy rls rust-analysis rust-src rust-docs rustfmt rust-analyzer
+    rustup component add clippy rustfmt rust-analyzer rust-src rust-docs
 
 FROM builder AS go_builder
 RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz && \
@@ -30,6 +30,7 @@ ARG strict
 FROM ubuntu:${strict} AS main
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
+ARG NVM_VERSION=v0.40.2
 ARG local_docker_gid
 
 ENV SHELL /bin/bash
@@ -39,7 +40,7 @@ ENV LC_ALL ja_JP.UTF-8
 
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
-    apt-get install -y  tzdata locales sudo mutt \
+    apt-get install -y  tzdata locales sudo \
         git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
@@ -57,14 +58,20 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     make -j$(nproc) && \
     make install && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices && \
-    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
+    apt-get install -y nodejs npm && \
+    npm install n -g && \
+    n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
+    npm install -g @devcontainers/cli && \
+    npm install -g @openai/codex@latest && \
+    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
-    update-alternatives --set editor /usr/bin/vim.basic
+    update-alternatives --set editor /usr/bin/vim.basic && \
+    userdel -r ubuntu
 
 COPY --from=rust_builder /root/.cargo /root/.cargo
 COPY --from=rust_builder /root/.rustup /root/.rustup

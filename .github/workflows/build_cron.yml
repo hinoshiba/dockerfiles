@@ -2,12 +2,14 @@ name: build_cron
 on:
   schedule:
     - cron: "0 0 * * 6"
+  workflow_dispatch:
 env:
   MYNAME: hinoshiba
 jobs:
   builder:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - IMGNAME: workbench
