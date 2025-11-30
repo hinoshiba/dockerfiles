@@ -55,5 +55,5 @@ jobs:
         if: steps.diff_check.outcome == 'success'
       - name: Run test.
         run: |
-          docker run ${{ matrix.IMGNAME }}
+          docker run ${{ matrix.IMGNAME }} ls
         if: steps.diff_check.outcome == 'success'
