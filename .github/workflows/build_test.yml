@@ -65,5 +65,7 @@ jobs:
         if: steps.diff_check.outcome == 'success'
       - name: Run test x64.
         run: |
-          docker run ${{ env.MYNAME}}/${{ matrix.IMGNAME }} ls -lah
+          # docker run ${{ env.MYNAME}}/${{ matrix.IMGNAME }} ls -lah
+          make install
+          make run target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }}
         if: steps.diff_check.outcome == 'success'
