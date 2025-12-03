@@ -91,7 +91,7 @@ ifeq ($(ROOT), )
 		endif
 
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-		command=/usr/local/bin/exec_user.sh /bin/bash
+		command=/usr/local/bin/exec_user.sh $(command)
 	else
 		useropt=-u `id -u`:`id -g` -e HOME=/tmphome
 	endif

@@ -67,5 +67,5 @@ jobs:
         run: |
           # docker run ${{ env.MYNAME}}/${{ matrix.IMGNAME }} ls -lah
           make install
-          make start target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }}
+          make target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }} cmd="ls -lah" start
         if: steps.diff_check.outcome == 'success'
