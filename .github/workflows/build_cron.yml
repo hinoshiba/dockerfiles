@@ -15,6 +15,7 @@ jobs:
           - IMGNAME: workbench
           - IMGNAME: research
           - IMGNAME: cvemaker
+          - IMGNAME: codex
     steps:
       - name: Get current week-id
         id: date
