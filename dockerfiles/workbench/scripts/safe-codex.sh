@@ -8,7 +8,7 @@ set -euo pipefail
 # - IMAGE は定数
 # - workdir(コンテナ内)はホスト current directory の絶対パスと同一
 # - ~/.codex を writable mount（current user の HOME 配下）
-# - ~/.codex-cstm/preagent.md を <workdir>/AGENT.md に overlay（ホストは変更しない）
+# - ~/.codex-cstm/preagent.md を <workdir>/AGENTS.md に overlay（ホストは変更しない）
 # - ~/.codex-cstm/.codexignore に従い不可視化 mount を追加（file=/dev/null, dir=空dir）
 #
 # - ./.codex-build が存在する場合:
@@ -16,7 +16,7 @@ set -euo pipefail
 #   2) その後 “ENTRYPOINT に戻して” 通常起動（= entrypoint を上書きしない起動）し、codex を実行
 #
 # - ユーザー作成などはカスタムイメージ側が担当する前提
-#   HOST_USER / HOST_GROUP / HOST_UID / HOST_GID を env で渡すだけ
+#   LOCAL_WHOAMI / LOCAL_GROUP / LOCAL_UID / LOCAL_GID を env で渡すだけ
 #
 # ============================================================
 # ~/.codex-cstm/.codexignore の書き方（ホスト filesystem 基準）
@@ -42,22 +42,24 @@ set -euo pipefail
 # -----------------------------
 # 固定設定（ここだけ編集）
 # -----------------------------
-IMAGE="myorg/codex:custom"   # <- あなたのカスタム codex イメージ
+IMAGE="localhost/codex:latest"
 # -----------------------------
 
-PROJECT_ROOT="$(pwd)"                    # 絶対パス
+PROJECT_ROOT="$(pwd)"
 WORKDIR_IN_CONTAINER="${PROJECT_ROOT}"   # コンテナ内も同じ絶対パス
 
-HOST_UID="$(id -u)"
-HOST_GID="$(id -g)"
-HOST_USER="$(id -un)"
-HOST_GROUP="$(id -gn)"
-HOST_HOME="${HOME}"
+LOCAL_UID="$(id -u)"
+LOCAL_GID="$(id -g)"
+LOCAL_WHOAMI="$(id -un)"
+LOCAL_GROUP="$(id -gn)"
+LOCAL_DOCKER_GID="$(getent group docker | awk  -F: '{print $3}')"
+LOCAL_HOME="${HOME}"
+WORK_CUR="$(pwd)"
 
-CODEX_CSTM_DIR="${HOST_HOME}/.codex-cstm"
+CODEX_CSTM_DIR="${LOCAL_HOME}/.codex-cstm"
 CODEXIGNORE_FILE="${CODEX_CSTM_DIR}/.codexignore"
 PREAGENT_FILE="${CODEX_CSTM_DIR}/preagent.md"
-HOST_CODEX_DIR="${HOST_HOME}/.codex"
+LOCAL_CODEX_DIR="${LOCAL_HOME}/.codex"
 
 TMP_DIRS=()
 TMP_FILES=()
@@ -77,16 +79,16 @@ trap cleanup EXIT
 command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found" >&2; exit 1; }
 
 # ------------------------------------------------------------
-# 1) AGENT.md overlay（ホスト current directory は触らない）
+# 1) AGENTS.md overlay（ホスト current directory は触らない）
 # ------------------------------------------------------------
 AGENT_OVERLAY_PATH=""
 if [[ -f "${PREAGENT_FILE}" ]]; then
   AGENT_OVERLAY_PATH="$(mktemp -t codex-agent-XXXXXX.md)"
   TMP_FILES+=("${AGENT_OVERLAY_PATH}")
   cp -f -- "${PREAGENT_FILE}" "${AGENT_OVERLAY_PATH}"
-  echo "[prep] Overlay AGENT.md from: ${PREAGENT_FILE}"
+  echo "[prep] Overlay AGENTS.md from: ${PREAGENT_FILE}"
 else
-  echo "[warn] ${PREAGENT_FILE} not found; AGENT.md overlay will not be applied."
+  echo "[warn] ${PREAGENT_FILE} not found; AGENTS.md overlay will not be applied."
 fi
 
 # ------------------------------------------------------------
@@ -98,18 +100,18 @@ DOCKER_MOUNTS=()
 DOCKER_MOUNTS+=("-v" "${PROJECT_ROOT}:${WORKDIR_IN_CONTAINER}:rw")
 
 # ~/.codex を writable mount（コンテナ側は /home/<user>/.codex を想定）
-CONTAINER_HOME="/home/${HOST_USER}"
-mkdir -p -- "${HOST_CODEX_DIR}"
-DOCKER_MOUNTS+=("-v" "${HOST_CODEX_DIR}:${CONTAINER_HOME}/.codex:rw")
+CONTAINER_HOME="/home/${LOCAL_WHOAMI}"
+mkdir -p -- "${LOCAL_CODEX_DIR}"
+DOCKER_MOUNTS+=("-v" "${LOCAL_CODEX_DIR}:${CONTAINER_HOME}/.codex:rw")
 
 # 任意: ~/.codex-cstm（参照用）
 if [[ -d "${CODEX_CSTM_DIR}" ]]; then
   DOCKER_MOUNTS+=("-v" "${CODEX_CSTM_DIR}:${CONTAINER_HOME}/.codex-cstm:ro")
 fi
 
-# AGENT.md overlay（コンテナ内は host と同一 workdir）
+# AGENTS.md overlay（コンテナ内は host と同一 workdir）
 if [[ -n "${AGENT_OVERLAY_PATH}" ]]; then
-  DOCKER_MOUNTS+=("-v" "${AGENT_OVERLAY_PATH}:${WORKDIR_IN_CONTAINER}/AGENT.md:ro")
+  DOCKER_MOUNTS+=("-v" "${AGENT_OVERLAY_PATH}:${WORKDIR_IN_CONTAINER}/AGENTS.md:ro")
 fi
 
 # ------------------------------------------------------------
@@ -169,10 +171,12 @@ fi
 
 # 共通 env
 DOCKER_ENVS=(
-  "-e" "HOST_USER=${HOST_USER}"
-  "-e" "HOST_GROUP=${HOST_GROUP}"
-  "-e" "HOST_UID=${HOST_UID}"
-  "-e" "HOST_GID=${HOST_GID}"
+  "-e" "LOCAL_WHOAMI=${LOCAL_WHOAMI}"
+  "-e" "LOCAL_GROUP=${LOCAL_GROUP}"
+  "-e" "LOCAL_UID=${LOCAL_UID}"
+  "-e" "LOCAL_GID=${LOCAL_GID}"
+  "-e" "LOCAL_DOCKER_GID=${LOCAL_DOCKER_GID}"
+  "-e" "WORK_CUR=${WORK_CUR}"
 )
 
 # ------------------------------------------------------------
@@ -181,7 +185,8 @@ DOCKER_ENVS=(
 if [[ -f "${PROJECT_ROOT}/.codex-build" ]]; then
   echo "[pre] Running ./.codex-build inside container (temporary entrypoint=/bin/bash)..."
 
-  docker run --rm -it \
+  docker run --rm \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
     "${DOCKER_ENVS[@]}" \
     -w "${WORKDIR_IN_CONTAINER}" \
     "${DOCKER_MOUNTS[@]}" \
@@ -194,15 +199,16 @@ fi
 # 5) ENTRYPOINT に戻して codex を起動（引数はそのまま）
 #    - entrypoint は上書きしない（= イメージ既定に戻る）
 # ------------------------------------------------------------
-echo "[run] docker run --rm -it ${IMAGE}"
+echo "[run] docker run --rm ${IMAGE}"
 echo "      project: ${PROJECT_ROOT}"
 echo "      workdir : ${WORKDIR_IN_CONTAINER} (same as host)"
-echo "      env     : HOST_USER=${HOST_USER} HOST_GROUP=${HOST_GROUP} HOST_UID=${HOST_UID} HOST_GID=${HOST_GID}"
+echo "      env     : LOCAL_WHOAMI=${LOCAL_WHOAMI} LOCAL_GROUP=${LOCAL_GROUP} LOCAL_UID=${LOCAL_UID} LOCAL_GID=${LOCAL_GID}"
 
-exec docker run --rm -it \
+exec docker run --rm \
+  -it \
+  --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
   "${DOCKER_ENVS[@]}" \
   -w "${WORKDIR_IN_CONTAINER}" \
   "${DOCKER_MOUNTS[@]}" \
   "${IMAGE}" \
   codex "$@"
-
