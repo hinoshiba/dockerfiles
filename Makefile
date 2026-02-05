@@ -66,6 +66,9 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=$(HOME)/git
 		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
+		ifneq ("$(wildcard $(HOME)/.codex/.*)","")
+			useropt+= --mount type=bind,src=$(HOME)/.codex,dst=$(HOME)/.codex
+		endif
 
 		## ro
 		useropt+= --mount type=bind,src=$(HOME)/Downloads,dst=$(HOME)/Downloads,ro
