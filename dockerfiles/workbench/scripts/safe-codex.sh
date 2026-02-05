@@ -42,7 +42,7 @@ set -euo pipefail
 # -----------------------------
 # 固定設定（ここだけ編集）
 # -----------------------------
-IMAGE="localhost/codex:latest"
+IMAGE="hinoshiba/codex:latest"
 # -----------------------------
 
 PROJECT_ROOT="$(pwd)"
