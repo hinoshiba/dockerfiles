@@ -17,20 +17,10 @@ RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshi
     rm -rf /usr/local/go && tar xzf go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz -C /usr/local && \
     export PATH="${PATH}:/usr/local/go/bin"
 
-FROM builder AS kai_builder
-ENV VERSION_KAIKUN=0.0.4
-RUN mkdir -p /tmp/install && cd /tmp/install && \
-    arch=$(dpkg --print-architecture) && \
-    wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v${VERSION_KAIKUN}/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && \
-    tar zxvf kai-kun.tar.gz && \
-    find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/' && \
-    rm -rf /tmp/install
-
 ARG strict
 FROM ubuntu:${strict} AS main
 LABEL maintainer="s.k.noe@hinoshiba.com"
 
-ARG NVM_VERSION=v0.40.2
 ARG local_docker_gid
 
 ENV SHELL /bin/bash
@@ -41,9 +31,7 @@ ENV LC_ALL ja_JP.UTF-8
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
     apt-get install -y  tzdata locales sudo \
-        git vim screen telnet netcat-openbsd nmap net-tools tcpdump curl wget \
-        less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
-        iputils-ping net-tools dnsutils rsync nkf git-lfs \
+        git git-lfs curl wget less bash-completion make \
         build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev \
         ca-certificates gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
@@ -63,46 +51,20 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     npm install n -g && \
     n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
     npm install -g @devcontainers/cli && \
+    npm install -g @openai/codex@latest && \
     apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
-    update-alternatives --set editor /usr/bin/vim.basic && \
     userdel -r ubuntu
 
 COPY --from=rust_builder /root/.cargo /root/.cargo
 COPY --from=rust_builder /root/.rustup /root/.rustup
-
 COPY --from=go_builder /usr/local/go /usr/local/go
 
-COPY --from=kai_builder /usr/local/bin/kai-ab /usr/local/bin/kai-ab
-
-ADD ./dotfiles /etc/dotfiles
-ADD ./templates /usr/local/src/templates
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
-ADD ./scripts/clone.sh /usr/local/bin/clone.sh
-ADD ./scripts/work.sh /usr/local/bin/work
-ADD ./scripts/template.sh /usr/local/bin/template
-ADD ./scripts/work-git.sh /usr/local/bin/work-git
-ADD ./scripts/work-cve-maker.sh /usr/local/bin/work-cve-maker
-ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
-ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
-ADD ./scripts/safe-codex.sh /usr/local/bin/safe-codex.sh
-RUN chmod +x /usr/local/bin/exec_user.sh && \
-    chmod +x /usr/local/bin/clone.sh && \
-    chmod +x /usr/local/bin/work && \
-    chmod +x /usr/local/bin/template && \
-    chmod +x /usr/local/bin/work-git && \
-    chmod +x /usr/local/bin/work-cve-maker && \
-    chmod +x /usr/local/bin/dockerfiles && \
-    chmod +x /usr/local/bin/docker-with-make-config.sh && \
-    chmod +x /usr/local/bin/safe-codex.sh && \
-    ln -s /usr/local/bin/safe-codex.sh /usr/local/bin/codex
-
-RUN mkdir /var/dotfiles && \
-    vim -E -s -c "source /etc/dotfiles/vimrc | NeoBundleInstall | qa" && \
-    mv ~/.vim /var/dotfiles/.vim
+RUN chmod +x /usr/local/bin/exec_user.sh
 
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
