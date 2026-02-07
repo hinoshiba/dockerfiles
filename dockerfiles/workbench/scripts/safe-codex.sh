@@ -180,35 +180,47 @@ DOCKER_ENVS=(
 )
 
 # ------------------------------------------------------------
-# 4) (任意) コンテナ内で ./.codex-build を実行（ENTRYPOINT を一時的に /bin/bash）
-# ------------------------------------------------------------
-if [[ -f "${PROJECT_ROOT}/.codex-build" ]]; then
-  echo "[pre] Running ./.codex-build inside container (temporary entrypoint=/bin/bash)..."
-
-  docker run --rm \
-    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-    "${DOCKER_ENVS[@]}" \
-    -w "${WORKDIR_IN_CONTAINER}" \
-    "${DOCKER_MOUNTS[@]}" \
-    --entrypoint /bin/bash \
-    "${IMAGE}" \
-    -lc 'set -euo pipefail; cd "$PWD"; bash "./.codex-build"'
-fi
-
-# ------------------------------------------------------------
-# 5) ENTRYPOINT に戻して codex を起動（引数はそのまま）
-#    - entrypoint は上書きしない（= イメージ既定に戻る）
+# 4) (任意) ./.codex-build を “同一コンテナ” で実行してから codex を起動
+#    - 2コンテナに分けると変更が引き継がれないため
 # ------------------------------------------------------------
 echo "[run] docker run --rm ${IMAGE}"
 echo "      project: ${PROJECT_ROOT}"
 echo "      workdir : ${WORKDIR_IN_CONTAINER} (same as host)"
 echo "      env     : LOCAL_WHOAMI=${LOCAL_WHOAMI} LOCAL_GROUP=${LOCAL_GROUP} LOCAL_UID=${LOCAL_UID} LOCAL_GID=${LOCAL_GID}"
 
-exec docker run --rm \
-  -it \
-  --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-  "${DOCKER_ENVS[@]}" \
-  -w "${WORKDIR_IN_CONTAINER}" \
-  "${DOCKER_MOUNTS[@]}" \
-  "${IMAGE}" \
-  codex "$@"
+if [[ -f "${PROJECT_ROOT}/.codex-build" ]]; then
+  echo "[pre] Running ./.codex-build inside same container..."
+
+  mapfile -t IMAGE_ENTRYPOINT < <(docker image inspect --format '{{range .Config.Entrypoint}}{{println .}}{{end}}' "${IMAGE}")
+
+  if [[ "${#IMAGE_ENTRYPOINT[@]}" -eq 0 ]]; then
+    exec docker run --rm \
+      -it \
+      --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+      "${DOCKER_ENVS[@]}" \
+      -w "${WORKDIR_IN_CONTAINER}" \
+      "${DOCKER_MOUNTS[@]}" \
+      --entrypoint /bin/bash \
+      "${IMAGE}" \
+      -lc 'set -euo pipefail; bash "./.codex-build"; exec codex "$@"' -- "$@"
+  fi
+
+  exec docker run --rm \
+    -it \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    "${DOCKER_ENVS[@]}" \
+    -w "${WORKDIR_IN_CONTAINER}" \
+    "${DOCKER_MOUNTS[@]}" \
+    --entrypoint /bin/bash \
+    "${IMAGE}" \
+    -lc 'set -euo pipefail; bash "./.codex-build"; exec "$@"' -- "${IMAGE_ENTRYPOINT[@]}" codex "$@"
+else
+  exec docker run --rm \
+    -it \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    "${DOCKER_ENVS[@]}" \
+    -w "${WORKDIR_IN_CONTAINER}" \
+    "${DOCKER_MOUNTS[@]}" \
+    "${IMAGE}" \
+    codex "$@"
+fi
