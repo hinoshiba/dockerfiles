@@ -58,7 +58,6 @@ WORK_CUR="$(pwd)"
 
 CODEX_CSTM_DIR="${LOCAL_HOME}/.codex-cstm"
 CODEXIGNORE_FILE="${CODEX_CSTM_DIR}/.codexignore"
-PREAGENT_FILE="${CODEX_CSTM_DIR}/preagent.md"
 LOCAL_CODEX_DIR="${LOCAL_HOME}/.codex"
 
 TMP_DIRS=()
@@ -79,20 +78,7 @@ trap cleanup EXIT
 command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found" >&2; exit 1; }
 
 # ------------------------------------------------------------
-# 1) AGENTS.md overlay（ホスト current directory は触らない）
-# ------------------------------------------------------------
-AGENT_OVERLAY_PATH=""
-if [[ -f "${PREAGENT_FILE}" ]]; then
-  AGENT_OVERLAY_PATH="$(mktemp -t codex-agent-XXXXXX.md)"
-  TMP_FILES+=("${AGENT_OVERLAY_PATH}")
-  cp -f -- "${PREAGENT_FILE}" "${AGENT_OVERLAY_PATH}"
-  echo "[prep] Overlay AGENTS.md from: ${PREAGENT_FILE}"
-else
-  echo "[warn] ${PREAGENT_FILE} not found; AGENTS.md overlay will not be applied."
-fi
-
-# ------------------------------------------------------------
-# 2) Docker mounts 構築
+# 1) Docker mounts 構築
 # ------------------------------------------------------------
 DOCKER_MOUNTS=()
 
@@ -109,13 +95,8 @@ if [[ -d "${CODEX_CSTM_DIR}" ]]; then
   DOCKER_MOUNTS+=("-v" "${CODEX_CSTM_DIR}:${CONTAINER_HOME}/.codex-cstm:ro")
 fi
 
-# AGENTS.md overlay（コンテナ内は host と同一 workdir）
-if [[ -n "${AGENT_OVERLAY_PATH}" ]]; then
-  DOCKER_MOUNTS+=("-v" "${AGENT_OVERLAY_PATH}:${WORKDIR_IN_CONTAINER}/AGENTS.md:ro")
-fi
-
 # ------------------------------------------------------------
-# 3) codexignore 解析 → “不可視化 mount” を追加
+# 2) codexignore 解析 → “不可視化 mount” を追加
 # ------------------------------------------------------------
 if [[ -f "${CODEXIGNORE_FILE}" ]]; then
   echo "[prep] Applying ignore rules from: ${CODEXIGNORE_FILE}"
