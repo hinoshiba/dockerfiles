@@ -27,7 +27,7 @@ GUI=${gui}
 CMD=${cmd}
 AUTOREBUILD=${autorebuild}
 NOCACHE=${nocache}
-WORK_DIR?=${work_dir}
+WORK_DIR=${work_dir}
 USE_LOCALIMG=${localimg}
 LOCAL_UID=$(shell id -u)
 LOCAL_GID=$(shell id -g)
@@ -36,7 +36,7 @@ LOCAL_WHOAMI=$(shell id -un)
 LOCAL_GROUP=$(shell id -gn)
 LOCAL_DOCKER_GID=$(shell getent group docker | awk  -F: '{print $$3}')
 LOCAL_HOME=$(HOME)
-ifeq ($(strip $(WORK_DIR)),)
+ifeq ($(WORK_DIR),)
 WORK_DIR=$(shell pwd)
 endif
 LOCAL_HOSTNAME=$(shell hostname)
@@ -81,6 +81,9 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
 		ifneq ("$(wildcard $(HOME)/.codex/.*)","")
 			useropt+= --mount type=bind,src=$(HOME)/.codex,dst=$(HOME)/.codex
+		endif
+		ifneq ("$(wildcard $(HOME)/.codex-cstm/.*)","")
+			useropt+= --mount type=bind,src=$(HOME)/.codex-cstm,dst=$(HOME)/.codex-cstm
 		endif
 
 		## ro
@@ -166,7 +169,11 @@ endif
 
 define RUN_CODEX
 	@bash -eu -o pipefail -c '\
-IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
+if [ -n "$(USE_LOCALIMG)" ]; then \
+  IMAGE="localhost/$(TGT):$(tag_opt)"; \
+else \
+  IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
+fi; \
 PROJECT_ROOT="$(WORK_DIR)"; \
 	WORKDIR_IN_CONTAINER="$(WORK_DIR)"; \
 LOCAL_UID="$(LOCAL_UID)"; \

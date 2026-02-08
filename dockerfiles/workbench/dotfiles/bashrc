@@ -135,6 +135,6 @@ alias cve-maker="/usr/local/bin/work-cve-maker"
 alias research="/usr/local/bin/work research"
 alias docker="/usr/local/bin/docker-with-make-config.sh"
 codex() {
-    export WORK_DIR="$cur"; make -C "${PATH_DOCKERFILES}" target=codex work_dir=${WORK_DIR}
+    make -C "${PATH_DOCKERFILES}" start cname=$(tr -dc 'a-zA-Z' </dev/urandom | head -c 10) target=codex work_dir=$(pwd)
 }
 alias httpd="docker run -it --rm -v $(pwd):/usr/share/nginx/html:ro -p 8000:80 nginx:latest"
