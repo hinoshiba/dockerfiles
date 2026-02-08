@@ -1,5 +1,5 @@
 # mydocker makefile@hinoshiba:##
-#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n] [workdir=<work dir>] [localimg=y]
+#  usage: ## make [target=<targetpath>] [tag=<tag>] [root=y] [daemon=n] [autorm=n] [mount=<path>] [creater=<name>] [port=<number>] [cname=<container name>] [cmd=<exec command>] [autorebuild=n] [nocache=n] [work_dir=<work dir>] [localimg=y]
 #  sample: ## make target=golang root=y autorm=n daemon=n mount=/home/hinoshiba/Downloads creater=hinoshiba port=80 cname=run02
 #  sample: ## make target=tor gui=firefox
 #  =======options========  :##
@@ -27,7 +27,7 @@ GUI=${gui}
 CMD=${cmd}
 AUTOREBUILD=${autorebuild}
 NOCACHE=${nocache}
-WK_DIR=${workdir}
+WORK_DIR?=${work_dir}
 USE_LOCALIMG=${localimg}
 LOCAL_UID=$(shell id -u)
 LOCAL_GID=$(shell id -g)
@@ -36,7 +36,9 @@ LOCAL_WHOAMI=$(shell id -un)
 LOCAL_GROUP=$(shell id -gn)
 LOCAL_DOCKER_GID=$(shell getent group docker | awk  -F: '{print $$3}')
 LOCAL_HOME=$(HOME)
-WORK_CUR=$(shell pwd)
+ifeq ($(strip $(WORK_DIR)),)
+WORK_DIR=$(shell pwd)
+endif
 LOCAL_HOSTNAME=$(shell hostname)
 
 ## import
@@ -72,6 +74,7 @@ ifeq ($(ROOT), )
 		else
 			useropt=-e LOCAL_UID=$(LOCAL_UID) -e LOCAL_GID=$(LOCAL_GID) -e LOCAL_HOME=$(LOCAL_HOME) -e LOCAL_WHOAMI=$(LOCAL_WHOAMI) -e LOCAL_HOSTNAME=$(LOCAL_HOSTNAME) -e LOCAL_DOCKER_GID=$(LOCAL_DOCKER_GID)
 		endif
+		useropt+= -e PATH_DOCKERFILES=$(shell pwd)
 		## wr
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=$(HOME)/git
@@ -113,8 +116,8 @@ ifneq ($(MOUNT), )
 	mt= --mount type=bind,src=$(MOUNT),dst=$(MOUNT)
 endif
 
-ifneq ($(WK_DIR), )
-	wkdir= -w $(WK_DIR)
+ifneq ($(WORK_DIR), )
+	wkdir= -w $(WORK_DIR)
 endif
 
 ifeq ($(AUTORM), )
@@ -164,15 +167,15 @@ endif
 define RUN_CODEX
 	@bash -eu -o pipefail -c '\
 IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
-PROJECT_ROOT="$$(pwd)"; \
-WORKDIR_IN_CONTAINER="$$PROJECT_ROOT"; \
+PROJECT_ROOT="$(WORK_DIR)"; \
+	WORKDIR_IN_CONTAINER="$(WORK_DIR)"; \
 LOCAL_UID="$(LOCAL_UID)"; \
 LOCAL_GID="$(LOCAL_GID)"; \
 LOCAL_WHOAMI="$(LOCAL_WHOAMI)"; \
 LOCAL_GROUP="$(LOCAL_GROUP)"; \
 LOCAL_DOCKER_GID="$(LOCAL_DOCKER_GID)"; \
 LOCAL_HOME="$(LOCAL_HOME)"; \
-WORK_CUR="$(WORK_CUR)"; \
+	WORK_DIR="$(WORK_DIR)"; \
 CODEX_CSTM_DIR="$$LOCAL_HOME/.codex-cstm"; \
 CODEXIGNORE_FILE="$$CODEX_CSTM_DIR/.codexignore"; \
 LOCAL_CODEX_DIR="$$LOCAL_HOME/.codex"; \
@@ -187,7 +190,12 @@ cleanup() { \
 trap cleanup EXIT; \
 command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found" >&2; exit 1; }; \
 DOCKER_MOUNTS=(); \
-DOCKER_MOUNTS+=("-v" "$$PROJECT_ROOT:$$WORKDIR_IN_CONTAINER:rw"); \
+DOCKER_MOUNTS+=("-v" "$$PROJECT_ROOT:$$PROJECT_ROOT:rw"); \
+case "$$WORKDIR_IN_CONTAINER" in \
+  "$$PROJECT_ROOT"/*) ;; \
+  "$$PROJECT_ROOT") ;; \
+  *) DOCKER_MOUNTS+=("-v" "$$WORKDIR_IN_CONTAINER:$$WORKDIR_IN_CONTAINER:rw");; \
+esac; \
 CONTAINER_HOME="/home/$$LOCAL_WHOAMI"; \
 mkdir -p -- "$$LOCAL_CODEX_DIR"; \
 DOCKER_MOUNTS+=("-v" "$$LOCAL_CODEX_DIR:$$CONTAINER_HOME/.codex:rw"); \
@@ -242,13 +250,13 @@ DOCKER_ENVS=( \
   "-e" "LOCAL_UID=$$LOCAL_UID" \
   "-e" "LOCAL_GID=$$LOCAL_GID" \
   "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
-  "-e" "WORK_CUR=$$WORK_CUR" \
+  "-e" "WORK_DIR=$$WORK_DIR" \
 ); \
 echo "[run] docker run --rm $$IMAGE"; \
 echo "      project: $$PROJECT_ROOT"; \
 echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
 echo "      env     : LOCAL_WHOAMI=$$LOCAL_WHOAMI LOCAL_GROUP=$$LOCAL_GROUP LOCAL_UID=$$LOCAL_UID LOCAL_GID=$$LOCAL_GID"; \
-if [ -f "$$PROJECT_ROOT/.codex-build" ]; then \
+if [ -f "$$WORKDIR_IN_CONTAINER/.codex-build" ]; then \
   echo "[pre] Running ./.codex-build inside same container..."; \
   mapfile -t IMAGE_ENTRYPOINT < <(docker image inspect --format '\''{{range .Config.Entrypoint}}{{println .}}{{end}}'\'' "$$IMAGE"); \
   if [ "$${#IMAGE_ENTRYPOINT[@]}" -eq 0 ]; then \
