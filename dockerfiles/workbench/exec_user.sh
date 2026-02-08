@@ -29,6 +29,7 @@ chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${LOCAL_HOME}"
 test "${LOCAL_HOME}" == "/home/${LOCAL_WHOAMI}" || (rm -rf "/home/${LOCAL_WHOAMI}" && ln -s "${LOCAL_HOME}" "/home/${LOCAL_WHOAMI}" && usermod -d "${LOCAL_HOME}" "${LOCAL_WHOAMI}")
 sudo -u ${LOCAL_WHOAMI} cp /etc/dotfiles/bashrc /home/${LOCAL_WHOAMI}/.bashrc
 sudo -u ${LOCAL_WHOAMI} echo "export LOCAL_HOSTNAME=${LOCAL_HOSTNAME}" >> /home/${LOCAL_WHOAMI}/.bashrc
+sudo -u ${LOCAL_WHOAMI} echo "export PATH_DOCKERFILES=${PATH_DOCKERFILES}" >> /home/${LOCAL_WHOAMI}/.bashrc
 
 test -n "${SSH_AUTH_SOCK:-}" && sudo -u ${LOCAL_WHOAMI} echo "export SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> /home/${LOCAL_WHOAMI}/.bashrc
 test -n "${SSH_AUTH_SOCK:-}" && chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${SSH_AUTH_SOCK}"
@@ -40,6 +41,7 @@ ln -s /etc/dotfiles/vimrc /home/${LOCAL_WHOAMI}/.vimrc
 cp -rf /var/dotfiles/.vim /home/${LOCAL_WHOAMI}/.vim && chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI}/.vim
 ln -s /etc/dotfiles/screenrc /home/${LOCAL_WHOAMI}/.screenrc
 ln -s /etc/dotfiles/selected_editor /home/${LOCAL_WHOAMI}/.selected_editor
+ln -s /etc/dotfiles/gitignore_global /home/${LOCAL_WHOAMI}/.gitignore_global
 
 test -d /home/${LOCAL_WHOAMI}/.host.ssh && ln -s /home/${LOCAL_WHOAMI}/.host.ssh /home/${LOCAL_WHOAMI}/.ssh
 
@@ -64,6 +66,7 @@ tgt="/home/${LOCAL_WHOAMI}/.gitconfig"
 test -f ${tgt}.add && (sudo -u ${LOCAL_WHOAMI} cp ${tgt}.add ${tgt} && sudo -u ${LOCAL_WHOAMI} chmod 600 ${tgt})
 test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global --add --bool push.autoSetupRemote true
 test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global url."git@github.com:".insteadOf "https://github.com/"
+test -f ${tgt} && sudo -u ${LOCAL_WHOAMI} git config --global core.excludesfile ~/.gitignore_global
 
 tgt="/home/${LOCAL_WHOAMI}/.screen_layout"
 test -f ${tgt} || ln -s /etc/dotfiles/screen_layout /home/${LOCAL_WHOAMI}/.screen_layout

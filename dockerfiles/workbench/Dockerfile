@@ -89,7 +89,6 @@ ADD ./scripts/work-git.sh /usr/local/bin/work-git
 ADD ./scripts/work-cve-maker.sh /usr/local/bin/work-cve-maker
 ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
-ADD ./scripts/safe-codex.sh /usr/local/bin/safe-codex.sh
 ADD ./scripts/codex-mon.sh /usr/local/bin/codex-monitor
 RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/clone.sh && \
@@ -99,9 +98,7 @@ RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
     chmod +x /usr/local/bin/docker-with-make-config.sh && \
-    chmod +x /usr/local/bin/codex-monitor && \
-    chmod +x /usr/local/bin/safe-codex.sh && \
-    ln -s /usr/local/bin/safe-codex.sh /usr/local/bin/codex
+    chmod +x /usr/local/bin/codex-monitor
 
 RUN mkdir /var/dotfiles && \
     vim -E -s -c "source /etc/dotfiles/vimrc | NeoBundleInstall | qa" && \

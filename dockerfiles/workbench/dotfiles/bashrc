@@ -134,4 +134,7 @@ alias node-container="/usr/local/bin/work-git node"
 alias cve-maker="/usr/local/bin/work-cve-maker"
 alias research="/usr/local/bin/work research"
 alias docker="/usr/local/bin/docker-with-make-config.sh"
+codex() {
+    make -C "${PATH_DOCKERFILES}" start cname=$(tr -dc 'a-zA-Z' </dev/urandom | head -c 10) target=codex work_dir=$(pwd)
+}
 alias httpd="docker run -it --rm -v $(pwd):/usr/share/nginx/html:ro -p 8000:80 nginx:latest"

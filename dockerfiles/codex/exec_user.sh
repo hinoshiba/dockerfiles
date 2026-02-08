@@ -7,7 +7,7 @@ if [ -n "$1" ]; then
 fi
 
 function exec_usershell() {
-	cd "${WORK_CUR}"
+	cd "${WORK_DIR}"
 	exec sudo -u ${LOCAL_WHOAMI} ${CMD}
 }
 
