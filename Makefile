@@ -9,6 +9,7 @@
 DEFAULT_CMD=/bin/bash
 D=docker
 SP_WORKBENCH=workbench
+SP_CODEX=codex
 PATH_MTX=.mtx/
 DEFAULT_BUILDER=hinoshiba
 
@@ -28,6 +29,15 @@ AUTOREBUILD=${autorebuild}
 NOCACHE=${nocache}
 WK_DIR=${workdir}
 USE_LOCALIMG=${localimg}
+LOCAL_UID=$(shell id -u)
+LOCAL_GID=$(shell id -g)
+LOCAL_GID_MAC=$(LOCAL_UID)
+LOCAL_WHOAMI=$(shell id -un)
+LOCAL_GROUP=$(shell id -gn)
+LOCAL_DOCKER_GID=$(shell getent group docker | awk  -F: '{print $$3}')
+LOCAL_HOME=$(HOME)
+WORK_CUR=$(shell pwd)
+LOCAL_HOSTNAME=$(shell hostname)
 
 ## import
 TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
@@ -57,10 +67,10 @@ endif
 ifeq ($(ROOT), )
 	ifeq ($(TGT), $(SP_WORKBENCH))
 		ifeq ($(shell uname), Darwin)
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -u ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname) -e LOCAL_DOCKER_GID="" 
+			useropt=-e LOCAL_UID=$(LOCAL_UID) -e LOCAL_GID=$(LOCAL_GID_MAC) -e LOCAL_HOME=$(LOCAL_HOME) -e LOCAL_WHOAMI=$(LOCAL_WHOAMI) -e LOCAL_HOSTNAME=$(LOCAL_HOSTNAME) -e LOCAL_DOCKER_GID="" 
 			# Default group id is '20' on macOS. This group id is already exsit on Linux Container. So set a same value as uid.
 		else
-			useropt=-e LOCAL_UID=$(shell id -u ${USER}) -e LOCAL_GID=$(shell id -g ${USER}) -e LOCAL_HOME=$(HOME) -e LOCAL_WHOAMI=$(shell whoami) -e LOCAL_HOSTNAME=$(shell hostname) -e LOCAL_DOCKER_GID=$(shell getent group docker | awk  -F: '{print $$3}')
+			useropt=-e LOCAL_UID=$(LOCAL_UID) -e LOCAL_GID=$(LOCAL_GID) -e LOCAL_HOME=$(LOCAL_HOME) -e LOCAL_WHOAMI=$(LOCAL_WHOAMI) -e LOCAL_HOSTNAME=$(LOCAL_HOSTNAME) -e LOCAL_DOCKER_GID=$(LOCAL_DOCKER_GID)
 		endif
 		## wr
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
@@ -151,6 +161,125 @@ else
 	VERSION=$(shell date '+%Y%U')
 endif
 
+define RUN_CODEX
+	@bash -eu -o pipefail -c '\
+IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
+PROJECT_ROOT="$$(pwd)"; \
+WORKDIR_IN_CONTAINER="$$PROJECT_ROOT"; \
+LOCAL_UID="$(LOCAL_UID)"; \
+LOCAL_GID="$(LOCAL_GID)"; \
+LOCAL_WHOAMI="$(LOCAL_WHOAMI)"; \
+LOCAL_GROUP="$(LOCAL_GROUP)"; \
+LOCAL_DOCKER_GID="$(LOCAL_DOCKER_GID)"; \
+LOCAL_HOME="$(LOCAL_HOME)"; \
+WORK_CUR="$(WORK_CUR)"; \
+CODEX_CSTM_DIR="$$LOCAL_HOME/.codex-cstm"; \
+CODEXIGNORE_FILE="$$CODEX_CSTM_DIR/.codexignore"; \
+LOCAL_CODEX_DIR="$$LOCAL_HOME/.codex"; \
+TMP_DIRS=(); \
+cleanup() { \
+  rc="$$?"; \
+  for d in "$${TMP_DIRS[@]:-}"; do \
+    [ -n "$$d" ] && [ -d "$$d" ] && rm -rf -- "$$d" || true; \
+  done; \
+  exit "$$rc"; \
+}; \
+trap cleanup EXIT; \
+command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found" >&2; exit 1; }; \
+DOCKER_MOUNTS=(); \
+DOCKER_MOUNTS+=("-v" "$$PROJECT_ROOT:$$WORKDIR_IN_CONTAINER:rw"); \
+CONTAINER_HOME="/home/$$LOCAL_WHOAMI"; \
+mkdir -p -- "$$LOCAL_CODEX_DIR"; \
+DOCKER_MOUNTS+=("-v" "$$LOCAL_CODEX_DIR:$$CONTAINER_HOME/.codex:rw"); \
+if [ -d "$$CODEX_CSTM_DIR" ]; then \
+  DOCKER_MOUNTS+=("-v" "$$CODEX_CSTM_DIR:$$CONTAINER_HOME/.codex-cstm:ro"); \
+fi; \
+if [ -f "$$CODEXIGNORE_FILE" ]; then \
+  echo "[prep] Applying ignore rules from: $$CODEXIGNORE_FILE"; \
+  shopt -s nullglob globstar dotglob; \
+  while IFS= read -r raw || [ -n "$$raw" ]; do \
+    line="$${raw#"$${raw%%[![:space:]]*}"}"; \
+    line="$${line%"$${line##*[![:space:]]}"}"; \
+    [ -z "$$line" ] && continue; \
+    case "$$line" in \#*) continue ;; esac; \
+    matches=(); \
+    if [ "$${line#/}" != "$$line" ]; then \
+      while IFS= read -r m; do matches+=("$$m"); done < <(compgen -G "$$line" || true); \
+      [ "$${#matches[@]}" -eq 0 ] && matches=("$$line"); \
+    else \
+      while IFS= read -r m; do matches+=("$$m"); done < <(cd "$$PROJECT_ROOT" && compgen -G "$$line" || true); \
+      [ "$${#matches[@]}" -eq 0 ] && matches=("$$line"); \
+    fi; \
+    for p in "$${matches[@]}"; do \
+      p="$${p#./}"; \
+      if [ "$${p#/}" != "$$p" ]; then \
+        host_path="$$p"; \
+        container_path="$$p"; \
+      else \
+        host_path="$$PROJECT_ROOT/$$p"; \
+        container_path="$$WORKDIR_IN_CONTAINER/$$p"; \
+      fi; \
+      if [ -d "$$host_path" ]; then \
+        empty_dir="$$(mktemp -d -t codex-emptydir-XXXXXX)"; \
+        TMP_DIRS+=("$$empty_dir"); \
+        DOCKER_MOUNTS+=("-v" "$$empty_dir:$$container_path:ro"); \
+        echo "  [hide dir]  $$host_path -> $$container_path"; \
+      elif [ -e "$$host_path" ]; then \
+        DOCKER_MOUNTS+=("-v" "/dev/null:$$container_path:ro"); \
+        echo "  [hide file] $$host_path -> $$container_path"; \
+      else \
+        echo "  [skip] not found: $$host_path"; \
+      fi; \
+    done; \
+  done < "$$CODEXIGNORE_FILE"; \
+  shopt -u nullglob globstar dotglob; \
+else \
+  echo "[info] $$CODEXIGNORE_FILE not found; no ignore mounts applied."; \
+fi; \
+DOCKER_ENVS=( \
+  "-e" "LOCAL_WHOAMI=$$LOCAL_WHOAMI" \
+  "-e" "LOCAL_GROUP=$$LOCAL_GROUP" \
+  "-e" "LOCAL_UID=$$LOCAL_UID" \
+  "-e" "LOCAL_GID=$$LOCAL_GID" \
+  "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
+  "-e" "WORK_CUR=$$WORK_CUR" \
+); \
+echo "[run] docker run --rm $$IMAGE"; \
+echo "      project: $$PROJECT_ROOT"; \
+echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
+echo "      env     : LOCAL_WHOAMI=$$LOCAL_WHOAMI LOCAL_GROUP=$$LOCAL_GROUP LOCAL_UID=$$LOCAL_UID LOCAL_GID=$$LOCAL_GID"; \
+if [ -f "$$PROJECT_ROOT/.codex-build" ]; then \
+  echo "[pre] Running ./.codex-build inside same container..."; \
+  mapfile -t IMAGE_ENTRYPOINT < <(docker image inspect --format '\''{{range .Config.Entrypoint}}{{println .}}{{end}}'\'' "$$IMAGE"); \
+  if [ "$${#IMAGE_ENTRYPOINT[@]}" -eq 0 ]; then \
+    exec docker run --rm -it \
+      --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+      "$${DOCKER_ENVS[@]}" \
+      -w "$$WORKDIR_IN_CONTAINER" \
+      "$${DOCKER_MOUNTS[@]}" \
+      --entrypoint /bin/bash \
+      "$$IMAGE" \
+      -lc '\''set -euo pipefail; bash "./.codex-build"; exec codex "$$@"'\'' -- "$$@"; \
+  fi; \
+  exec docker run --rm -it \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    "$${DOCKER_ENVS[@]}" \
+    -w "$$WORKDIR_IN_CONTAINER" \
+    "$${DOCKER_MOUNTS[@]}" \
+    --entrypoint /bin/bash \
+    "$$IMAGE" \
+    -lc '\''set -euo pipefail; bash "./.codex-build"; exec "$$@"'\'' -- "$${IMAGE_ENTRYPOINT[@]}" codex "$$@"; \
+else \
+  exec docker run --rm -it \
+    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    "$${DOCKER_ENVS[@]}" \
+    -w "$$WORKDIR_IN_CONTAINER" \
+    "$${DOCKER_MOUNTS[@]}" \
+    "$$IMAGE" \
+    codex "$$@"; \
+fi' -- $(ARGS)
+endef
+
 .PHONY: all
 all: check_health start ## [Default] Exec function of  'build' -> 'start' -> 'attach'
 ifneq ($(dopt), )
@@ -172,7 +301,11 @@ endif
 
 .PHONY: start
 start: check_health check_target pull ## Start a target docker image. If the target container already exists, skip this section.
+ifeq ($(TGT), $(SP_CODEX))
+	$(RUN_CODEX)
+else
 	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
+endif
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif

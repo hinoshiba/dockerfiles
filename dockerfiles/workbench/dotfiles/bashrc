@@ -134,4 +134,10 @@ alias node-container="/usr/local/bin/work-git node"
 alias cve-maker="/usr/local/bin/work-cve-maker"
 alias research="/usr/local/bin/work research"
 alias docker="/usr/local/bin/docker-with-make-config.sh"
+codex() {
+    local cur root
+    cur="$(pwd)"
+    root="$(git -C "$cur" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$cur")"
+    (cd "$root" && make target=codex ARGS="$*")
+}
 alias httpd="docker run -it --rm -v $(pwd):/usr/share/nginx/html:ro -p 8000:80 nginx:latest"
