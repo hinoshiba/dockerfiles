@@ -98,7 +98,7 @@ RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
     chmod +x /usr/local/bin/docker-with-make-config.sh && \
-    chmod +x /usr/local/bin/codex-monitor && \
+    chmod +x /usr/local/bin/codex-monitor
 
 RUN mkdir /var/dotfiles && \
     vim -E -s -c "source /etc/dotfiles/vimrc | NeoBundleInstall | qa" && \
