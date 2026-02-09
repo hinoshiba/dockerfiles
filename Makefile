@@ -209,6 +209,12 @@ DOCKER_MOUNTS+=("-v" "$$LOCAL_CODEX_DIR:$$CONTAINER_HOME/.codex:rw"); \
 if [ -d "$$CODEX_CSTM_DIR" ]; then \
   DOCKER_MOUNTS+=("-v" "$$CODEX_CSTM_DIR:$$CONTAINER_HOME/.codex-cstm:ro"); \
 fi; \
+if [ -d "$$LOCAL_HOME/.ssh" ]; then \
+  DOCKER_MOUNTS+=("-v" "$$LOCAL_HOME/.ssh:$$CONTAINER_HOME/.ssh:ro"); \
+fi; \
+if [ -f "$$LOCAL_HOME/.gitconfig" ]; then \
+  DOCKER_MOUNTS+=("-v" "$$LOCAL_HOME/.gitconfig:$$CONTAINER_HOME/.gitconfig:ro"); \
+fi; \
 if [ -f "$$CODEXIGNORE_FILE" ]; then \
   echo "[prep] Applying ignore rules from: $$CODEXIGNORE_FILE"; \
   shopt -s nullglob globstar dotglob; \
@@ -259,6 +265,17 @@ DOCKER_ENVS=( \
   "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
   "-e" "WORK_DIR=$$WORK_DIR" \
 ); \
+if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
+  if [ "$$(uname -s)" = "Darwin" ]; then \
+    if [ -S /run/host-services/ssh-auth.sock ]; then \
+      DOCKER_MOUNTS+=("-v" "/run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock"); \
+      DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock"); \
+    fi; \
+  elif [ -S "$$SSH_AUTH_SOCK" ]; then \
+    DOCKER_MOUNTS+=("-v" "$$SSH_AUTH_SOCK:$$SSH_AUTH_SOCK"); \
+    DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=$$SSH_AUTH_SOCK"); \
+  fi; \
+fi; \
 echo "[run] docker run --rm $$IMAGE"; \
 echo "      project: $$PROJECT_ROOT"; \
 echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
