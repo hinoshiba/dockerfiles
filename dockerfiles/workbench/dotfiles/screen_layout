@@ -1,10 +1,26 @@
 split
 resize +10
+split -v
+resize +15
+focus
+split
+focus
+focus
+focus
+resize +5
 screen -t "vim" 0 vim
-screen -t "bash" 1 /bin/bash
+screen -t "codexmon" 1 /usr/local/bin/codex-monitor
+screen -t "bash" 2 /bin/bash
+screen -t "bash" 3 /bin/bash
 select 0
 focus
 redisplay
 select 1
+focus
+redisplay
+select 2
+focus
+redisplay
+select 3
 focus
 redisplay
