@@ -50,9 +50,9 @@ export USER
 export HOME
 
 ifeq ($(CMD), )
-	command=$(DEFAULT_CMD)
+	command:=$(DEFAULT_CMD)
 else
-	command=$(CMD)
+	command:=$(CMD)
 endif
 
 ifeq ($(NOCACHE), )
@@ -110,7 +110,7 @@ ifeq ($(ROOT), )
 		endif
 
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-		command=/usr/local/bin/exec_user.sh
+		command:=/usr/local/bin/exec_user.sh $(command)
 	else
 		useropt=-u `id -u`:`id -g` -e HOME=/tmphome
 	endif
