@@ -17,6 +17,7 @@ jobs:
           - IMGNAME: research
           - IMGNAME: cvemaker
           - IMGNAME: codex
+          - IMGNAME: claude
     steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
