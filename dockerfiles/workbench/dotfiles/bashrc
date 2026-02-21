@@ -137,4 +137,7 @@ alias docker="/usr/local/bin/docker-with-make-config.sh"
 codex() {
     make -C "${PATH_DOCKERFILES}" start cname=$(tr -dc 'a-zA-Z' </dev/urandom | head -c 10) target=codex work_dir=$(pwd)
 }
+claude() {
+    make -C "${PATH_DOCKERFILES}" start cname=$(tr -dc 'a-zA-Z' </dev/urandom | head -c 10) target=claude work_dir=$(pwd)
+}
 alias httpd="docker run -it --rm -v $(pwd):/usr/share/nginx/html:ro -p 8000:80 nginx:latest"
