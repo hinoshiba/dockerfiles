@@ -7,19 +7,6 @@ if [ -n "$1" ]; then
 fi
 
 function exec_usershell() {
-	echo "----------------------------"
-	sudo -u ${LOCAL_WHOAMI} cat /home/${LOCAL_WHOAMI}/.bashrc
-	echo "----------------------------"
-	sudo -u ${LOCAL_WHOAMI} cat /home/${LOCAL_WHOAMI}/.profile
-	echo "----------------------------"
-	sudo -u ${LOCAL_WHOAMI} ls -lah /home/${LOCAL_WHOAMI}/.local/bin
-	echo "----------------------------"
-	sudo -iu ${LOCAL_WHOAMI} cd ~/ && pwd
-	echo "----------------------------"
-	sudo -iu ${LOCAL_WHOAMI} cat ~/.bashrc
-	echo "----------------------------"
-	sudo -iu ${LOCAL_WHOAMI} cat ~/.profile
-	echo "----------------------------"
 	cd "${WORK_DIR}"
 	exec sudo -iu ${LOCAL_WHOAMI} ${CMD}
 }
@@ -44,9 +31,8 @@ test -n "${SSH_AUTH_SOCK:-}" && sudo -u ${LOCAL_WHOAMI} echo "export SSH_AUTH_SO
 test -n "${SSH_AUTH_SOCK:-}" && chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${SSH_AUTH_SOCK}"
 test -d /home/${LOCAL_WHOAMI}/.host.ssh && ln -s /home/${LOCAL_WHOAMI}/.host.ssh /home/${LOCAL_WHOAMI}/.ssh
 
-echo "Calude installing"
-sudo -iu ${LOCAL_WHOAMI} `curl -fsSL https://claude.ai/install.sh | bash`
-echo "Calude installed"
+chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI} || :
+sudo -iu ${LOCAL_WHOAMI} bash -c "curl -fsSL https://claude.ai/install.sh | bash"
 sudo -iu ${LOCAL_WHOAMI} echo 'export PATH="${HOME}/.local/bin:$PATH"' >> /home/${LOCAL_WHOAMI}/.bashrc
 sudo -iu ${LOCAL_WHOAMI} echo 'export PATH="${HOME}/.local/bin:$PATH"' >> /home/${LOCAL_WHOAMI}/.profile
 
