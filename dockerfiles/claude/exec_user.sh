@@ -8,7 +8,7 @@ fi
 
 function exec_usershell() {
 	cd "${WORK_DIR}"
-	exec sudo -iu ${LOCAL_WHOAMI} ${CMD}
+	exec sudo -iu ${LOCAL_WHOAMI} bash -c "cd ${WORK_DIR} && ${CMD}"
 }
 
 USER_ID=${LOCAL_UID:-9001}
