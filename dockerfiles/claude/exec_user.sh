@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-CMD="claude"
+CMD="claude --dangerously-skip-permissions"
 if [ -n "$1" ]; then
 	CMD="$1"
 fi
