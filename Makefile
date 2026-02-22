@@ -80,6 +80,9 @@ ifeq ($(ROOT), )
 		useropt+= --mount type=bind,src=$(HOME)/work,dst=$(HOME)/work
 		useropt+= --mount type=bind,src=$(HOME)/git,dst=$(HOME)/git
 		useropt+= --mount type=bind,src=$(HOME)/.shared_cache,dst=$(HOME)/.shared_cache
+		ifneq ("$(wildcard $(HOME)/.ai-ignore)","")
+			useropt+= --mount type=bind,src=$(HOME)/.ai-ignore,dst=$(HOME)/.ai-ignore
+		endif
 		ifneq ("$(wildcard $(HOME)/.codex/.*)","")
 			useropt+= --mount type=bind,src=$(HOME)/.codex,dst=$(HOME)/.codex
 		endif
