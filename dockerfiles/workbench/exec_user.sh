@@ -17,16 +17,14 @@ GROUP_ID=${LOCAL_GID:-9001}
 getent passwd ${LOCAL_WHOAMI} > /dev/null && exec_usershell
 
 echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
+test -z "${LOCAL_DOCKER_GID}" || groupmod -g "${LOCAL_DOCKER_GID}" docker
 useradd -u $USER_ID -o -m ${LOCAL_WHOAMI}
 groupmod -g $GROUP_ID ${LOCAL_WHOAMI}
 passwd -d ${LOCAL_WHOAMI}
 usermod -L ${LOCAL_WHOAMI}
-if [ -n "${LOCAL_DOCKER_GID:-}" ]; then
-	groupmod -g "${LOCAL_DOCKER_GID}" docker
-	gpasswd -a ${LOCAL_WHOAMI} docker
-	chown root:docker /var/run/docker.sock
-	chmod 660 /var/run/docker.sock
-fi
+gpasswd -a ${LOCAL_WHOAMI} docker
+chown root:docker /var/run/docker.sock
+chmod 660 /var/run/docker.sock
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /etc/dotfiles
 echo "${LOCAL_WHOAMI} ALL=NOPASSWD: ALL" | sudo EDITOR='tee -a' visudo
 
