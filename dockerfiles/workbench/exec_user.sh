@@ -1,9 +1,14 @@
 #!/bin/bash
 set -eu
 
+CMD="/bin/bash"
+if [ -n "$1" ]; then
+	CMD="$1"
+fi
+
 function exec_usershell() {
 	cd "${LOCAL_HOME}"
-	exec sudo -u ${LOCAL_WHOAMI} /bin/bash
+	exec sudo -u ${LOCAL_WHOAMI} ${CMD}
 }
 
 USER_ID=${LOCAL_UID:-9001}
