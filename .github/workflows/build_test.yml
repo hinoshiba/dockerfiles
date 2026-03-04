@@ -65,13 +65,6 @@ jobs:
         if: steps.diff_check.outcome == 'success'
       - name: Run test x64.
         run: |
-          docker run --rm \
-            -e LOCAL_UID="$(id -u)" \
-            -e LOCAL_GID="$(id -g)" \
-            -e LOCAL_HOME="${HOME}" \
-            -e LOCAL_WHOAMI="$(whoami)" \
-            -e LOCAL_HOSTNAME="$(hostname)" \
-            -e LOCAL_DOCKER_GID="" \
-            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest \
-            echo "ok"
+          make install
+          make target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }} cmd="echo ok" test
         if: steps.diff_check.outcome == 'success'
