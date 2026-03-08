@@ -43,7 +43,8 @@ jobs:
         if: steps.diff_check.outcome == 'success'
       - name: Get Docker GID
         id: docker_gid
-        run: echo "GID=$(getent group docker | awk -F: '{print $3}')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "GID=$(getent group docker | awk -F: '{print $3}')" >> "$GITHUB_OUTPUT"
         if: steps.diff_check.outcome == 'success'
       - name: Build test (all).
         uses: docker/build-push-action@v2
