@@ -2,8 +2,8 @@
 set -eu
 
 CMD="/bin/bash"
-if [ -n "$1" ]; then
-	CMD="$1"
+if [ $# -gt 0 ]; then
+	CMD="$*"
 fi
 
 function exec_usershell() {
