@@ -18,8 +18,7 @@ jobs:
           - IMGNAME: node
           - IMGNAME: research
           - IMGNAME: cvemaker
-          - IMGNAME: codex
-          - IMGNAME: claude
+          - IMGNAME: claude-codex
     steps:
       - name: Get current week-id
         id: date
