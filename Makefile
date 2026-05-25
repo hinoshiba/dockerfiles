@@ -11,6 +11,7 @@ D=docker
 SP_WORKBENCH=workbench
 SP_CODEX=codex
 SP_CLAUDE=claude
+SP_CLAUDE_CODEX=claude-codex
 PATH_MTX=.mtx/
 DEFAULT_BUILDER=hinoshiba
 
@@ -43,7 +44,12 @@ endif
 LOCAL_HOSTNAME=$(shell hostname)
 
 ## import
-TGT_SRCS=$(shell find ./dockerfiles/$(TGT) -type f -not -name '*.swp')
+ifeq ($(filter $(SP_CODEX) $(SP_CLAUDE),$(TGT)),)
+IMG_TGT=$(TGT)
+else
+IMG_TGT=$(SP_CLAUDE_CODEX)
+endif
+TGT_SRCS=$(shell find ./dockerfiles/$(IMG_TGT) -type f -not -name '*.swp')
 export http_proxy
 export https_proxy
 export SSH_AUTH_SOCK
@@ -177,158 +183,18 @@ else
 	VERSION=$(shell date '+%Y%U')
 endif
 
-define RUN_CODEX
+define RUN_AI
 	@bash -eu -o pipefail -c '\
 if [ -n "$(USE_LOCALIMG)" ]; then \
-  IMAGE="localhost/$(TGT):$(tag_opt)"; \
+  IMAGE="localhost/$(IMG_TGT):$(tag_opt)"; \
 else \
-  IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
+  IMAGE="$(builder)/$(IMG_TGT):$(tag_opt)"; \
 fi; \
-PROJECT_ROOT="$(WORK_DIR)"; \
-	WORKDIR_IN_CONTAINER="$(WORK_DIR)"; \
-LOCAL_UID="$(LOCAL_UID)"; \
-LOCAL_GID="$(LOCAL_GID)"; \
-LOCAL_WHOAMI="$(LOCAL_WHOAMI)"; \
-LOCAL_GROUP="$(LOCAL_GROUP)"; \
-LOCAL_DOCKER_GID="$(LOCAL_DOCKER_GID)"; \
-LOCAL_HOME="$(LOCAL_HOME)"; \
-	WORK_DIR="$(WORK_DIR)"; \
-CODEX_CSTM_DIR="$$LOCAL_HOME/.codex-cstm"; \
-CODEXIGNORE_FILE="$$LOCAL_HOME/.ai-ignore"; \
-LOCAL_CODEX_DIR="$$LOCAL_HOME/.codex"; \
-TMP_DIRS=(); \
-cleanup() { \
-  rc="$$?"; \
-  for d in "$${TMP_DIRS[@]:-}"; do \
-    [ -n "$$d" ] && [ -d "$$d" ] && rm -rf -- "$$d" || true; \
-  done; \
-  exit "$$rc"; \
-}; \
-trap cleanup EXIT; \
-command -v docker >/dev/null 2>&1 || { echo "ERROR: docker not found" >&2; exit 1; }; \
-DOCKER_MOUNTS=(); \
-DOCKER_MOUNTS+=("-v" "$$PROJECT_ROOT:$$PROJECT_ROOT:rw"); \
-case "$$WORKDIR_IN_CONTAINER" in \
-  "$$PROJECT_ROOT"/*) ;; \
-  "$$PROJECT_ROOT") ;; \
-  *) DOCKER_MOUNTS+=("-v" "$$WORKDIR_IN_CONTAINER:$$WORKDIR_IN_CONTAINER:rw");; \
+case "$(TGT)" in \
+  "$(SP_CODEX)") AI_CMD="codex"; BUILD_FILE=".codex-build";; \
+  "$(SP_CLAUDE)") AI_CMD="claude"; BUILD_FILE=".claude-build";; \
+  *) echo "ERROR: unsupported AI target: $(TGT)" >&2; exit 1;; \
 esac; \
-CONTAINER_HOME="/home/$$LOCAL_WHOAMI"; \
-mkdir -p -- "$$LOCAL_CODEX_DIR"; \
-DOCKER_MOUNTS+=("-v" "$$LOCAL_CODEX_DIR:$$CONTAINER_HOME/.codex:rw"); \
-if [ -d "$$CODEX_CSTM_DIR" ]; then \
-  DOCKER_MOUNTS+=("-v" "$$CODEX_CSTM_DIR:$$CONTAINER_HOME/.codex-cstm:ro"); \
-fi; \
-if [ -d "$$LOCAL_HOME/.ssh" ]; then \
-  DOCKER_MOUNTS+=("-v" "$$LOCAL_HOME/.ssh:$$CONTAINER_HOME/.ssh:ro"); \
-fi; \
-if [ -f "$$LOCAL_HOME/.gitconfig" ]; then \
-  DOCKER_MOUNTS+=("-v" "$$LOCAL_HOME/.gitconfig:$$CONTAINER_HOME/.gitconfig:ro"); \
-fi; \
-if [ -f "$$CODEXIGNORE_FILE" ]; then \
-  echo "[prep] Applying ignore rules from: $$CODEXIGNORE_FILE"; \
-  shopt -s nullglob globstar dotglob; \
-  while IFS= read -r raw || [ -n "$$raw" ]; do \
-    line="$${raw#"$${raw%%[![:space:]]*}"}"; \
-    line="$${line%"$${line##*[![:space:]]}"}"; \
-    [ -z "$$line" ] && continue; \
-    case "$$line" in \#*) continue ;; esac; \
-    matches=(); \
-    if [ "$${line#/}" != "$$line" ]; then \
-      while IFS= read -r m; do matches+=("$$m"); done < <(compgen -G "$$line" || true); \
-      [ "$${#matches[@]}" -eq 0 ] && matches=("$$line"); \
-    else \
-      while IFS= read -r m; do matches+=("$$m"); done < <(cd "$$PROJECT_ROOT" && compgen -G "$$line" || true); \
-      [ "$${#matches[@]}" -eq 0 ] && matches=("$$line"); \
-    fi; \
-    for p in "$${matches[@]}"; do \
-      p="$${p#./}"; \
-      if [ "$${p#/}" != "$$p" ]; then \
-        host_path="$$p"; \
-        container_path="$$p"; \
-      else \
-        host_path="$$PROJECT_ROOT/$$p"; \
-        container_path="$$WORKDIR_IN_CONTAINER/$$p"; \
-      fi; \
-      if [ -d "$$host_path" ]; then \
-        empty_dir="$$(mktemp -d -t codex-emptydir-XXXXXX)"; \
-        TMP_DIRS+=("$$empty_dir"); \
-        DOCKER_MOUNTS+=("-v" "$$empty_dir:$$container_path:ro"); \
-        echo "  [hide dir]  $$host_path -> $$container_path"; \
-      elif [ -e "$$host_path" ]; then \
-        DOCKER_MOUNTS+=("-v" "/dev/null:$$container_path:ro"); \
-        echo "  [hide file] $$host_path -> $$container_path"; \
-      else \
-        echo "  [skip] not found: $$host_path"; \
-      fi; \
-    done; \
-  done < "$$CODEXIGNORE_FILE"; \
-  shopt -u nullglob globstar dotglob; \
-else \
-  echo "[info] $$CODEXIGNORE_FILE not found; no ignore mounts applied."; \
-fi; \
-DOCKER_ENVS=( \
-  "-e" "LOCAL_WHOAMI=$$LOCAL_WHOAMI" \
-  "-e" "LOCAL_GROUP=$$LOCAL_GROUP" \
-  "-e" "LOCAL_UID=$$LOCAL_UID" \
-  "-e" "LOCAL_GID=$$LOCAL_GID" \
-  "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
-  "-e" "WORK_DIR=$$WORK_DIR" \
-); \
-if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
-  if [ "$$(uname -s)" = "Darwin" ]; then \
-    if [ -S /run/host-services/ssh-auth.sock ]; then \
-      DOCKER_MOUNTS+=("-v" "/run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock"); \
-      DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock"); \
-    fi; \
-  elif [ -S "$$SSH_AUTH_SOCK" ]; then \
-    DOCKER_MOUNTS+=("-v" "$$SSH_AUTH_SOCK:$$SSH_AUTH_SOCK"); \
-    DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=$$SSH_AUTH_SOCK"); \
-  fi; \
-fi; \
-echo "[run] docker run --rm $$IMAGE"; \
-echo "      project: $$PROJECT_ROOT"; \
-echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
-echo "      env     : LOCAL_WHOAMI=$$LOCAL_WHOAMI LOCAL_GROUP=$$LOCAL_GROUP LOCAL_UID=$$LOCAL_UID LOCAL_GID=$$LOCAL_GID"; \
-if [ -f "$$WORKDIR_IN_CONTAINER/.codex-build" ]; then \
-  echo "[pre] Running ./.codex-build inside same container..."; \
-  mapfile -t IMAGE_ENTRYPOINT < <(docker image inspect --format '\''{{range .Config.Entrypoint}}{{println .}}{{end}}'\'' "$$IMAGE"); \
-  if [ "$${#IMAGE_ENTRYPOINT[@]}" -eq 0 ]; then \
-    exec docker run --rm -it \
-      --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-      "$${DOCKER_ENVS[@]}" \
-      -w "$$WORKDIR_IN_CONTAINER" \
-      "$${DOCKER_MOUNTS[@]}" \
-      --entrypoint /bin/bash \
-      "$$IMAGE" \
-      -lc '\''set -euo pipefail; bash "./.codex-build"; exec codex "$$@"'\'' -- "$$@"; \
-  fi; \
-  exec docker run --rm -it \
-    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-    "$${DOCKER_ENVS[@]}" \
-    -w "$$WORKDIR_IN_CONTAINER" \
-    "$${DOCKER_MOUNTS[@]}" \
-    --entrypoint /bin/bash \
-    "$$IMAGE" \
-    -lc '\''set -euo pipefail; bash "./.codex-build"; exec "$$@"'\'' -- "$${IMAGE_ENTRYPOINT[@]}" codex "$$@"; \
-else \
-  exec docker run --rm -it \
-    --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-    "$${DOCKER_ENVS[@]}" \
-    -w "$$WORKDIR_IN_CONTAINER" \
-    "$${DOCKER_MOUNTS[@]}" \
-    "$$IMAGE" \
-    codex "$$@"; \
-fi' -- $(ARGS)
-endef
-
-define RUN_CLAUDE
-	@bash -eu -o pipefail -c '\
-if [ -n "$(USE_LOCALIMG)" ]; then \
-  IMAGE="localhost/$(TGT):$(tag_opt)"; \
-else \
-  IMAGE="$(builder)/$(TGT):$(tag_opt)"; \
-fi; \
 PROJECT_ROOT="$(WORK_DIR)"; \
 	WORKDIR_IN_CONTAINER="$(WORK_DIR)"; \
 LOCAL_UID="$(LOCAL_UID)"; \
@@ -338,8 +204,10 @@ LOCAL_GROUP="$(LOCAL_GROUP)"; \
 LOCAL_DOCKER_GID="$(LOCAL_DOCKER_GID)"; \
 LOCAL_HOME="$(LOCAL_HOME)"; \
 	WORK_DIR="$(WORK_DIR)"; \
+AIIGNORE_FILE="$$LOCAL_HOME/.ai-ignore"; \
+CODEX_CSTM_DIR="$$LOCAL_HOME/.codex-cstm"; \
+LOCAL_CODEX_DIR="$$LOCAL_HOME/.codex"; \
 CLAUDE_CSTM_DIR="$$LOCAL_HOME/.claude-cstm"; \
-CLAUDEIGNORE_FILE="$$LOCAL_HOME/.ai-ignore"; \
 LOCAL_CLAUDE_DIR="$$LOCAL_HOME/.claude"; \
 LOCAL_CLAUDE_JSON="$$LOCAL_HOME/.claude.json"; \
 TMP_DIRS=(); \
@@ -361,8 +229,14 @@ case "$$WORKDIR_IN_CONTAINER" in \
 esac; \
 CONTAINER_HOME="/home/$$LOCAL_WHOAMI"; \
 mkdir -p -- "$$LOCAL_CLAUDE_DIR"; \
+touch -- "$$LOCAL_CLAUDE_JSON"; \
+mkdir -p -- "$$LOCAL_CODEX_DIR"; \
+DOCKER_MOUNTS+=("-v" "$$LOCAL_CODEX_DIR:$$CONTAINER_HOME/.codex:rw"); \
 DOCKER_MOUNTS+=("-v" "$$LOCAL_CLAUDE_DIR:$$CONTAINER_HOME/.claude:rw"); \
 DOCKER_MOUNTS+=("-v" "$$LOCAL_CLAUDE_JSON:$$CONTAINER_HOME/.claude.json:rw"); \
+if [ -d "$$CODEX_CSTM_DIR" ]; then \
+  DOCKER_MOUNTS+=("-v" "$$CODEX_CSTM_DIR:$$CONTAINER_HOME/.codex-cstm:ro"); \
+fi; \
 if [ -d "$$CLAUDE_CSTM_DIR" ]; then \
   DOCKER_MOUNTS+=("-v" "$$CLAUDE_CSTM_DIR:$$CONTAINER_HOME/.claude-cstm:ro"); \
 fi; \
@@ -372,8 +246,8 @@ fi; \
 if [ -f "$$LOCAL_HOME/.gitconfig" ]; then \
   DOCKER_MOUNTS+=("-v" "$$LOCAL_HOME/.gitconfig:$$CONTAINER_HOME/.gitconfig:ro"); \
 fi; \
-if [ -f "$$CLAUDEIGNORE_FILE" ]; then \
-  echo "[prep] Applying ignore rules from: $$CLAUDEIGNORE_FILE"; \
+if [ -f "$$AIIGNORE_FILE" ]; then \
+  echo "[prep] Applying ignore rules from: $$AIIGNORE_FILE"; \
   shopt -s nullglob globstar dotglob; \
   while IFS= read -r raw || [ -n "$$raw" ]; do \
     line="$${raw#"$${raw%%[![:space:]]*}"}"; \
@@ -398,7 +272,7 @@ if [ -f "$$CLAUDEIGNORE_FILE" ]; then \
         container_path="$$WORKDIR_IN_CONTAINER/$$p"; \
       fi; \
       if [ -d "$$host_path" ]; then \
-        empty_dir="$$(mktemp -d -t claude-emptydir-XXXXXX)"; \
+        empty_dir="$$(mktemp -d -t ai-emptydir-XXXXXX)"; \
         TMP_DIRS+=("$$empty_dir"); \
         DOCKER_MOUNTS+=("-v" "$$empty_dir:$$container_path:ro"); \
         echo "  [hide dir]  $$host_path -> $$container_path"; \
@@ -409,10 +283,10 @@ if [ -f "$$CLAUDEIGNORE_FILE" ]; then \
         echo "  [skip] not found: $$host_path"; \
       fi; \
     done; \
-  done < "$$CLAUDEIGNORE_FILE"; \
+  done < "$$AIIGNORE_FILE"; \
   shopt -u nullglob globstar dotglob; \
 else \
-  echo "[info] $$CLAUDEIGNORE_FILE not found; no ignore mounts applied."; \
+  echo "[info] $$AIIGNORE_FILE not found; no ignore mounts applied."; \
 fi; \
 DOCKER_ENVS=( \
   "-e" "LOCAL_WHOAMI=$$LOCAL_WHOAMI" \
@@ -433,12 +307,12 @@ if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
     DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=$$SSH_AUTH_SOCK"); \
   fi; \
 fi; \
-echo "[run] docker run --rm $$IMAGE"; \
+echo "[run] docker run --rm $$IMAGE $$AI_CMD"; \
 echo "      project: $$PROJECT_ROOT"; \
 echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
 echo "      env     : LOCAL_WHOAMI=$$LOCAL_WHOAMI LOCAL_GROUP=$$LOCAL_GROUP LOCAL_UID=$$LOCAL_UID LOCAL_GID=$$LOCAL_GID"; \
-if [ -f "$$WORKDIR_IN_CONTAINER/.claude-build" ]; then \
-  echo "[pre] Running ./.claude-build inside same container..."; \
+if [ -f "$$WORKDIR_IN_CONTAINER/$$BUILD_FILE" ]; then \
+  echo "[pre] Running ./$$BUILD_FILE inside same container..."; \
   mapfile -t IMAGE_ENTRYPOINT < <(docker image inspect --format '\''{{range .Config.Entrypoint}}{{println .}}{{end}}'\'' "$$IMAGE"); \
   if [ "$${#IMAGE_ENTRYPOINT[@]}" -eq 0 ]; then \
     exec docker run --rm -it \
@@ -448,7 +322,7 @@ if [ -f "$$WORKDIR_IN_CONTAINER/.claude-build" ]; then \
       "$${DOCKER_MOUNTS[@]}" \
       --entrypoint /bin/bash \
       "$$IMAGE" \
-      -lc '\''set -euo pipefail; bash "./.claude-build"; exec claude "$$@"'\'' -- "$$@"; \
+      -lc '\''set -euo pipefail; build_file="$$1"; shift; app="$$1"; shift; bash "$$build_file"; exec "$$app" "$$@"'\'' -- "$$BUILD_FILE" "$$AI_CMD" "$$@"; \
   fi; \
   exec docker run --rm -it \
     --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
@@ -457,7 +331,7 @@ if [ -f "$$WORKDIR_IN_CONTAINER/.claude-build" ]; then \
     "$${DOCKER_MOUNTS[@]}" \
     --entrypoint /bin/bash \
     "$$IMAGE" \
-    -lc '\''set -euo pipefail; bash "./.claude-build"; exec "$$@"'\'' -- "$${IMAGE_ENTRYPOINT[@]}" claude "$$@"; \
+    -lc '\''set -euo pipefail; build_file="$$1"; shift; bash "$$build_file"; exec "$$@"'\'' -- "$$BUILD_FILE" "$${IMAGE_ENTRYPOINT[@]}" "$$AI_CMD" "$$@"; \
 else \
   exec docker run --rm -it \
     --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
@@ -465,7 +339,7 @@ else \
     -w "$$WORKDIR_IN_CONTAINER" \
     "$${DOCKER_MOUNTS[@]}" \
     "$$IMAGE" \
-    claude "$$@"; \
+    "$$AI_CMD" "$$@"; \
 fi' -- $(ARGS)
 endef
 
@@ -480,24 +354,20 @@ repopull: ## Pull the remote repositroy.
 	git pull
 
 .PHONY: build
-build: check_health check_target $(PATH_MTX)$(TGT).$(builder).$(VERSION) ## Build a target docker image. If the target container already exists, skip this section.
+build: check_health check_target $(PATH_MTX)$(IMG_TGT).$(builder).$(VERSION) ## Build a target docker image. If the target container already exists, skip this section.
 
 .PHONY: pull
 pull: check_health check_target
 ifeq ($(USE_LOCALIMG), )
-	docker pull $(builder)/$(TGT):$(tag_opt) || :
+	docker pull $(builder)/$(IMG_TGT):$(tag_opt) || :
 endif
 
 .PHONY: start
 start: check_health check_target pull ## Start a target docker image. If the target container already exists, skip this section.
-ifeq ($(TGT), $(SP_CODEX))
-	$(RUN_CODEX)
-else
-ifeq ($(TGT), $(SP_CLAUDE))
-	$(RUN_CLAUDE)
+ifneq ($(filter $(SP_CODEX) $(SP_CLAUDE),$(TGT)),)
+	$(RUN_AI)
 else
 	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
-endif
 endif
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
@@ -523,8 +393,8 @@ stop: check_health check_target ## Force stop the target docker container.
 
 .PHONY: clean
 clean: check_health check_target ## Remove the target dokcer image.
-	$(D) rmi -f $(shell docker images --filter "reference=$(builder)/$(TGT)" -q) && \
-	rm $(PATH_MTX)$(TGT).$(builder)*
+	$(D) rmi -f $(shell docker images --filter "reference=$(builder)/$(IMG_TGT)" -q) && \
+	rm $(PATH_MTX)$(IMG_TGT).$(builder)*
 
 .PHONY: allclean
 allclean: are_you_sure ## [[Powerful Option]] Cleanup **ALL** docker object
@@ -556,12 +426,13 @@ ifeq ($(TGT), )
 	@exit 1
 endif
 
-L_TYPE=$(shell cat dockerfiles/$(TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$$/\1/p')
-L_TAG=$(shell cat dockerfiles/$(TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\$${\([^}]*\)}.*$$/\1/p')
-$(PATH_MTX)$(TGT).$(builder).$(VERSION): $(TGT_SRCS)
-	$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) --build-arg $(L_TAG)=$(shell cat version/$(L_TYPE)/$(L_TAG)) -t $(builder)/$(TGT):$(VERSION) dockerfiles/$(TGT)/. && \
-		$(D) tag $(builder)/$(TGT):$(VERSION) $(builder)/$(TGT):latest && \
-		touch $(PATH_MTX)$(TGT).$(builder).$(VERSION)
+L_TYPE=$(shell cat dockerfiles/$(IMG_TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$$/\1/p')
+L_TAG=$(shell cat dockerfiles/$(IMG_TGT)/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\$${\([^}]*\)}.*$$/\1/p')
+LOCAL_DOCKER_GID_ARG=$(shell grep -q '^ARG local_docker_gid' dockerfiles/$(IMG_TGT)/Dockerfile && printf '%s' '--build-arg local_docker_gid=$(LOCAL_DOCKER_GID)' || :)
+$(PATH_MTX)$(IMG_TGT).$(builder).$(VERSION): $(TGT_SRCS)
+	$(D) image build $(nocache_opt) $(use_http_proxy) $(use_https_proxy) --build-arg $(L_TAG)=$(shell cat version/$(L_TYPE)/$(L_TAG)) $(LOCAL_DOCKER_GID_ARG) -t $(builder)/$(IMG_TGT):$(VERSION) dockerfiles/$(IMG_TGT)/. && \
+		$(D) tag $(builder)/$(IMG_TGT):$(VERSION) $(builder)/$(IMG_TGT):latest && \
+		touch $(PATH_MTX)$(IMG_TGT).$(builder).$(VERSION)
 
 .PHONY: are_you_sure
 are_you_sure:
