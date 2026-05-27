@@ -52,6 +52,7 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
     npm install -g @devcontainers/cli && \
     npm install -g @openai/codex@latest && \
+    apt-get -y autoremove && \
     apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \
     apt-get clean && \
