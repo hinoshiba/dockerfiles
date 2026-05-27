@@ -1,20 +1,19 @@
 #!/bin/bash
 set -eu
 
-CMD="claude --permission-mode auto --dangerously-skip-permissions"
-if [ -n "$1" ]; then
-	CMD="$1"
+if [ "$#" -eq 0 ]; then
+	set -- /bin/bash
 fi
 
 function exec_usershell() {
 	cd "${WORK_DIR}"
-	exec sudo -iu ${LOCAL_WHOAMI} bash -c "cd ${WORK_DIR} && ${CMD}"
+	exec sudo -iu "${LOCAL_WHOAMI}" bash -c 'cd "$1"; shift; exec "$@"' bash "${WORK_DIR}" "$@"
 }
 
 USER_ID=${LOCAL_UID:-9001}
 GROUP_ID=${LOCAL_GID:-9001}
 
-getent passwd ${LOCAL_WHOAMI} > /dev/null && exec_usershell
+getent passwd ${LOCAL_WHOAMI} > /dev/null && exec_usershell "$@"
 
 echo "Starting with UID : $USER_ID, GID: $GROUP_ID"
 test -z "${LOCAL_DOCKER_GID}" || groupmod -g "${LOCAL_DOCKER_GID}" docker
@@ -36,4 +35,4 @@ sudo -iu ${LOCAL_WHOAMI} bash -c "curl -fsSL https://claude.ai/install.sh | bash
 sudo -iu ${LOCAL_WHOAMI} echo 'export PATH="${HOME}/.local/bin:$PATH"' >> /home/${LOCAL_WHOAMI}/.bashrc
 sudo -iu ${LOCAL_WHOAMI} echo 'export PATH="${HOME}/.local/bin:$PATH"' >> /home/${LOCAL_WHOAMI}/.profile
 
-exec_usershell
+exec_usershell "$@"

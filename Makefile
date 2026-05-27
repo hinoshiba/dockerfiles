@@ -12,6 +12,8 @@ SP_WORKBENCH=workbench
 SP_CODEX=codex
 SP_CLAUDE=claude
 SP_CLAUDE_CODEX=claude-codex
+CODEX_CMD=codex
+CLAUDE_CMD=claude --permission-mode auto --dangerously-skip-permissions
 PATH_MTX=.mtx/
 DEFAULT_BUILDER=hinoshiba
 
@@ -191,8 +193,8 @@ else \
   IMAGE="$(builder)/$(IMG_TGT):$(tag_opt)"; \
 fi; \
 case "$(TGT)" in \
-  "$(SP_CODEX)") AI_CMD="codex"; BUILD_FILE=".codex-build";; \
-  "$(SP_CLAUDE)") AI_CMD="claude"; BUILD_FILE=".claude-build";; \
+  "$(SP_CODEX)") AI_CMD_ARGS=($(CODEX_CMD)); BUILD_FILE=".codex-build";; \
+  "$(SP_CLAUDE)") AI_CMD_ARGS=($(CLAUDE_CMD)); BUILD_FILE=".claude-build";; \
   *) echo "ERROR: unsupported AI target: $(TGT)" >&2; exit 1;; \
 esac; \
 PROJECT_ROOT="$(WORK_DIR)"; \
@@ -307,7 +309,7 @@ if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
     DOCKER_ENVS+=("-e" "SSH_AUTH_SOCK=$$SSH_AUTH_SOCK"); \
   fi; \
 fi; \
-echo "[run] docker run --rm $$IMAGE $$AI_CMD"; \
+echo "[run] docker run --rm $$IMAGE $${AI_CMD_ARGS[*]}"; \
 echo "      project: $$PROJECT_ROOT"; \
 echo "      workdir : $$WORKDIR_IN_CONTAINER (same as host)"; \
 echo "      env     : LOCAL_WHOAMI=$$LOCAL_WHOAMI LOCAL_GROUP=$$LOCAL_GROUP LOCAL_UID=$$LOCAL_UID LOCAL_GID=$$LOCAL_GID"; \
@@ -322,7 +324,7 @@ if [ -f "$$WORKDIR_IN_CONTAINER/$$BUILD_FILE" ]; then \
       "$${DOCKER_MOUNTS[@]}" \
       --entrypoint /bin/bash \
       "$$IMAGE" \
-      -lc '\''set -euo pipefail; build_file="$$1"; shift; app="$$1"; shift; bash "$$build_file"; exec "$$app" "$$@"'\'' -- "$$BUILD_FILE" "$$AI_CMD" "$$@"; \
+      -lc '\''set -euo pipefail; build_file="$$1"; shift; bash "$$build_file"; exec "$$@"'\'' -- "$$BUILD_FILE" "$${AI_CMD_ARGS[@]}" "$$@"; \
   fi; \
   exec docker run --rm -it \
     --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
@@ -331,7 +333,7 @@ if [ -f "$$WORKDIR_IN_CONTAINER/$$BUILD_FILE" ]; then \
     "$${DOCKER_MOUNTS[@]}" \
     --entrypoint /bin/bash \
     "$$IMAGE" \
-    -lc '\''set -euo pipefail; build_file="$$1"; shift; bash "$$build_file"; exec "$$@"'\'' -- "$$BUILD_FILE" "$${IMAGE_ENTRYPOINT[@]}" "$$AI_CMD" "$$@"; \
+    -lc '\''set -euo pipefail; build_file="$$1"; shift; bash "$$build_file"; exec "$$@"'\'' -- "$$BUILD_FILE" "$${IMAGE_ENTRYPOINT[@]}" "$${AI_CMD_ARGS[@]}" "$$@"; \
 else \
   exec docker run --rm -it \
     --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
@@ -339,7 +341,7 @@ else \
     -w "$$WORKDIR_IN_CONTAINER" \
     "$${DOCKER_MOUNTS[@]}" \
     "$$IMAGE" \
-    "$$AI_CMD" "$$@"; \
+    "$${AI_CMD_ARGS[@]}" "$$@"; \
 fi' -- $(ARGS)
 endef
 
