@@ -69,3 +69,4 @@ ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 RUN chmod +x /usr/local/bin/exec_user.sh
 
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
+CMD ["/bin/bash"]
