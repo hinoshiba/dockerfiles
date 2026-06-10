@@ -92,16 +92,16 @@ ifeq ($(ROOT), )
 			useropt+= --mount type=bind,src=$(HOME)/.ai-ignore,dst=$(HOME)/.ai-ignore
 		endif
 		ifneq ("$(wildcard $(HOME)/.codex/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.codex,dst=$(HOME)/.codex
+			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.codex,dst=$(HOME)/.codex
 		endif
 		ifneq ("$(wildcard $(HOME)/.codex-cstm/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.codex-cstm,dst=$(HOME)/.codex-cstm
+			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.codex-cstm,dst=$(HOME)/.codex-cstm
 		endif
 		ifneq ("$(wildcard $(HOME)/.claude/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.claude,dst=$(HOME)/.claude
+			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.claude,dst=$(HOME)/.claude
 		endif
 		ifneq ("$(wildcard $(HOME)/.claude.json)","")
-			useropt+= --mount type=bind,src=$(HOME)/.claude.json,dst=$(HOME)/.claude.json
+			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.claude.json,dst=$(HOME)/.claude.json
 		endif
 
 		## ro
