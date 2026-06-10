@@ -24,7 +24,12 @@ function update_startup_tools() {
 
 function exec_usershell() {
 	cd "${WORK_DIR}"
-	exec sudo -iu "${LOCAL_WHOAMI}" bash -c 'cd "$1"; shift; exec "$@"' bash "${WORK_DIR}" "$@"
+	exec sudo -H -u "${LOCAL_WHOAMI}" env \
+		HOME="/home/${LOCAL_WHOAMI}" \
+		USER="${LOCAL_WHOAMI}" \
+		LOGNAME="${LOCAL_WHOAMI}" \
+		PATH="/home/${LOCAL_WHOAMI}/.local/bin:${PATH}" \
+		bash -c 'cd "$1" || exit 1; shift; exec "$@"' bash "${WORK_DIR}" "$@"
 }
 
 USER_ID=${LOCAL_UID:-9001}
