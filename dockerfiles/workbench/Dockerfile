@@ -39,14 +39,9 @@ ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
 # Security cooldown: only adopt package releases older than this many days.
+# Applied natively per ecosystem (pip --uploaded-prior-to, npm --before).
 ARG COOLDOWN_DAYS=14
 ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
-
-# Cooldown-aware pip installer (resolves each package to a release that has
-# been public for at least COOLDOWN_DAYS days). Copied in before the install
-# step below so it is available while building the image.
-COPY ./scripts/cooldown-pip /usr/local/bin/cooldown-pip
-RUN chmod +x /usr/local/bin/cooldown-pip
 
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
@@ -67,7 +62,8 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     ./configure --enable-optimizations && \
     make -j$(nproc) && \
     make install && \
-    python$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) /usr/local/bin/cooldown-pip pip flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --uploaded-prior-to P${COOLDOWN_DAYS}D --upgrade pip flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
     apt-get install -y nodejs npm && \
     NPM_BEFORE="$(date -u -d "${COOLDOWN_DAYS:-14} days ago" '+%Y-%m-%d')" && \
     npm install n -g --before="${NPM_BEFORE}" && \

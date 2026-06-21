@@ -14,13 +14,12 @@ RUN apt-get update && \
     locale-gen ja_JP.UTF-8
 
 # Security cooldown: only adopt package releases older than this many days.
+# Applied natively via pip's --uploaded-prior-to (ISO-8601 duration).
 ARG COOLDOWN_DAYS=14
 ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
 
-ADD ./cooldown-pip /usr/local/bin/cooldown-pip
-
-RUN chmod +x /usr/local/bin/cooldown-pip && \
-    cooldown-pip pip capstone cve-maker
+RUN pip install --upgrade pip && \
+    pip install --uploaded-prior-to P${COOLDOWN_DAYS}D --upgrade pip capstone cve-maker
 
 RUN mkdir /tmphome && \
     chmod 777 /tmphome

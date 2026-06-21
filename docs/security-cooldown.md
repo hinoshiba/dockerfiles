@@ -6,20 +6,23 @@ third-party package resolution in these images only adopts releases that have
 been **public for at least 14 days** (`COOLDOWN_DAYS`).
 
 A two-week quarantine gives the wider community time to detect and pull a
-malicious release before it lands in our images.
+malicious release before it lands in our images. Each ecosystem is handled with
+its **native** mechanism wherever one exists, so there is no bespoke tooling to
+maintain.
 
 ## What is covered
 
 | Ecosystem | Where | Mechanism |
 | --- | --- | --- |
-| PyPI (pip) | `workbench`, `claude-codex`, `python`, `cvemaker`, `templates/python` | `cooldown-pip` resolves each package to the newest stable release uploaded ≥ `COOLDOWN_DAYS` ago and pins it before `pip install`. |
-| npm | `workbench`, `claude-codex` | `npm install --before=<today − COOLDOWN_DAYS>` so only versions published before the cutoff are eligible. |
-| vim plugins (git) | `workbench` | `vim-plugin-cooldown` rolls every NeoBundle plugin back to the newest commit that is ≥ `COOLDOWN_DAYS` days old. |
+| PyPI (pip) | `workbench`, `claude-codex`, `python`, `cvemaker`, `templates/python` | `pip install --uploaded-prior-to P<COOLDOWN_DAYS>D` — pip's native flag (ISO-8601 duration) limits the **whole** resolution, including transitive dependencies, to releases uploaded at least `COOLDOWN_DAYS` days ago. |
+| npm | `workbench`, `claude-codex` | `npm install --before=<today − COOLDOWN_DAYS>` — npm's native flag; only versions published before the cutoff are eligible. |
+| vim plugins (git) | `workbench` | `vim-plugin-cooldown` rolls every NeoBundle plugin back to the newest commit that is ≥ `COOLDOWN_DAYS` days old (git has no native release-age flag). |
 
-`cooldown-pip` and `vim-plugin-cooldown` live in
-`dockerfiles/workbench/scripts/`. `cooldown-pip` is duplicated into each image
-build context (`claude-codex`, `python`, `cvemaker`) because every image is
-built with its own Docker context directory; keep the copies in sync.
+`pip` self-upgrade is bootstrapped first (`pip install --upgrade pip`) so that
+the resolver is new enough to understand `--uploaded-prior-to`; the subsequent
+install then re-pins pip itself within the cooldown window.
+
+`vim-plugin-cooldown` lives in `dockerfiles/workbench/scripts/`.
 
 ## Tuning the window
 
@@ -29,14 +32,16 @@ Every image accepts a `COOLDOWN_DAYS` build argument (default `14`):
 docker build --build-arg COOLDOWN_DAYS=21 ...
 ```
 
-`cooldown-pip` also reads `COOLDOWN_DAYS` from the environment and accepts
-`--days N`; `vim-plugin-cooldown` reads `COOLDOWN_DAYS` from the environment.
+The project templates accept it as a make variable: `make d-test COOLDOWN_DAYS=21`.
 
-## Out of scope / known limitations
+## Out of scope
 
-- **Transitive pip dependencies** are resolved by pip in the usual way; the
-  cooldown pins the explicitly requested (direct) packages.
 - **Go modules** and **Cargo crates** (used in the `go`/`rust` templates) have
-  no native release-age filter, so they are not currently cooled down.
+  no native release-age filter — Go's is still a
+  [proposal](https://github.com/golang/go/issues/76485) and Cargo only has a
+  third-party wrapper — so they are intentionally **not** cooled down here.
+  Their lock files (`go.sum`, `Cargo.lock`) already pin exact versions
+  (including transitive ones), so new releases are never pulled in implicitly.
+  Revisit once upstream ships native support.
 - **apt** packages come from the distribution archive, which already applies
   its own review/stabilisation process.
