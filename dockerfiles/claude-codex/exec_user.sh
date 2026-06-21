@@ -20,6 +20,13 @@ function update_startup_tools() {
 		grep -qxF 'export PATH="${HOME}/.local/bin:$PATH"' "${profile}" || \
 			echo 'export PATH="${HOME}/.local/bin:$PATH"' >> "${profile}"
 	done
+
+	echo "Setting up standard skills (claude/codex plugins)..."
+	sudo -iu "${LOCAL_WHOAMI}" env \
+		HOME="/home/${LOCAL_WHOAMI}" \
+		SKILLS_BOOTSTRAP="${SKILLS_BOOTSTRAP:-}" \
+		SKILLS_REFRESH="${SKILLS_REFRESH:-}" \
+		bash /usr/local/bin/setup_skills.sh || true
 }
 
 function exec_usershell() {

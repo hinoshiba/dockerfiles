@@ -36,3 +36,14 @@ dockerfiles
 * 便利なセットアップ
 	* `alias work='cd ~/git/github.com/hinoshiba/dockerfiles && make target=workbench'` を、host側の.bashrcに登録することで、workコマンドで一発起動
 
+### 特別な使い方: イメージ名: claude-codex (`make target=claude` / `make target=codex`)
+
+* 概要
+	* Claude Code / OpenAI Codex を、カレントの作業ディレクトリにマウントして起動します
+	* `~/.claude`, `~/.codex` 等を host からマウントし、認証・設定・履歴を永続化します
+	* 起動時に「標準skills (plugins)」を自動セットアップします
+		* Claude Code → Codex 連携 (`openai/codex-plugin-cc`)
+		* Codex → Claude Code 連携 (`sendbird/cc-plugin-codex`)
+		* 公式のコードセキュリティ plugin (`security-guidance@claude-plugins-official`)
+* 詳細・無効化方法は [標準skills (plugins)](./claude-codex/skills.md) を参照
+

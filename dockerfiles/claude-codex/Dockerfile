@@ -66,7 +66,8 @@ COPY --from=rust_builder /root/.rustup /root/.rustup
 COPY --from=go_builder /usr/local/go /usr/local/go
 
 ADD ./exec_user.sh /usr/local/bin/exec_user.sh
-RUN chmod +x /usr/local/bin/exec_user.sh
+ADD ./setup_skills.sh /usr/local/bin/setup_skills.sh
+RUN chmod +x /usr/local/bin/exec_user.sh /usr/local/bin/setup_skills.sh
 
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
 CMD ["/bin/bash"]

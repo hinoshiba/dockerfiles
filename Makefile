@@ -297,6 +297,8 @@ DOCKER_ENVS=( \
   "-e" "LOCAL_GID=$$LOCAL_GID" \
   "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
   "-e" "WORK_DIR=$$WORK_DIR" \
+  "-e" "SKILLS_BOOTSTRAP=$${SKILLS_BOOTSTRAP:-}" \
+  "-e" "SKILLS_REFRESH=$${SKILLS_REFRESH:-}" \
 ); \
 if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
   if [ "$$(uname -s)" = "Darwin" ]; then \
