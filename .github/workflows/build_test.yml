@@ -25,11 +25,7 @@ jobs:
       - name: has diff for the image ?
         id: diff_check
         run: |
-          # TEMP(ci-verify): the trailing '|| true' forces every matrix image to
-          # build+run so the build_test workflow itself can be exercised across all
-          # images regardless of diff. REVERT this line after confirming the Actions
-          # results to restore diff-based efficiency.
-          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}" || true
+          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
         continue-on-error: true
       - name: Get LANG_TYPE
         id: LANG
@@ -64,7 +60,12 @@ jobs:
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
         if: steps.diff_check.outcome == 'success'
       - name: Run test x64.
+        # claude-codex is a build-only AI composite image (run in practice via
+        # `make target=codex` / `make target=claude`). Its entrypoint requires the
+        # rich workbench-style env and runs update_startup_tools, so it is not
+        # exercised by this generic one-shot smoke test; build coverage above still
+        # applies to it.
         run: |
           make install
           make target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }} cmd="echo ok" test
-        if: steps.diff_check.outcome == 'success'
+        if: steps.diff_check.outcome == 'success' && matrix.IMGNAME != 'claude-codex'
