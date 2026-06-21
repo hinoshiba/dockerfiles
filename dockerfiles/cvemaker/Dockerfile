@@ -13,9 +13,14 @@ RUN apt-get update && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8
 
-RUN pip install --upgrade pip && \
-    pip install capstone && \
-    pip install cve-maker
+# Security cooldown: only adopt package releases older than this many days.
+ARG COOLDOWN_DAYS=14
+ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
+
+ADD ./cooldown-pip /usr/local/bin/cooldown-pip
+
+RUN chmod +x /usr/local/bin/cooldown-pip && \
+    cooldown-pip pip capstone cve-maker
 
 RUN mkdir /tmphome && \
     chmod 777 /tmphome

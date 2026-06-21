@@ -13,10 +13,16 @@ RUN apt update && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8
 
+# Security cooldown: only adopt package releases older than this many days.
+ARG COOLDOWN_DAYS=14
+ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
+
+ADD ./cooldown-pip /usr/local/bin/cooldown-pip
 ADD ./requirements.txt /tmp/requirements.txt
 
-RUN pip install --upgrade pip && \
-    pip install -r /tmp/requirements.txt
+RUN chmod +x /usr/local/bin/cooldown-pip && \
+    cooldown-pip pip && \
+    cooldown-pip -r /tmp/requirements.txt
 
 RUN mkdir /tmphome && \
     chmod 777 /tmphome
