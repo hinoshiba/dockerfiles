@@ -39,6 +39,37 @@ function exec_usershell() {
 		bash -c 'cd "$1" || exit 1; shift; exec "$@"' bash "${WORK_DIR}" "$@"
 }
 
+function notice_codex_setup() {
+	# Show a reminder to finish wiring cc-plugin-codex inside Codex.
+	# Only relevant when launching Codex, only while the one-time step is pending.
+	local cmd="${1:-}"
+	if [ "${cmd}" != "codex" ]; then
+		return 0
+	fi
+
+	local codex_home="/home/${LOCAL_WHOAMI}/.codex"
+	if [ ! -f "${codex_home}/.cc-plugin-codex.bootstrap" ]; then
+		return 0
+	fi
+	if [ -f "${codex_home}/.cc-plugin-codex.ready" ]; then
+		return 0
+	fi
+
+	cat <<'EOF'
+
+============================================================
+ [skills] cc-plugin-codex (Codex -> Claude Code) is installed.
+
+   One-time step: run   $cc:setup   inside Codex to finish wiring.
+   After that you can use:  $cc:review  $cc:rescue  $cc:status ...
+
+   To silence this reminder once done:
+     touch ~/.codex/.cc-plugin-codex.ready
+============================================================
+
+EOF
+}
+
 USER_ID=${LOCAL_UID:-9001}
 GROUP_ID=${LOCAL_GID:-9001}
 
@@ -66,4 +97,5 @@ test -d /home/${LOCAL_WHOAMI}/.host.ssh && test ! -e /home/${LOCAL_WHOAMI}/.ssh 
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI} || :
 update_startup_tools
 
+notice_codex_setup "$@"
 exec_usershell "$@"

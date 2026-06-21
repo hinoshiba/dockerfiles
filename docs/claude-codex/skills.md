@@ -26,6 +26,14 @@ claude-codex 標準skills (plugins)
 
 > Codex 側は plugin ファイルの配置までを自動化します。Codex を初回起動したあと、
 > Codex 内で一度だけ `$cc:setup` を実行して認証・配線を完了させてください。
+>
+> この `$cc:setup` は忘れやすいため、`make target=codex` で **Codex を起動する直前に
+> 画面へリマインダーを表示**します（未完了のときのみ）。完了してリマインダーを消したい
+> 場合は、コンテナ内で次を実行してください。
+>
+> ```sh
+> touch ~/.codex/.cc-plugin-codex.ready
+> ```
 
 ## メンテナンス継続性 (なぜ起動時セットアップなのか)
 
