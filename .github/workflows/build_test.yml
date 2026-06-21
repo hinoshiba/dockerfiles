@@ -25,7 +25,11 @@ jobs:
       - name: has diff for the image ?
         id: diff_check
         run: |
-          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
+          # TEMP(ci-verify): the trailing '|| true' forces every matrix image to
+          # build+run so the build_test workflow itself can be exercised across all
+          # images regardless of diff. REVERT this line after confirming the Actions
+          # results to restore diff-based efficiency.
+          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}" || true
         continue-on-error: true
       - name: Get LANG_TYPE
         id: LANG
