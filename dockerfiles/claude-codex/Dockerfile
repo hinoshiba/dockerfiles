@@ -28,6 +28,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
+# Security cooldown: only adopt package releases older than this many days.
+# Applied natively per ecosystem (pip --uploaded-prior-to, npm --before).
+ARG COOLDOWN_DAYS=14
+ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
+
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
     apt-get install -y  tzdata locales sudo \
@@ -46,12 +51,13 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     make -j$(nproc) && \
     make install && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --uploaded-prior-to P${COOLDOWN_DAYS}D --upgrade pip flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
     apt-get install -y nodejs npm && \
-    npm install n -g && \
+    NPM_BEFORE="$(date -u -d "${COOLDOWN_DAYS:-14} days ago" '+%Y-%m-%d')" && \
+    npm install n -g --before="${NPM_BEFORE}" && \
     n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
-    npm install -g @devcontainers/cli && \
-    npm install -g @openai/codex@latest && \
+    npm install -g @devcontainers/cli --before="${NPM_BEFORE}" && \
+    npm install -g @openai/codex --before="${NPM_BEFORE}" && \
     apt-get -y autoremove && \
     apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \

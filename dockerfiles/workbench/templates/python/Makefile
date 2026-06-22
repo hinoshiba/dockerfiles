@@ -3,11 +3,14 @@ VERSION=$(shell curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/
 
 OPT=-it --rm
 
-MOUNT=--mount type=bind,src=$(CURDIR),dst=/src/ 
-MOUNT+=--mount type=bind,src=$(HOME)/.ssh,dst=/root/.ssh,ro 
+MOUNT=--mount type=bind,src=$(CURDIR),dst=/src/
+MOUNT+=--mount type=bind,src=$(HOME)/.ssh,dst=/root/.ssh,ro
 MOUNT+=--mount type=bind,src=$(HOME)/.gitconfig,dst=/root/.gitconfig,ro
 
-PIP=pip install pytest --quiet 
+# Security cooldown: only install package releases older than this many days.
+# Uses pip's native --uploaded-prior-to (ISO-8601 duration, e.g. P14D).
+COOLDOWN_DAYS?=14
+PIP=pip install --upgrade pip --quiet && pip install --uploaded-prior-to P$(COOLDOWN_DAYS)D pytest --quiet
 
 D_HEAD=docker run $(OPT) $(MOUNT) $(TARGET):$(VERSION) /bin/bash -c "$(PIP) && cd /src &&
 D_TAIL= && chown $(shell id -u):$(shell id -g) -R ./*"
