@@ -7,6 +7,10 @@
 
 ## const
 DEFAULT_CMD=/bin/bash
+# workbench reaches the user shell only through its entrypoint. 'docker exec'
+# (attach) bypasses the Dockerfile ENTRYPOINT, so the entrypoint must be the
+# default command for workbench when cmd is not given.
+WORKBENCH_CMD=/usr/local/bin/exec_user.sh
 D=docker
 SP_WORKBENCH=workbench
 SP_CODEX=codex
@@ -59,7 +63,11 @@ export USER
 export HOME
 
 ifeq ($(CMD), )
-	command=$(DEFAULT_CMD)
+	ifeq ($(TGT), $(SP_WORKBENCH))
+		command=$(WORKBENCH_CMD)
+	else
+		command=$(DEFAULT_CMD)
+	endif
 else
 	command=$(CMD)
 endif
