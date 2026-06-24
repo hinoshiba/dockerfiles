@@ -128,7 +128,6 @@ ifeq ($(ROOT), )
 		endif
 
 		useropt+= --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-		command=/usr/local/bin/exec_user.sh
 	else
 		useropt=-u `id -u`:`id -g` -e HOME=/tmphome
 	endif
@@ -297,6 +296,8 @@ DOCKER_ENVS=( \
   "-e" "LOCAL_GID=$$LOCAL_GID" \
   "-e" "LOCAL_DOCKER_GID=$$LOCAL_DOCKER_GID" \
   "-e" "WORK_DIR=$$WORK_DIR" \
+  "-e" "SKILLS_BOOTSTRAP=$${SKILLS_BOOTSTRAP:-}" \
+  "-e" "SKILLS_REFRESH=$${SKILLS_REFRESH:-}" \
 ); \
 if [ -n "$${SSH_AUTH_SOCK:-}" ]; then \
   if [ "$$(uname -s)" = "Darwin" ]; then \
@@ -374,6 +375,10 @@ endif
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
 endif
+
+.PHONY: test
+test: check_health check_target ## Test if the target docker image can start.
+	$(D) run --rm $(useropt) $(builder)/$(TGT):$(tag_opt) $(command)
 
 .PHONY: install
 install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads

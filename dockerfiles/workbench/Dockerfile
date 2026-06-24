@@ -38,6 +38,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG ja_JP.UTF-8
 ENV LC_ALL ja_JP.UTF-8
 
+# Security cooldown: only adopt package releases older than this many days.
+# Applied natively per ecosystem (pip --uploaded-prior-to, npm --before).
+ARG COOLDOWN_DAYS=14
+ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
+
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
     apt-get install -y  tzdata locales sudo \
@@ -58,11 +63,12 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     make -j$(nproc) && \
     make install && \
     pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --upgrade pip && \
-    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
+    pip$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/major) install --uploaded-prior-to P${COOLDOWN_DAYS}D --upgrade pip flake8 pylint mypy black isort xyzservices ruff numpydoc pytest pytest-benchmark && \
     apt-get install -y nodejs npm && \
-    npm install n -g && \
+    NPM_BEFORE="$(date -u -d "${COOLDOWN_DAYS:-14} days ago" '+%Y-%m-%d')" && \
+    npm install n -g --before="${NPM_BEFORE}" && \
     n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
-    npm install -g @devcontainers/cli && \
+    npm install -g @devcontainers/cli --before="${NPM_BEFORE}" && \
     apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
     apt-get -y autoremove && \
     apt-get clean && \
@@ -90,6 +96,7 @@ ADD ./scripts/work-cve-maker.sh /usr/local/bin/work-cve-maker
 ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
 ADD ./scripts/codex-mon.sh /usr/local/bin/codex-monitor
+ADD ./scripts/vim-plugin-cooldown.sh /usr/local/bin/vim-plugin-cooldown
 RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/clone.sh && \
     chmod +x /usr/local/bin/work && \
@@ -98,10 +105,12 @@ RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
     chmod +x /usr/local/bin/docker-with-make-config.sh && \
-    chmod +x /usr/local/bin/codex-monitor
+    chmod +x /usr/local/bin/codex-monitor && \
+    chmod +x /usr/local/bin/vim-plugin-cooldown
 
 RUN mkdir /var/dotfiles && \
     vim -E -s -c "source /etc/dotfiles/vimrc | NeoBundleInstall | qa" && \
+    /usr/local/bin/vim-plugin-cooldown && \
     mv ~/.vim /var/dotfiles/.vim
 
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]

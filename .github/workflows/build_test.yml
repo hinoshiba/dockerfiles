@@ -41,12 +41,31 @@ jobs:
       - name: Set up Docker Buildx.
         uses: docker/setup-buildx-action@v2
         if: steps.diff_check.outcome == 'success'
-      - name: Build test.
+      - name: Get Docker GID
+        id: docker_gid
+        run: |
+          echo "GID=$(getent group docker | awk -F: '{print $3}')" >> "$GITHUB_OUTPUT"
+        if: steps.diff_check.outcome == 'success'
+      - name: Build test (all).
         uses: docker/build-push-action@v2
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: false
-          platforms: linux/amd64,linux/arm64
+          load: true
+          platforms: linux/amd64
           build-args: |
             ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
+            local_docker_gid=${{ steps.docker_gid.outputs.GID }}
+          tags: |
+            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
         if: steps.diff_check.outcome == 'success'
+      - name: Run test x64.
+        # claude-codex is a build-only AI composite image (run in practice via
+        # `make target=codex` / `make target=claude`). Its entrypoint requires the
+        # rich workbench-style env and runs update_startup_tools, so it is not
+        # exercised by this generic one-shot smoke test; build coverage above still
+        # applies to it.
+        run: |
+          make install
+          make target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }} cmd="echo ok" test
+        if: steps.diff_check.outcome == 'success' && matrix.IMGNAME != 'claude-codex'

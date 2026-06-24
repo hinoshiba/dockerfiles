@@ -1,8 +1,16 @@
 #!/bin/bash
 set -eu
 
+CMD=""
+if [ $# -gt 0 ]; then
+	CMD="$*"
+fi
+
 function exec_usershell() {
 	cd "${LOCAL_HOME}"
+	if [ -n "${CMD}" ] && [ "${CMD}" != "/bin/bash" ]; then
+		exec sudo -u ${LOCAL_WHOAMI} /bin/bash -c "${CMD}"
+	fi
 	exec sudo -u ${LOCAL_WHOAMI} /bin/bash
 }
 
