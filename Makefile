@@ -91,17 +91,17 @@ ifeq ($(ROOT), )
 		ifneq ("$(wildcard $(HOME)/.ai-ignore)","")
 			useropt+= --mount type=bind,src=$(HOME)/.ai-ignore,dst=$(HOME)/.ai-ignore
 		endif
-		ifneq ("$(wildcard $(HOME)/.codex/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.codex,dst=$(HOME)/.codex
+		ifneq ("$(wildcard $(HOME)/.shared_ai_cache/.codex)","")
+			useropt+= --mount type=bind,src=$(HOME)/.shared_ai_cache/.codex,dst=$(HOME)/.codex
 		endif
-		ifneq ("$(wildcard $(HOME)/.codex-cstm/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.codex-cstm,dst=$(HOME)/.codex-cstm
+		ifneq ("$(wildcard $(HOME)/.shared_ai_cache/.codex-cstm)","")
+			useropt+= --mount type=bind,src=$(HOME)/.shared_ai_cache/.codex-cstm,dst=$(HOME)/.codex-cstm
 		endif
-		ifneq ("$(wildcard $(HOME)/.claude/.*)","")
-			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.claude,dst=$(HOME)/.claude
+		ifneq ("$(wildcard $(HOME)/.shared_ai_cache/.claude)","")
+			useropt+= --mount type=bind,src=$(HOME)/.shared_ai_cache/.claude,dst=$(HOME)/.claude
 		endif
-		ifneq ("$(wildcard $(HOME)/.claude.json)","")
-			useropt+= --mount type=bind,src=$(HOME)/.shared_cache.claude.json,dst=$(HOME)/.claude.json
+		ifneq ("$(wildcard $(HOME)/.shared_ai_cache/.claude.json)","")
+			useropt+= --mount type=bind,src=$(HOME)/.shared_ai_cache/.claude.json,dst=$(HOME)/.claude.json
 		endif
 
 		## ro
@@ -206,11 +206,12 @@ LOCAL_DOCKER_GID="$(LOCAL_DOCKER_GID)"; \
 LOCAL_HOME="$(LOCAL_HOME)"; \
 	WORK_DIR="$(WORK_DIR)"; \
 AIIGNORE_FILE="$$LOCAL_HOME/.ai-ignore"; \
-CODEX_CSTM_DIR="$$LOCAL_HOME/.codex-cstm"; \
-LOCAL_CODEX_DIR="$$LOCAL_HOME/.codex"; \
-CLAUDE_CSTM_DIR="$$LOCAL_HOME/.claude-cstm"; \
-LOCAL_CLAUDE_DIR="$$LOCAL_HOME/.claude"; \
-LOCAL_CLAUDE_JSON="$$LOCAL_HOME/.claude.json"; \
+SHARED_AI_CACHE="$$LOCAL_HOME/.shared_ai_cache"; \
+CODEX_CSTM_DIR="$$SHARED_AI_CACHE/.codex-cstm"; \
+LOCAL_CODEX_DIR="$$SHARED_AI_CACHE/.codex"; \
+CLAUDE_CSTM_DIR="$$SHARED_AI_CACHE/.claude-cstm"; \
+LOCAL_CLAUDE_DIR="$$SHARED_AI_CACHE/.claude"; \
+LOCAL_CLAUDE_JSON="$$SHARED_AI_CACHE/.claude.json"; \
 TMP_DIRS=(); \
 cleanup() { \
   rc="$$?"; \
@@ -229,6 +230,7 @@ case "$$WORKDIR_IN_CONTAINER" in \
   *) DOCKER_MOUNTS+=("-v" "$$WORKDIR_IN_CONTAINER:$$WORKDIR_IN_CONTAINER:rw");; \
 esac; \
 CONTAINER_HOME="/home/$$LOCAL_WHOAMI"; \
+mkdir -p -- "$$SHARED_AI_CACHE"; \
 mkdir -p -- "$$LOCAL_CLAUDE_DIR"; \
 touch -- "$$LOCAL_CLAUDE_JSON"; \
 mkdir -p -- "$$LOCAL_CODEX_DIR"; \
@@ -381,14 +383,22 @@ test: check_health check_target ## Test if the target docker image can start.
 	$(D) run --rm $(useropt) $(builder)/$(TGT):$(tag_opt) $(command)
 
 .PHONY: install
-install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads
+install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads $(HOME)/.shared_ai_cache
 
 $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads:
 	mkdir -p ${@}
 
+# Consolidate the Claude / Codex state under a single directory so the host's
+# default ~/.claude* and ~/.codex* are never touched by the containers.
+$(HOME)/.shared_ai_cache:
+	mkdir -p $@/.claude $@/.codex
+	touch $@/.claude.json
+
 .PHONY: uninstall
 uninstall:
 	rmdir $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads
+	-rm -f $(HOME)/.shared_ai_cache/.claude.json
+	-rmdir $(HOME)/.shared_ai_cache/.claude $(HOME)/.shared_ai_cache/.codex $(HOME)/.shared_ai_cache/.claude-cstm $(HOME)/.shared_ai_cache/.codex-cstm $(HOME)/.shared_ai_cache 2>/dev/null
 
 .PHONY: attach
 attach: check_health check_target ## Attach the target docker container.
