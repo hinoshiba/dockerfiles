@@ -78,6 +78,7 @@ dockerのtokenを暗号化したもの
 |:---:|:---|
 |`~/work/`|作業データの共有|
 |`~/.shared_cache/`|n回起動であっても保存が必要なキャッシュが保存される|
+|`~/.shared_ai_cache/`|Claude Code / Codex の状態 (`.claude`, `.codex`, `.claude.json` 等) の集約先。host のデフォルトの `~/.claude*` / `~/.codex*` を汚さないため分離している。`make install` で作成される|
 
 # 3. docker設定の、キーbind変更
 
