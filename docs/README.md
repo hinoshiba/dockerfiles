@@ -40,7 +40,9 @@ dockerfiles
 
 * 概要
 	* Claude Code / OpenAI Codex を、カレントの作業ディレクトリにマウントして起動します
-	* `~/.claude`, `~/.codex` 等を host からマウントし、認証・設定・履歴を永続化します
+	* host の `~/.shared_ai_cache/` 配下 (`.claude`, `.codex`, `.claude.json` 等) をマウントし、認証・設定・履歴を永続化します
+		* host のデフォルトの `~/.claude*` / `~/.codex*` には一切触れません (集約先を分離)
+		* `make install` で `~/.shared_ai_cache/` とサブディレクトリを作成します
 	* 起動時に「標準skills (plugins)」を自動セットアップします
 		* Claude Code → Codex 連携 (`openai/codex-plugin-cc`)
 		* Codex → Claude Code 連携 (`sendbird/cc-plugin-codex`)

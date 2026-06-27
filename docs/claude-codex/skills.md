@@ -37,7 +37,8 @@ claude-codex 標準skills (plugins)
 
 ## メンテナンス継続性 (なぜ起動時セットアップなのか)
 
-* `~/.claude` / `~/.codex` は host からマウントされ永続化されるため、導入状態はホスト側に残ります。
+* コンテナ内の `~/.claude` / `~/.codex` は host の `~/.shared_ai_cache/` 配下 (`~/.shared_ai_cache/.claude`, `~/.shared_ai_cache/.codex`) からマウントされ永続化されるため、導入状態はホスト側に残ります。
+	* host のデフォルトの `~/.claude*` / `~/.codex*` は使わないので、ホスト直の設定には影響しません。
 * 起動のたびに `setup_skills.sh` を流すことで、plugin 集合を常に収束させます
   (導入済みなら高速に no-op)。
 * イメージ自体は週次で再ビルドされ、`@openai/codex` と `claude` 本体は起動毎に更新されるため、
