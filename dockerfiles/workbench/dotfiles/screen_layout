@@ -1,6 +1,11 @@
 split
 resize +10
 split -v
+resize +15
+focus
+focus
+resize +5
+focus
 screen -t "vim" 0 vim
 screen -t "bash" 1 /bin/bash
 screen -t "bash" 2 /bin/bash
