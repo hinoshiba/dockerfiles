@@ -68,11 +68,6 @@ ifeq ($(CMD), )
 else
 	command=$(CMD)
 endif
-# `docker run` already enters through the image ENTRYPOINT, so the workbench
-# default command is only needed by `docker exec` (attach). Passing it to
-# `docker run` too makes exec_user.sh (workbench:202625+) re-exec itself via
-# an env-stripped sudo and the container dies on start. Keep the run-time
-# command empty in that case.
 run_command=$(command)
 ifeq ($(CMD), )
 	ifeq ($(TGT), $(SP_WORKBENCH))

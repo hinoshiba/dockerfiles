@@ -5,11 +5,6 @@ CMD=""
 if [ $# -gt 0 ]; then
 	CMD="$*"
 fi
-# The Makefile passes its workbench default command to `docker run` as well,
-# where the ENTRYPOINT is already this script. Re-running it through
-# `sudo -u ... bash -c` drops the LOCAL_* variables (sudo env_reset) and the
-# second run aborts under `set -u`, killing the container. Treat "run
-# myself" as "no extra command".
 case "${CMD}" in
 	"$0"|"/usr/local/bin/exec_user.sh")
 		CMD=""
