@@ -68,6 +68,12 @@ ifeq ($(CMD), )
 else
 	command=$(CMD)
 endif
+run_command=$(command)
+ifeq ($(CMD), )
+	ifeq ($(TGT), $(SP_WORKBENCH))
+		run_command=
+	endif
+endif
 
 ifeq ($(NOCACHE), )
 	nocache_opt= --no-cache
@@ -377,7 +383,7 @@ start: check_health check_target pull ## Start a target docker image. If the tar
 ifneq ($(filter $(SP_CODEX) $(SP_CLAUDE),$(TGT)),)
 	$(RUN_AI)
 else
-	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(command)
+	test -n "$(CONTAINER_ID)" || $(D) run --name $(NAME) -it $(useropt) $(rm) $(mt) $(wkdir) $(portopt) $(dopt) $(builder)/$(TGT):$(tag_opt) $(run_command)
 endif
 ifneq ($(dopt), )
 	test -n "$(CONTAINER_ID)" || sleep 1 ## Magic sleep. Wait for container to stabilize.
@@ -385,7 +391,7 @@ endif
 
 .PHONY: test
 test: check_health check_target ## Test if the target docker image can start.
-	$(D) run --rm $(useropt) $(builder)/$(TGT):$(tag_opt) $(command)
+	$(D) run --rm $(useropt) $(builder)/$(TGT):$(tag_opt) $(run_command)
 
 .PHONY: install
 install: $(HOME)/work $(HOME)/git $(HOME)/.shared_cache $(HOME)/Downloads $(HOME)/.shared_ai_cache
