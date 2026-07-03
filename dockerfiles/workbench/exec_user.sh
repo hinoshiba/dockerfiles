@@ -5,6 +5,11 @@ CMD=""
 if [ $# -gt 0 ]; then
 	CMD="$*"
 fi
+case "${CMD}" in
+	"$0"|"/usr/local/bin/exec_user.sh")
+		CMD=""
+		;;
+esac
 
 function exec_usershell() {
 	cd "${LOCAL_HOME}"
