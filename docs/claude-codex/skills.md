@@ -5,6 +5,10 @@ claude-codex 標準skills (plugins)
 起動時に「標準skills」として、Claude Code / OpenAI Codex の公式・準公式 plugin を
 自動セットアップする仕組みを入れています。
 
+> **用語の区別:** このページの「標準skills」は marketplace の **plugin** のことです。
+> coding のノウハウを `SKILL.md` 形式で書き溜める **Agent Skills** は
+> [coding-knowhow skills](./coding-skills.md) を参照してください。
+
 ## 何が入るか
 
 コンテナ起動時 (`exec_user.sh` の `update_startup_tools`) に
