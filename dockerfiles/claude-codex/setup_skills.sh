@@ -14,6 +14,10 @@
 #     - cc-plugin-codex                            (github: sendbird/cc-plugin-codex)
 #         Drive Claude Code from inside Codex: $cc:review, $cc:rescue, ...
 #
+# It also links the repo's version-controlled coding-knowhow skills (Agent
+# Skills, SKILL.md format), baked into the image at /opt/coding-skills, into the
+# locations Claude Code / Codex discover. See dockerfiles/claude-codex/skills/.
+#
 # State is written under the host-mounted ~/.claude and ~/.codex directories,
 # so it persists across container runs. Running this on every container start
 # keeps the set converged for "maintenance continuity": once a plugin is
@@ -111,8 +115,54 @@ setup_codex() {
 	log "Codex plugin installed; run '\$cc:setup' once inside Codex to finish wiring."
 }
 
+# Location of the baked-in, version-controlled coding-knowhow skills.
+CODING_SKILLS_SRC="${CODING_SKILLS_SRC:-/opt/coding-skills}"
+
+setup_coding_skills() {
+	# Link the repo's coding-knowhow skills (Agent Skills, SKILL.md format) into
+	# the places Claude Code / Codex look, so the team's know-how travels with
+	# the image and stays PR-reviewable.
+	[ -d "${CODING_SKILLS_SRC}" ] || {
+		log "no coding skills at ${CODING_SKILLS_SRC}; skipping."
+		return 0
+	}
+
+	mkdir -p "${HOME}/.claude" "${HOME}/.codex" 2>/dev/null || true
+	local sentinel="${HOME}/.claude/.coding-skills.bootstrap"
+
+	if [ -f "${sentinel}" ] && [ -z "${FORCE}" ]; then
+		log "Coding skills already linked; skipping (SKILLS_REFRESH=1 to refresh)."
+		return 0
+	fi
+
+	# Claude Code: personal skills live under ~/.claude/skills/<name>/SKILL.md.
+	local claude_skills="${HOME}/.claude/skills"
+	mkdir -p "${claude_skills}" 2>/dev/null || true
+
+	# Codex: expose the same tree at a stable, documented path.
+	run ln -sfn "${CODING_SKILLS_SRC}" "${HOME}/.codex/coding-skills"
+
+	local linked=0 d name
+	for d in "${CODING_SKILLS_SRC}"/*/; do
+		[ -d "${d}" ] || continue
+		name="$(basename "${d}")"
+		# Skip templates / drafts / hidden entries.
+		case "${name}" in
+			_*|.*) continue ;;
+		esac
+		# Only link real skills (a directory holding a SKILL.md).
+		[ -f "${d}SKILL.md" ] || continue
+		run ln -sfn "${d%/}" "${claude_skills}/${name}"
+		linked=$((linked + 1))
+	done
+
+	: > "${sentinel}" 2>/dev/null || true
+	log "Coding skills linked: ${linked} into ${claude_skills} (and ~/.codex/coding-skills)."
+}
+
 setup_claude
 setup_codex
+setup_coding_skills
 
 log "Standard skills bootstrap complete."
 exit 0
