@@ -95,7 +95,6 @@ ADD ./scripts/work-git.sh /usr/local/bin/work-git
 ADD ./scripts/work-cve-maker.sh /usr/local/bin/work-cve-maker
 ADD ./scripts/dockerfiles.sh /usr/local/bin/dockerfiles
 ADD ./scripts/docker-with-make-config.sh /usr/local/bin/docker-with-make-config.sh
-ADD ./scripts/codex-mon.sh /usr/local/bin/codex-monitor
 ADD ./scripts/vim-plugin-cooldown.sh /usr/local/bin/vim-plugin-cooldown
 RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/clone.sh && \
@@ -105,7 +104,6 @@ RUN chmod +x /usr/local/bin/exec_user.sh && \
     chmod +x /usr/local/bin/work-cve-maker && \
     chmod +x /usr/local/bin/dockerfiles && \
     chmod +x /usr/local/bin/docker-with-make-config.sh && \
-    chmod +x /usr/local/bin/codex-monitor && \
     chmod +x /usr/local/bin/vim-plugin-cooldown
 
 RUN mkdir /var/dotfiles && \
