@@ -48,4 +48,5 @@ dockerfiles
 		* Codex → Claude Code 連携 (`sendbird/cc-plugin-codex`)
 		* 公式のコードセキュリティ plugin (`security-guidance@claude-plugins-official`)
 * 詳細・無効化方法は [標準skills (plugins)](./claude-codex/skills.md) を参照
+* coding のノウハウを書き溜める [coding-knowhow skills](./claude-codex/coding-skills.md) の置き場所も用意しています
 

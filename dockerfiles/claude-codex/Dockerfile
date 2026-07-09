@@ -75,5 +75,10 @@ ADD ./exec_user.sh /usr/local/bin/exec_user.sh
 ADD ./setup_skills.sh /usr/local/bin/setup_skills.sh
 RUN chmod +x /usr/local/bin/exec_user.sh /usr/local/bin/setup_skills.sh
 
+# Version-controlled coding-knowhow skills (Agent Skills / SKILL.md format).
+# Baked in as the read-only source of truth; setup_skills.sh links these into
+# ~/.claude/skills and ~/.codex/coding-skills at container start.
+COPY ./skills /opt/coding-skills
+
 ENTRYPOINT ["/usr/local/bin/exec_user.sh"]
 CMD ["/bin/bash"]
