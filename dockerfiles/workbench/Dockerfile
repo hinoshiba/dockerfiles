@@ -17,15 +17,6 @@ RUN wget https://go.dev/dl/go$(curl -s https://raw.githubusercontent.com/hinoshi
     rm -rf /usr/local/go && tar xzf go$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/golang/strict).linux-$(dpkg --print-architecture).tar.gz -C /usr/local && \
     export PATH="${PATH}:/usr/local/go/bin"
 
-FROM builder AS kai_builder
-ENV VERSION_KAIKUN=0.0.4
-RUN mkdir -p /tmp/install && cd /tmp/install && \
-    arch=$(dpkg --print-architecture) && \
-    wget -nv --show-progress --progress=bar:force:noscroll https://github.com/hinoshiba/kai-ab/releases/download/v${VERSION_KAIKUN}/$(uname -s)_$(uname -p).tar.gz -O kai-kun.tar.gz && \
-    tar zxvf kai-kun.tar.gz && \
-    find -executable -type f | xargs -I{} sh -c 'chmod +x {}; mv {} /usr/local/bin/' && \
-    rm -rf /tmp/install
-
 ARG strict
 FROM ubuntu:${strict} AS main
 LABEL maintainer="s.k.noe@hinoshiba.com"
@@ -82,8 +73,6 @@ COPY --from=rust_builder /root/.cargo /root/.cargo
 COPY --from=rust_builder /root/.rustup /root/.rustup
 
 COPY --from=go_builder /usr/local/go /usr/local/go
-
-COPY --from=kai_builder /usr/local/bin/kai-ab /usr/local/bin/kai-ab
 
 ADD ./dotfiles /etc/dotfiles
 ADD ./templates /usr/local/src/templates
