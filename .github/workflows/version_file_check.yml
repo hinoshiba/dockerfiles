@@ -7,10 +7,6 @@ jobs:
     steps:
       - name: Checkout from repository.
         uses: actions/checkout@v2
-        with:
-          context: dockerfiles/${{matrix.IMGNAME}}
-          push: false
-          platforms: linux/amd64,linux/arm64
       - name: Check a files
         run: |
             find ./version -maxdepth 1 -mindepth 1 | xargs -I{} sh -c "grep -qFf {}/major {}/strict || exit 1"
