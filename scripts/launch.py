@@ -16,6 +16,7 @@ import tempfile
 import time
 
 from container_runtime import Runtime
+from image_build import build_args as image_build_args
 
 
 class Options:
@@ -262,7 +263,7 @@ class Launcher:
             if source.exists():
                 self.mount(args, source, home / name, readonly=True)
         self.env(args, 'WORK_DIR', self.o.work_dir)
-        for key in ('SKILLS_BOOTSTRAP', 'SKILLS_REFRESH'):
+        for key in ('SKILLS_BOOTSTRAP', 'SKILLS_REFRESH', 'ECC_BOOTSTRAP'):
             self.env(args, key, os.environ.get(key, ''))
         ignore = self.o.home / '.ai-ignore'
         if ignore.is_file():
@@ -311,11 +312,7 @@ class Launcher:
     def build(self):
         context = self.o.repo / 'dockerfiles' / self.o.image_target
         lines = (context / 'Dockerfile').read_text().splitlines()
-        base = next(line for line in lines if line.startswith('FROM ')).split()[1]
-        match = re.fullmatch(r'([^:]+):\$\{([^}]+)\}', base)
-        build_args = []
-        if match:
-            build_args.append(match[2] + '=' + (self.o.repo / 'version' / match[1] / match[2]).read_text().strip())
+        build_args = image_build_args(self.o.repo, self.o.image_target)
         for key in ('http_proxy', 'https_proxy'):
             if os.environ.get(key):
                 build_args.append(key + '=' + os.environ[key])

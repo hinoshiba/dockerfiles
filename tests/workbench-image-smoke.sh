@@ -10,7 +10,7 @@ export PATH="${HOME}/.cargo/bin:/usr/local/go/bin:${PATH}"
 for command in bash sudo git git-lfs vim screen telnet nc nmap ifconfig tcpdump \
     curl wget less make hexdump ip zip gpg objdump jq ping dig rsync nkf \
     python3 pip3 flake8 pylint mypy black isort ruff numpydoc pytest \
-    node npm npx n devcontainer docker go rustup cargo rustc rustfmt \
+    node npm npx n corepack gcc g++ devcontainer docker go rustup cargo rustc rustfmt \
     rust-analyzer work template work-git work-cve-maker dockerfiles; do
     command -v "$command" >/dev/null || { echo "Missing command: $command" >&2; exit 1; }
 done

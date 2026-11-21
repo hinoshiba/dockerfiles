@@ -51,11 +51,11 @@ case "${SKILLS_REFRESH:-0}" in
 	1|yes|YES|true|TRUE|on|ON) FORCE="1" ;;
 esac
 
-# best-effort runner: echo the command, swallow failures so a flaky network or
-# an already-applied change can never break the container start.
+# Preserve the command status so failures are retried on the next start.
+# Callers remain best-effort and never abort the interactive container.
 run() {
 	log "+ $*"
-	"$@" </dev/null || warn "command failed (ignored): $*"
+	"$@" </dev/null || { warn "command failed; will retry: $*"; return 1; }
 }
 
 setup_claude() {
@@ -73,20 +73,22 @@ setup_claude() {
 	fi
 
 	log "Registering Claude Code plugin marketplaces..."
-	run claude plugin marketplace add openai/codex-plugin-cc
-	run claude plugin marketplace add anthropics/claude-plugins-official
+	run claude plugin marketplace add openai/codex-plugin-cc || true
+	run claude plugin marketplace add anthropics/claude-plugins-official || true
 
 	log "Installing standard Claude Code plugins..."
-	run claude plugin install codex@openai-codex --scope user
-	run claude plugin install security-guidance@claude-plugins-official --scope user
+	local failed=0
+	run claude plugin install codex@openai-codex --scope user || failed=1
+	run claude plugin install security-guidance@claude-plugins-official --scope user || failed=1
 
 	if [ -n "${FORCE}" ]; then
 		log "Refreshing Claude Code plugins..."
-		run claude plugin update codex@openai-codex
-		run claude plugin update security-guidance@claude-plugins-official
+		run claude plugin update codex@openai-codex || failed=1
+		run claude plugin update security-guidance@claude-plugins-official || failed=1
 	fi
 
-	: > "${sentinel}" 2>/dev/null || true
+	[ "$failed" -eq 0 ] || { rm -f "${sentinel}"; return 1; }
+	: > "${sentinel}" 2>/dev/null || return 1
 	log "Claude Code plugins ready (codex, security-guidance)."
 }
 
@@ -109,7 +111,7 @@ setup_codex() {
 	fi
 
 	log "Installing cc-plugin-codex (use Claude Code from inside Codex)..."
-	run npx -y cc-plugin-codex@latest install
+	run npx -y cc-plugin-codex@latest install || { rm -f "${sentinel}"; return 1; }
 
 	: > "${sentinel}" 2>/dev/null || true
 	log "Codex plugin installed; run '\$cc:setup' once inside Codex to finish wiring."
@@ -118,51 +120,48 @@ setup_codex() {
 # Location of the baked-in, version-controlled coding-knowhow skills.
 CODING_SKILLS_SRC="${CODING_SKILLS_SRC:-/opt/coding-skills}"
 
-setup_coding_skills() {
-	# Link the repo's coding-knowhow skills (Agent Skills, SKILL.md format) into
-	# the places Claude Code / Codex look, so the team's know-how travels with
-	# the image and stays PR-reviewable.
-	[ -d "${CODING_SKILLS_SRC}" ] || {
-		log "no coding skills at ${CODING_SKILLS_SRC}; skipping."
-		return 0
-	}
-
-	mkdir -p "${HOME}/.claude" "${HOME}/.codex" 2>/dev/null || true
-	local sentinel="${HOME}/.claude/.coding-skills.bootstrap"
-
-	if [ -f "${sentinel}" ] && [ -z "${FORCE}" ]; then
-		log "Coding skills already linked; skipping (SKILLS_REFRESH=1 to refresh)."
+# Never replace a user's directory, file, or differently targeted symlink.
+link_skill() {
+	local source="$1" destination="$2"
+	if [ -L "$destination" ] && [ "$(readlink "$destination")" = "$source" ]; then
 		return 0
 	fi
-
-	# Claude Code: personal skills live under ~/.claude/skills/<name>/SKILL.md.
-	local claude_skills="${HOME}/.claude/skills"
-	mkdir -p "${claude_skills}" 2>/dev/null || true
-
-	# Codex: expose the same tree at a stable, documented path.
-	run ln -sfn "${CODING_SKILLS_SRC}" "${HOME}/.codex/coding-skills"
-
-	local linked=0 d name
-	for d in "${CODING_SKILLS_SRC}"/*/; do
-		[ -d "${d}" ] || continue
-		name="$(basename "${d}")"
-		# Skip templates / drafts / hidden entries.
-		case "${name}" in
-			_*|.*) continue ;;
-		esac
-		# Only link real skills (a directory holding a SKILL.md).
-		[ -f "${d}SKILL.md" ] || continue
-		run ln -sfn "${d%/}" "${claude_skills}/${name}"
-		linked=$((linked + 1))
-	done
-
-	: > "${sentinel}" 2>/dev/null || true
-	log "Coding skills linked: ${linked} into ${claude_skills} (and ~/.codex/coding-skills)."
+	if [ -e "$destination" ] || [ -L "$destination" ]; then
+		warn "Keeping existing user skill: $destination"
+		return 0
+	fi
+	ln -s "$source" "$destination" || return 1
 }
 
-setup_claude
-setup_codex
-setup_coding_skills
+setup_coding_skills() {
+	[ -d "${CODING_SKILLS_SRC}" ] || return 0
+	# Reconcile on every start: a previous image's sentinel must not hide new skills.
+	local destination d name linked=0 failed=0
+	for destination in "${HOME}/.agents/skills" "${HOME}/.claude/skills" "${HOME}/.codex/skills"; do
+		mkdir -p "$destination" || { warn "Cannot create skill directory: $destination"; failed=1; continue; }
+		for d in "${CODING_SKILLS_SRC}"/*/; do
+			[ -d "$d" ] || continue
+			name="$(basename "$d")"
+			case "$name" in _*|.*) continue ;; esac
+			[ -f "${d}SKILL.md" ] || continue
+			link_skill "${d%/}" "$destination/$name" || { failed=1; continue; }
+			linked=$((linked + 1))
+		done
+	done
+	# Preserve the old documented shortcut alongside actual discovery locations.
+	link_skill "$CODING_SKILLS_SRC" "${HOME}/.codex/coding-skills" || return 1
+	log "Coding skill locations reconciled ($linked entries)."
+	return "$failed"
+}
+
+# Local skills do not depend on the network or external plugin installation.
+setup_coding_skills || warn "Some local skills could not be linked."
+setup_claude || warn "Claude plugins incomplete; retrying on next start."
+setup_codex || warn "Codex plugin incomplete; retrying on next start."
+ecc_helper="$(dirname "${BASH_SOURCE[0]}")/setup_ecc.sh"
+if [ -f "$ecc_helper" ]; then
+	bash "$ecc_helper" || warn "ECC setup incomplete; retrying on next start."
+fi
 
 log "Standard skills bootstrap complete."
 exit 0

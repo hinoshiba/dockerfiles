@@ -21,25 +21,21 @@ jobs:
         id: date
         run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
       - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Get LANG_TYPE
-        id: LANG
-        run: |
-          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
-          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
-      - name: Get Version
-        id: VERSION
-        run: |
-          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
+        uses: actions/checkout@v4
+      - name: Resolve checkout versions and image dependencies
+        id: image
+        run: python3 scripts/image_build.py ${{ matrix.IMGNAME }} >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Build and Push to Docker Hub.
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: true
@@ -48,4 +44,4 @@ jobs:
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:${{ steps.date.outputs.Weekid }}
           build-args: |
-            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
+            ${{ steps.image.outputs.build_args }}

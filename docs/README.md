@@ -55,3 +55,18 @@ Apple silicon / macOS 26 以降では Apple container を優先します。
 * 詳細・無効化方法は [標準skills (plugins)](./claude-codex/skills.md) を参照
 * coding のノウハウを書き溜める [coding-knowhow skills](./claude-codex/coding-skills.md) の置き場所も用意しています
 
+
+## コンテナなしで使う skills
+
+このリポジトリを Claude Code / Codex で開くと、共通の coding skills を自動発見します。
+[配置と追加方法](./claude-codex/coding-skills.md)、
+[ECC plugin](./claude-codex/everything-claude-code.md)、
+[Fable 5 資料の検討](./claude-codex/fable5-review.md) を参照してください。
+
+## バージョン更新とビルド
+
+`make build target=workbench` などのビルドは、checkout 内の `version/` から
+Ubuntu と各言語のバージョンを渡します。PR でも同じ値でビルド・実行検証します。
+Go / Rust / Node / Python のバージョン変更は workbench と claude-codex の再ビルドにも反映されます。
+Dockerfile を直接使う場合は `scripts/image_build.py <image>` が出力する `build_args` を
+各 `--build-arg` に渡してください。
