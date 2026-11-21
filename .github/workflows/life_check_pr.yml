@@ -63,14 +63,15 @@ jobs:
               expected_versions.extend(['--env', 'EXPECTED_' + variable + '=' + version])
 
           images = ['workbench', 'claude-codex']
-          if os.environ['PRODUCT'] == 'node':
-              images.insert(0, 'node')
+          candidate_product = os.environ['PRODUCT']
+          if candidate_product in ('node', 'golang', 'rust'):
+              images.insert(0, candidate_product)
           for image in images:
               tag = 'dockerfiles-lifecycle-' + image + ':candidate'
               command = ['docker', 'buildx', 'build', '--platform', 'linux/amd64', '--load', '--tag', tag]
               for argument in build_args(repository, image):
                   command.extend(['--build-arg', argument])
-              if image != 'node':
+              if image in ('workbench', 'claude-codex'):
                   command.extend(['--build-arg', 'local_docker_gid=' + str(docker_gid)])
               command.append(str(repository / 'dockerfiles' / image))
               subprocess.run(command, check=True)
@@ -78,11 +79,16 @@ jobs:
               smoke_scripts = ['composite-image-smoke.sh']
               if image == 'node':
                   smoke_scripts = ['node-image-smoke.sh']
+              elif image in ('golang', 'rust'):
+                  smoke_scripts = ['language-image-smoke.sh']
               elif image == 'workbench':
                   smoke_scripts.append('workbench-image-smoke.sh')
               for smoke_script in smoke_scripts:
                   command = ['docker', 'run', '--rm', '-i', '--entrypoint', '/bin/bash']
                   command.extend(expected_versions)
+                  if image in ('golang', 'rust'):
+                      version = (repository / 'version' / image / 'strict').read_text().strip()
+                      command.extend(['--env', 'LANG_IMAGE=' + image, '--env', 'EXPECTED_VERSION=' + version])
                   command.extend([tag, '-s'])
                   with (repository / 'tests' / smoke_script).open('rb') as script:
                       subprocess.run(command, stdin=script, check=True)

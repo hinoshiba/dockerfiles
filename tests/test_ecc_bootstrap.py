@@ -1,5 +1,6 @@
 """Isolated native-CLI contract tests; never install into the developer's HOME."""
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,8 @@ import unittest
 SCRIPT = Path(__file__).resolve().parents[1] / "dockerfiles/claude-codex/setup_ecc.sh"
 PLUGIN = "ecc@dockerfiles-ecc"
 REVISION = "c05b2d6614f62f6db0047669aa4eefb223d478f9"
+PACKAGE = '{"name":"ecc-test","version":"2.2.3"}\n'
+LOCK = '{"name":"ecc-test","lockfileVersion":3,"packages":{}}\n'
 FAKE_CLAUDE = r'''#!/usr/bin/env python3
 import json
 import os
@@ -52,6 +55,42 @@ else:
 config.mkdir(parents=True, exist_ok=True)
 settings_file.write_text(json.dumps(settings))
 state_file.write_text(json.dumps(state))
+installations = []
+for plugin in state["plugins"]:
+    if plugin.get("id") != "ecc@dockerfiles-ecc" or plugin.get("scope") != "user":
+        continue
+    plugin_path = Path(os.environ.get("ECC_INSTALL_PATH") or config / "plugins/cache/dockerfiles-ecc/ecc/2.2.3")
+    plugin_path.mkdir(parents=True, exist_ok=True)
+    for filename in ["package.json", "package-lock.json"]:
+        if not (plugin_path / filename).exists():
+            (plugin_path / filename).write_text((root / filename).read_text())
+    installations.append({"scope":"user", "installPath":str(plugin_path), "gitCommitSha":os.environ.get("ECC_RECORD_SHA", "c05b2d6614f62f6db0047669aa4eefb223d478f9")})
+(config / "plugins").mkdir(exist_ok=True)
+(config / "plugins/installed_plugins.json").write_text(json.dumps({"version":2,"plugins":{"ecc@dockerfiles-ecc":installations}}))
+'''
+FAKE_RUNTIME = r'''#!/usr/bin/env python3
+import json
+import os
+from pathlib import Path
+import sys
+import time
+
+root = Path(os.environ["ECC_TEST_DIR"])
+name = Path(sys.argv[0]).name
+with (root / "runtime.jsonl").open("a") as stream:
+    stream.write(json.dumps({"name":name, "args":sys.argv[1:], "cwd":os.getcwd()}) + "\n")
+if os.environ.get("ECC_FAIL_RUNTIME") == name:
+    sys.exit(27)
+if name == "npm":
+    time.sleep(float(os.environ.get("ECC_RUNTIME_PAUSE", "0")))
+    assert "--omit=dev" in sys.argv and "--ignore-scripts" in sys.argv
+    assert not Path(".npmrc").exists()
+    modules = Path("node_modules")
+    modules.mkdir()
+    (modules / "installed").write_text("reviewed dependencies")
+elif name == "node":
+    assert Path("node_modules/installed").exists()
+    assert all(package in sys.argv[-1] for package in ["sql.js", "ajv", "js-yaml", "@iarna/toml"])
 '''
 
 
@@ -67,6 +106,21 @@ class EccBootstrapTests(unittest.TestCase):
         fake = self.bin / "claude"
         fake.write_text(FAKE_CLAUDE)
         fake.chmod(0o755)
+        for name in ("npm", "node"):
+            runtime = self.bin / name
+            runtime.write_text(FAKE_RUNTIME)
+            runtime.chmod(0o755)
+        (self.root / "package.json").write_text(PACKAGE)
+        (self.root / "package-lock.json").write_text(LOCK)
+        # Small synthetic manifests keep failure-path tests independent of
+        # upstream downloads. The real pinned hashes are checked by live smoke.
+        source = SCRIPT.read_text()
+        source = source.replace('PACKAGE_HASH = "d658518a714b2834340704ca0d7eeb383fe1f061a00e66f001f58915a3de7c19"',
+                                'PACKAGE_HASH = "' + hashlib.sha256(PACKAGE.encode()).hexdigest() + '"')
+        source = source.replace('LOCK_HASH = "c5a1610655ada847c7aa7e3e1eff287146babed59a67462b72a02b93ad8a8fe8"',
+                                'LOCK_HASH = "' + hashlib.sha256(LOCK.encode()).hexdigest() + '"')
+        self.script = self.root / "setup_ecc.sh"
+        self.script.write_text(source)
         self.config = self.home / ".claude"
         self.config.mkdir()
         self.marker = self.config / "dockerfiles-ecc/bootstrapped"
@@ -74,11 +128,11 @@ class EccBootstrapTests(unittest.TestCase):
         self.state.write_text(json.dumps({"plugins": [], "marketplaces": []}))
         self.env = dict(os.environ, HOME=str(self.home), PATH=str(self.bin) + ":" + os.environ["PATH"],
                         ECC_TEST_DIR=str(self.root))
-        for key in ("SKILLS_BOOTSTRAP", "SKILLS_REFRESH", "ECC_BOOTSTRAP", "CLAUDE_CONFIG_DIR"):
+        for key in ("SKILLS_BOOTSTRAP", "SKILLS_REFRESH", "ECC_BOOTSTRAP", "CLAUDE_CONFIG_DIR", "CLAUDE_CODE_PLUGIN_CACHE_DIR"):
             self.env.pop(key, None)
 
     def run_script(self, **environment):
-        return subprocess.run(["bash", str(SCRIPT)], env=dict(self.env, **environment),
+        return subprocess.run(["bash", str(self.script)], env=dict(self.env, **environment),
                               capture_output=True, text=True, timeout=15)
 
     def calls(self):
@@ -91,6 +145,10 @@ class EccBootstrapTests(unittest.TestCase):
     def settings(self):
         return json.loads((self.config / "settings.json").read_text())
 
+    def runtime_calls(self):
+        path = self.root / "runtime.jsonl"
+        return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
     def test_install_pins_plugin_source_and_defaults_hooks_off(self):
         result = self.run_script()
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -100,12 +158,15 @@ class EccBootstrapTests(unittest.TestCase):
         self.assertIn(["plugin", "install", PLUGIN, "--scope", "user", "--config", "hooks_enabled=false"], self.calls())
         self.assertFalse(self.settings()["pluginConfigs"][PLUGIN]["options"]["hooks_enabled"])
         self.assertIn(REVISION, self.marker.read_text())
+        self.assertEqual([call["name"] for call in self.runtime_calls()], ["npm", "node"])
 
     def test_success_is_cached_without_network_or_cli(self):
         self.assertEqual(self.run_script().returncode, 0)
         before = self.calls()
+        before_runtime = self.runtime_calls()
         self.assertEqual(self.run_script().returncode, 0)
         self.assertEqual(self.calls(), before)
+        self.assertEqual(self.runtime_calls(), before_runtime)
 
     def test_global_and_ecc_opt_out_do_not_touch_configuration(self):
         for key in ("SKILLS_BOOTSTRAP", "ECC_BOOTSTRAP"):
@@ -113,6 +174,7 @@ class EccBootstrapTests(unittest.TestCase):
                 self.assertEqual(self.run_script(**{key: value}).returncode, 0)
         self.assertEqual(self.calls(), [])
         self.assertFalse(self.marker.exists())
+        self.assertFalse(self.marker.parent.exists())
 
     def test_preserves_explicit_hook_options_and_unrelated_settings(self):
         settings = {"permissions": {"deny": ["Bash(rm:*)"]}, "env": {"EXAMPLE": "value"},
@@ -195,6 +257,74 @@ class EccBootstrapTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((alternate / "dockerfiles-ecc/bootstrapped").exists())
         self.assertFalse(self.marker.exists())
+
+    def test_dependency_failure_retries_without_marking_complete(self):
+        for runtime in ("npm", "node"):
+            result = self.run_script(ECC_FAIL_RUNTIME=runtime)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(self.marker.exists())
+        self.assertEqual(self.run_script().returncode, 0)
+        self.assertTrue(self.marker.exists())
+
+    def test_failed_dependency_refresh_keeps_existing_modules(self):
+        self.assertEqual(self.run_script().returncode, 0)
+        modules = self.config / "plugins/cache/dockerfiles-ecc/ecc/2.2.3/node_modules"
+        (modules / "keep-until-ready").write_text("existing")
+        result = self.run_script(SKILLS_REFRESH="1", ECC_FAIL_RUNTIME="node")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue((modules / "keep-until-ready").exists())
+        self.assertFalse(self.marker.exists())
+
+    def test_dependency_install_rejects_unreviewed_commit(self):
+        result = self.run_script(ECC_RECORD_SHA="0" * 40)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.runtime_calls(), [])
+        self.assertFalse(self.marker.exists())
+
+    def test_dependency_install_rejects_foreign_install_path(self):
+        result = self.run_script(ECC_INSTALL_PATH=str(self.root / "other-plugin"))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(self.runtime_calls(), [])
+        self.assertFalse(self.marker.exists())
+
+    def test_dependency_install_rejects_modified_manifests(self):
+        for filename in ("package.json", "package-lock.json"):
+            with self.subTest(filename=filename):
+                original = (self.root / filename).read_text()
+                (self.root / filename).write_text(original + " ")
+                plugin_path = self.config / "plugins/cache/dockerfiles-ecc/ecc/2.2.3"
+                if (plugin_path / filename).exists():
+                    (plugin_path / filename).unlink()
+                result = self.run_script()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(self.runtime_calls(), [])
+                self.assertFalse(self.marker.exists())
+                (self.root / filename).write_text(original)
+                (plugin_path / filename).unlink()
+
+    def test_version_one_marker_upgrades_runtime_dependencies(self):
+        self.marker.parent.mkdir(parents=True)
+        self.marker.write_text("v1:" + REVISION + "\n")
+        self.assertEqual(self.run_script().returncode, 0)
+        self.assertEqual(self.marker.read_text(), "v2:" + REVISION + "\n")
+        self.assertEqual([call["name"] for call in self.runtime_calls()], ["npm", "node"])
+
+    def test_concurrent_startups_share_one_successful_install(self):
+        environment = dict(self.env, ECC_RUNTIME_PAUSE="0.5")
+        processes = [subprocess.Popen(["bash", str(self.script)], env=environment,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                     for _ in range(2)]
+        try:
+            outputs = [process.communicate(timeout=20) for process in processes]
+        finally:
+            for process in processes:
+                if process.poll() is None:
+                    process.kill()
+                    process.communicate()
+        for process, (stdout, stderr) in zip(processes, outputs):
+            self.assertEqual(process.returncode, 0, stdout + stderr)
+        self.assertEqual([call["name"] for call in self.runtime_calls()], ["npm", "node"])
+        self.assertEqual(sum(call[:2] == ["plugin", "install"] for call in self.calls()), 1)
 
 
 if __name__ == "__main__":

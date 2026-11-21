@@ -8,6 +8,9 @@ env:
 jobs:
   builder:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: publish-${{ matrix.IMGNAME }}
+      cancel-in-progress: false
     strategy:
       fail-fast: false
       matrix:

@@ -29,6 +29,8 @@ Claude が取得する **plugin 本体** の checkout を固定しており、�
 初回の通信に失敗した場合は警告を出してシェル起動を継続し、次の起動で再試行します。
 全処理が成功した場合だけ commit を含む完了印を保存します。
 通常の再起動では通信や CLI を再実行しません。
+同じ永続ディレクトリを複数のコンテナが共有する場合は、bootstrap を排他制御して
+plugin 設定や依存モジュールの更新が競合しないようにします。
 
 ## 自動 hooks
 
@@ -65,14 +67,25 @@ Claude を再起動すると適用されます。戻す場合は `hooks_enabled`
 [自動的に接続・起動](https://code.claude.com/docs/en/mcp#plugin-provided-mcp-servers)
 されます。ブラウザー操作には Chrome 等の実行環境が別途必要です。
 必要がなければ Claude の `/mcp` パネルで当該サーバーを無効にできます（プロジェクト単位）。
-bootstrap は上流 plugin cache や他の MCP 設定を変更しません。
+bootstrap は上流 plugin のソース・MCP 定義や、他の MCP 設定を変更しません。
 
-Claude 2.1.330 では上流 `package.json` の `overrides` を native installer が適用できず、
-npm dependencies をインストールしなかった旨が `claude plugin list --json` の note に
-表示されました。plugin の導入自体は成功しますが、`sql.js`、`ajv`、`js-yaml`、
-`@iarna/toml` を使う上流の state store・context profile 等の補助スクリプトについては
-依存パッケージの別途セットアップが必要です。bootstrap はこの拒否を回避して
-外部 installer を自動実行しません。
+Claude 2.1.330 の native dependency installer は上流 `package.json` の `overrides`
+に未対応のため、その段階では npm dependencies が未導入になります。これは
+[パッケージ管理の制約](https://code.claude.com/docs/en/plugins/loading#limits-on-the-dependency-install)
+であり、bootstrap が `sql.js`、`ajv`、`js-yaml`、`@iarna/toml` の runtime dependencies を
+補完します。state store・context profile 等を使うための手動セットアップは不要です。
+
+補完前に native install record の commit/path と `package.json`・`package-lock.json`
+の SHA-256 を検証します。専用 staging directory で
+`npm ci --omit=dev --ignore-scripts --no-audit --no-fund` を実行し、4 つの直接依存を Node で
+ロードできた場合だけ `node_modules` を配置します。npm の user/global config は分離し、
+上流のソース、lockfile、hooks、MCP、Claude の設定を変更しません。
+失敗した場合は既存の `node_modules` を保持し、完了印を残さず次回に再試行します。
+
+固定 lockfile の production 依存は推移依存を含め 9 パッケージです。npm registry の
+公開日時と integrity を確認済みで、最も新しいものは `fast-uri@3.1.7`
+（2026-09-02 公開）です。全件が 14 日 cooldown を満たし、取得元と integrity は lockfile
+で固定します。開発用依存、lifecycle scripts、上流の installer は実行しません。
 
 ## 起動時の制御
 
@@ -113,8 +126,12 @@ CLI は公式 native 配布から取得し、manifest の SHA-256 とコード�
 - `plugin configure --json` の `hooks_enabled` が `false`。
 - 通常の再起動が設定を変更せず、`SKILLS_REFRESH=1` も固定版のまま成功。
 - ユーザーが明示した hook 設定、disabled 状態、既存 permissions/env が refresh 後も保持。
+- Node 26.13.1 / npm 11.20.0 で production 依存 9 パッケージの補完に成功。
+  TOML/YAML の parse、Ajv の validate、sql.js の in-memory SQLite query が成功し、
+  plugin source・lockfile・Claude settings は変更されていないことを確認。
+  `plugin list --json` にあった dependencies-refused note も解消。
 - `plugin validate` が exit 0。上流 `CLAUDE.md` は plugin のプロジェクト context としては
   自動読込されない旨の warning があり、これを含めてユーザーの既存 `CLAUDE.md` を維持。
 
 LLM 呼び出しや実セッション、MCP サーバー・Chrome の起動は行っていません。
-Linux コンテナ内の実セッションと追加依存を使う補助スクリプトは別途検証が必要です。
+Linux コンテナ内の実セッションと上流の個別ワークフローは別途検証が必要です。

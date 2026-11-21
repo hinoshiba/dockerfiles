@@ -42,6 +42,8 @@ def affected(repo, image, paths):
               '.github/workflows/build_pr.yml', '.github/workflows/build_cron.yml'}
     if image in ('workbench', 'claude-codex'):
         shared.add('tests/composite-image-smoke.sh')
+    if image in ('golang', 'rust'):
+        shared.add('tests/language-image-smoke.sh')
     if image == 'node':
         shared.add('tests/node-image-smoke.sh')
     if image == 'workbench':

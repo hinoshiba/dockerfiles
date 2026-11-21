@@ -55,6 +55,15 @@ jobs:
             -e EXPECTED_NODE="$(cat version/node/strict)" \
             ${{ env.MYNAME }}/node:latest -s < tests/node-image-smoke.sh
         if: steps.image.outputs.changed == 'true' && matrix.IMGNAME == 'node'
+      - name: Verify Go and Rust image versions, locale and compilers
+        env:
+          LANG_IMAGE: ${{ matrix.IMGNAME }}
+        run: |
+          docker run --rm -i --entrypoint /bin/bash \
+            -e LANG_IMAGE="$LANG_IMAGE" \
+            -e EXPECTED_VERSION="$(cat "version/$LANG_IMAGE/strict")" \
+            "${{ env.MYNAME }}/$LANG_IMAGE:latest" -s < tests/language-image-smoke.sh
+        if: steps.image.outputs.changed == 'true' && (matrix.IMGNAME == 'golang' || matrix.IMGNAME == 'rust')
       - name: Verify bundled runtime versions and compiler behavior
         run: |
           docker run --rm -i --entrypoint /bin/bash \
