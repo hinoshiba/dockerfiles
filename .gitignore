@@ -1,3 +1,5 @@
 *.swp
 .mtx/*
 !.mtx/.gitkeep
+__pycache__/
+*.pyc

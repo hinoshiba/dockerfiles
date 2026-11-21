@@ -1,0 +1,17 @@
+name: runtime checks
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  launcher:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check launcher and runtime behavior without container engines
+        run: make check

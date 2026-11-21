@@ -59,6 +59,11 @@ jobs:
           tags: |
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
         if: steps.diff_check.outcome == 'success'
+      - name: Verify workbench commands and language libraries.
+        run: |
+          docker run --rm -i --entrypoint /bin/bash \
+            ${{ env.MYNAME }}/workbench:latest -s < tests/workbench-image-smoke.sh
+        if: steps.diff_check.outcome == 'success' && matrix.IMGNAME == 'workbench'
       - name: Run test x64.
         # claude-codex is a build-only AI composite image (run in practice via
         # `make target=codex` / `make target=claude`). Its entrypoint requires the

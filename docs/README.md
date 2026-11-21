@@ -3,6 +3,11 @@ dockerfiles
 
 作業用コンテナをサクッと管理できるmakefileとその構成群  
 
+Apple silicon / macOS 26 以降では Apple container を優先します。
+`engine=docker` で Docker を明示でき、Linux と Intel Mac は従来どおり Docker を使います。
+未導入の Apple container は Homebrew、または Apple 公式の署名済み package で導入します（`auto_install=n` で無効化）。
+ホストに Python 3 が必要です。[実行環境と互換性確認](./container-runtimes.md) も参照してください。
+
 ## 基本的な使い方
 
 1. `<repository>/dockerfiles/<image name>/Dockerfile` を作成する
@@ -28,7 +33,7 @@ dockerfiles
 	* カレントユーザを自動的にコンテナへ作成します
 		* ENTRYPOINT で作成するので、イメージ上は反映されません
 		* カレントユーザの環境変数ファイルをいくつかマウントもします
-			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh#L30)
+			* [ユーザ作成スクリプト ローカルマウントセクション一覧](../dockerfiles/workbench/exec_user.sh)
 	* docker outside docker がいじれるようにしてあります。mountのpathは、host側のpathになるので気をつけてください
 * [利用準備](./workbench/setup.md) をした環境で利用できる
 * 編集

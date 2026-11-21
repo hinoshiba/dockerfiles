@@ -35,6 +35,8 @@ function exec_usershell() {
 		HOME="/home/${LOCAL_WHOAMI}" \
 		USER="${LOCAL_WHOAMI}" \
 		LOGNAME="${LOCAL_WHOAMI}" \
+		SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}" \
+		DOCKERFILES_DOCKER_SSH_SOCK="${DOCKERFILES_DOCKER_SSH_SOCK:-}" \
 		PATH="/home/${LOCAL_WHOAMI}/.local/bin:${PATH}" \
 		bash -c 'cd "$1" || exit 1; shift; exec "$@"' bash "${WORK_DIR}" "$@"
 }
@@ -91,7 +93,20 @@ fi
 
 test -n "${SSH_AUTH_SOCK:-}" && grep -qxF "export SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" /home/${LOCAL_WHOAMI}/.bashrc || \
 	test -z "${SSH_AUTH_SOCK:-}" || sudo -u ${LOCAL_WHOAMI} echo "export SSH_AUTH_SOCK=${SSH_AUTH_SOCK}" >> /home/${LOCAL_WHOAMI}/.bashrc
-test -n "${SSH_AUTH_SOCK:-}" && chown ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} "${SSH_AUTH_SOCK}"
+for socket in "${SSH_AUTH_SOCK:-}" "${SSH_AGENT_ALIAS:-}"; do
+	if [ -n "${socket}" ] && [ -S "${socket}" ]; then
+		chown "${LOCAL_WHOAMI}:${LOCAL_WHOAMI}" "${socket}"
+		if [ "${DOCKERFILES_ENGINE:-}" = apple ]; then chmod 600 "${socket}"; fi
+		parent=$(dirname "${socket}")
+		while [ "${DOCKERFILES_ENGINE:-}" = apple ] && [[ "${parent}" == "/home/${LOCAL_WHOAMI}/"* ]]; do
+			if [ "$(findmnt -n -o FSTYPE -T "${parent}")" != virtiofs ]; then
+				chown "${LOCAL_WHOAMI}:${LOCAL_WHOAMI}" "${parent}"
+				chmod u+rwx "${parent}"
+			fi
+			parent=$(dirname "${parent}")
+		done
+	fi
+done
 test -d /home/${LOCAL_WHOAMI}/.host.ssh && test ! -e /home/${LOCAL_WHOAMI}/.ssh && ln -s /home/${LOCAL_WHOAMI}/.host.ssh /home/${LOCAL_WHOAMI}/.ssh
 
 chown -R ${LOCAL_WHOAMI}:${LOCAL_WHOAMI} /home/${LOCAL_WHOAMI} || :

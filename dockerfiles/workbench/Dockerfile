@@ -34,6 +34,9 @@ ENV LC_ALL ja_JP.UTF-8
 ARG COOLDOWN_DAYS=14
 ENV COOLDOWN_DAYS=${COOLDOWN_DAYS}
 
+# Keep the full command/toolchain set. Remove only build inputs and download
+# caches in this RUN, before they can become part of an image layer. Mark the
+# libraries used by Python extensions as runtime dependencies before autoremove.
 RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get update && \
     apt-get install -y  tzdata locales sudo \
@@ -41,15 +44,19 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
         less bash-completion make bsdmainutils iproute2 zip gnupg2 binutils jq \
         iputils-ping net-tools dnsutils rsync nkf git-lfs \
         build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev \
+        libbz2-dev liblzma-dev libsqlite3-dev \
         ca-certificates gnupg lsb-release && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y --no-install-recommends docker-ce docker-ce-cli docker-compose-plugin && \
-    wget https://www.python.org/ftp/python/$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)/Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
-    tar -xf Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict).tgz && \
-    cd Python-$(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict) && \
+    PYTHON_VERSION="$(curl -fsSL https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/python/strict)" && \
+    mkdir -p /tmp/workbench-python && \
+    cd /tmp/workbench-python && \
+    wget "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" && \
+    tar -xf "Python-${PYTHON_VERSION}.tgz" && \
+    cd "Python-${PYTHON_VERSION}" && \
     ./configure --enable-optimizations && \
     make -j$(nproc) && \
     make install && \
@@ -58,12 +65,18 @@ RUN test -z ${local_docker_gid} || groupadd -g ${local_docker_gid} docker && \
     apt-get install -y nodejs npm && \
     NPM_BEFORE="$(date -u -d "${COOLDOWN_DAYS:-14} days ago" '+%Y-%m-%d')" && \
     npm install n -g --before="${NPM_BEFORE}" && \
-    n $(curl -s https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
+    n --cleanup $(curl -fsSL https://raw.githubusercontent.com/hinoshiba/dockerfiles/master/version/node/strict) && \
     npm install -g @devcontainers/cli --before="${NPM_BEFORE}" && \
-    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev nodejs npm && \
+    ldd /usr/local/bin/python3 /usr/local/lib/python*/lib-dynload/*.so | \
+        awk '/=> \// { so = $(NF-1); sub("^/(usr/)?", "", so); print "*" so }' | \
+        sort -u | xargs -r dpkg-query --search | \
+        awk 'sub(":$", "", $1) { print $1 }' | sort -u | xargs -r apt-mark manual && \
+    apt-get purge -y docker-ce build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libbz2-dev liblzma-dev libsqlite3-dev nodejs npm && \
     apt-get -y autoremove && \
+    python3 -c "import bz2, ctypes, curses, dbm.gnu, lzma, readline, sqlite3, ssl, zlib" && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
+    cd / && \
+    rm -rf /var/lib/apt/lists/* /tmp/workbench-python /root/.cache/pip /root/.npm && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
     locale-gen ja_JP.UTF-8 && \
     update-alternatives --set editor /usr/bin/vim.basic && \
