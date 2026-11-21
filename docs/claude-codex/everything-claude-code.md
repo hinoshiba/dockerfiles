@@ -19,12 +19,15 @@ Codex 用の外部 installer や Git hooks は自動実行しません。
 - 保存先: `~/.claude/dockerfiles-ecc/` と Claude が管理する plugin cache。
   `CLAUDE_CONFIG_DIR` を設定している場合は、そのディレクトリを使います。
 
-専用の local marketplace に GitHub plugin source の `ref` と `sha` を指定します。
+専用の local marketplace に HTTPS git URL の plugin source と `ref`・`sha` を指定します。
 Claude が取得する **plugin 本体** の checkout を固定しており、可変な `main` を
 起動のたびに取り込みません。これは Claude の
 [marketplace schema](https://code.claude.com/docs/en/plugins/marketplace-reference)
 にある正式な source 形式です。上流の `install.sh` や npm installer を経由せず、
 `claude plugin marketplace add` と `claude plugin install` を使います。
+GitHub shorthand は Claude の更新処理が SSH を選ぶ場合があるため使わず、初回導入・更新
+ともに `https://github.com/affaan-m/ECC.git` を使用します。SSH keys や known_hosts の
+初期設定、ユーザーの Git 設定の変更は不要です。
 
 初回の通信に失敗した場合は警告を出してシェル起動を継続し、次の起動で再試行します。
 全処理が成功した場合だけ commit を含む完了印を保存します。
@@ -132,6 +135,12 @@ CLI は公式 native 配布から取得し、manifest の SHA-256 とコード�
   `plugin list --json` にあった dependencies-refused note も解消。
 - `plugin validate` が exit 0。上流 `CLAUDE.md` は plugin のプロジェクト context としては
   自動読込されない旨の warning があり、これを含めてユーザーの既存 `CLAUDE.md` を維持。
+
+同日に、更新版 workbench image を使った Apple container 内の Linux arm64 でも検証しました。
+UID 65534、空の HOME、リポジトリの read-only mount、認証情報なしで公式 Claude 2.1.330 を
+SHA-256 検証後に実行し、初回導入・依存の parse/validate/SQLite smoke・通常再起動・refresh・
+設定保持が成功しました。HTTPS source により SSH keys / known_hosts なしで更新でき、
+plugin list の dependency warning もありません。検証専用コンテナは終了後に削除しています。
 
 LLM 呼び出しや実セッション、MCP サーバー・Chrome の起動は行っていません。
 Linux コンテナ内の実セッションと上流の個別ワークフローは別途検証が必要です。

@@ -154,7 +154,7 @@ class EccBootstrapTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         manifest = json.loads((self.config / "dockerfiles-ecc/marketplace/.claude-plugin/marketplace.json").read_text())
         self.assertEqual(manifest["plugins"][0]["source"], {
-            "source": "github", "repo": "affaan-m/ECC", "ref": "v2.2.3", "sha": REVISION})
+            "source": "url", "url": "https://github.com/affaan-m/ECC.git", "ref": "v2.2.3", "sha": REVISION})
         self.assertIn(["plugin", "install", PLUGIN, "--scope", "user", "--config", "hooks_enabled=false"], self.calls())
         self.assertFalse(self.settings()["pluginConfigs"][PLUGIN]["options"]["hooks_enabled"])
         self.assertIn(REVISION, self.marker.read_text())
@@ -221,6 +221,17 @@ class EccBootstrapTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(self.marker.exists())
         self.assertEqual(sum(call[:2] == ["plugin", "install"] for call in self.calls()), 1)
+
+    def test_refresh_migrates_github_shorthand_to_https(self):
+        self.assertEqual(self.run_script().returncode, 0)
+        manifest_path = self.config / "dockerfiles-ecc/marketplace/.claude-plugin/marketplace.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["plugins"][0]["source"] = {"source": "github", "repo": "affaan-m/ECC", "sha": REVISION}
+        manifest_path.write_text(json.dumps(manifest))
+        self.assertEqual(self.run_script(SKILLS_REFRESH="1").returncode, 0)
+        source = json.loads(manifest_path.read_text())["plugins"][0]["source"]
+        self.assertEqual(source, {"source": "url", "url": "https://github.com/affaan-m/ECC.git",
+                                  "ref": "v2.2.3", "sha": REVISION})
 
     def test_existing_disabled_install_stays_disabled_during_refresh(self):
         self.assertEqual(self.run_script().returncode, 0)

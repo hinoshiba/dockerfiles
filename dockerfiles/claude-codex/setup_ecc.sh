@@ -156,7 +156,9 @@ def main():
         "plugins": [{
             "name": "ecc",
             "description": "Everything Claude Code, pinned by hinoshiba/dockerfiles",
-            "source": {"source": "github", "repo": "affaan-m/ECC",
+            # GitHub shorthand can switch to SSH during update in an empty
+            # container HOME. Keep this public dependency on HTTPS throughout.
+            "source": {"source": "url", "url": "https://github.com/affaan-m/ECC.git",
                        "ref": "v" + VERSION, "sha": REVISION},
         }],
     }
