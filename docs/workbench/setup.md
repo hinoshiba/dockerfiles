@@ -1,6 +1,13 @@
 workbench 利用準備
 ===
 
+# 0. 実行環境
+
+ホストに Python 3 を用意して `make install` を実行します。
+Apple silicon / macOS 26 以降は Apple container を、それ以外は Docker を選択します。
+Docker / Compose / devcontainers をコンテナ内で使うための Docker daemon も必要です。
+[実行環境の詳細と 1Password の SSH Agent 転送](../container-runtimes.md) を参照してください。
+
 # 1. 設定ファイルの設置
 
 必要に応じて、任意のもののみ追加  
