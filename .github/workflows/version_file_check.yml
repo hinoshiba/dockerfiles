@@ -5,8 +5,6 @@ jobs:
   file_check:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Check a files
-        run: |
-            find ./version -maxdepth 1 -mindepth 1 | xargs -I{} sh -c "grep -qFf {}/major {}/strict || exit 1"
+      - uses: actions/checkout@v4
+      - name: Validate exact numeric version-cycle boundaries
+        run: python3 scripts/version_lifecycle.py --check-files

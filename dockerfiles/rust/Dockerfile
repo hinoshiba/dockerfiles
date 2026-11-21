@@ -12,7 +12,8 @@ RUN apt update && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
-    locale-gen ja_JP.UTF-8
+    sed -i '/^# *ja_JP.UTF-8 UTF-8/s/^# *//' /etc/locale.gen && \
+    locale-gen
 RUN mkdir /.cache && \
     chmod 777 /.cache && \
     mkdir /tmphome && \

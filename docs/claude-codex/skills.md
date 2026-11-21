@@ -2,7 +2,7 @@ claude-codex 標準skills (plugins)
 ===
 
 `make target=claude` / `make target=codex` で起動する `claude-codex` イメージには、
-起動時に「標準skills」として、Claude Code / OpenAI Codex の公式・準公式 plugin を
+起動時に「標準skills」として、Claude Code / OpenAI Codex の公式およびコミュニティ製 plugin を
 自動セットアップする仕組みを入れています。
 
 > **用語の区別:** このページの「標準skills」は marketplace の **plugin** のことです。
@@ -20,6 +20,7 @@ claude-codex 標準skills (plugins)
 | plugin | marketplace (source) | 用途 |
 | --- | --- | --- |
 | `codex` | `openai/codex-plugin-cc` (OpenAI公式) | Claude Code から Codex を叩く。`/codex:review`, `/codex:adversarial-review`, `/codex:rescue`, `/codex:status` ほか |
+| `ecc` | `affaan-m/ECC` (コミュニティ製、確認済み commit に固定) | 再利用できる skills / agents / commands。[設定と無効化](everything-claude-code.md) |
 | `security-guidance` | `anthropics/claude-plugins-official` (Anthropic公式) | コード生成と同時にセキュリティレビューを行う公式 plugin。injection / unsafe deserialization / 危険なDOM API / ハードコードされた secret などを検出 |
 
 ### Codex 側
@@ -65,6 +66,7 @@ SKILLS_REFRESH=1 make target=claude
 | 変数 | 既定 | 説明 |
 | --- | --- | --- |
 | `SKILLS_BOOTSTRAP` | `1` (有効) | `0` でこのセットアップを丸ごとスキップ |
+| `ECC_BOOTSTRAP` | `1` | `0` で ECC の導入・更新だけをスキップ（導入済み plugin は削除しない） |
 | `SKILLS_REFRESH` | `0` | `1` で sentinel を無視して再インストール / 更新 |
 
 冪等性のための sentinel:
@@ -73,6 +75,8 @@ SKILLS_REFRESH=1 make target=claude
 * Codex: `~/.codex/.cc-plugin-codex.bootstrap`
 
 このファイルを消すか `SKILLS_REFRESH=1` を付ければ再セットアップされます。
+導入に失敗した場合は成功状態を保存せず、次回起動で再試行します。
+ECC の状態・初期 hook 設定は [ECC の説明](everything-claude-code.md) を参照してください。
 
 ## 参照
 

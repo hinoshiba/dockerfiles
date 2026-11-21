@@ -2,118 +2,126 @@ name: life check
 on:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
 jobs:
-    check:
-      runs-on: ubuntu-24.04
-      strategy:
-        matrix:
-          include:
-            - PRODUCT: golang
-            - PRODUCT: python
-            - PRODUCT: rust
-            - PRODUCT: node
-      steps:
-      - name: Checkout from repository.
-        uses: actions/checkout@v2
-      - name: Check to exist the target.
+  check:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        product: [golang, python, rust, node]
+    concurrency:
+      group: lifecycle-${{ matrix.product }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate lifecycle metadata and select a newer patch in this cycle
+        id: lifecycle
+        env:
+          PRODUCT: ${{ matrix.product }}
         run: |
-          test -f version/${{matrix.PRODUCT}}/strict
-      - name: Check a latest version.
-        id: latest_env
-        run: |
-            curl -L -s --request GET --url https://endoflife.date/api/${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major).json --header 'Accept: application/json' > /tmp/version.json
-            cat /tmp/version.json
-            grep -q "latest" /tmp/version.json
-            echo "Version=$(cat /tmp/version.json | jq -r '.latest')" >> "$GITHUB_OUTPUT"
-            echo "Eol=$(cat /tmp/version.json | jq -r '.eol')" >> "$GITHUB_OUTPUT"
-            echo "Support=$(cat /tmp/version.json | jq -r '.support')" >> "$GITHUB_OUTPUT"
-      - name: Update version.
-        id: diff_check
-        run: |
-            cp version/${{matrix.PRODUCT}}/strict /tmp/strict_bk
-            echo "${{steps.latest_env.outputs.Version}}" > version/${{matrix.PRODUCT}}/strict
-            diff /tmp/strict_bk version/${{matrix.PRODUCT}}/strict
-        continue-on-error: true
-      - name: Set up Docker Buildx for build test.
-        uses: docker/setup-buildx-action@v2
-        if: steps.diff_check.outcome == 'failure'
-      - name: Get LANG_TYPE
-        id: LANG
-        run: |
-          echo "TYPE=$(cat dockerfiles/${{matrix.PRODUCT}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
-          echo "TAG=$(cat dockerfiles/${{matrix.PRODUCT}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
-      - name: Get Version
-        id: VERSION
-        run: |
-          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
-      - name: Build test.
-        uses: docker/build-push-action@v2
+          python3 scripts/version_lifecycle.py --product "$PRODUCT" --update --report-dir .tmp
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        if: steps.lifecycle.outputs.changed == 'true'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        if: steps.lifecycle.outputs.changed == 'true'
+      - name: Build the proposed image on both architectures
+        uses: docker/build-push-action@v6
         with:
-          context: dockerfiles/${{matrix.PRODUCT}}
+          context: dockerfiles/${{ matrix.product }}
           push: false
           platforms: linux/amd64,linux/arm64
           build-args: |
-            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
-        if: steps.diff_check.outcome == 'failure'
-      - name: Create a Pull Request.
-        uses: peter-evans/create-pull-request@v5
+            strict=${{ steps.lifecycle.outputs.version }}
+        if: steps.lifecycle.outputs.changed == 'true'
+      - name: Build and smoke-test the updated runtime images
+        # GITHUB_TOKEN-created PRs do not trigger pull_request workflows.
+        env:
+          PRODUCT: ${{ matrix.product }}
+        run: |
+          python3 - <<'PY'
+          import grp
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          sys.path.insert(0, 'scripts')
+          from image_build import build_args
+
+          repository = Path.cwd()
+          docker_gid = grp.getgrnam('docker').gr_gid
+          expected_versions = []
+          for variable, product in [('RUST', 'rust'), ('GO', 'golang'), ('PYTHON', 'python'), ('NODE', 'node')]:
+              version = (repository / 'version' / product / 'strict').read_text().strip()
+              expected_versions.extend(['--env', 'EXPECTED_' + variable + '=' + version])
+
+          images = ['workbench', 'claude-codex']
+          candidate_product = os.environ['PRODUCT']
+          if candidate_product in ('node', 'golang', 'rust'):
+              images.insert(0, candidate_product)
+          for image in images:
+              tag = 'dockerfiles-lifecycle-' + image + ':candidate'
+              command = ['docker', 'buildx', 'build', '--platform', 'linux/amd64', '--load', '--tag', tag]
+              for argument in build_args(repository, image):
+                  command.extend(['--build-arg', argument])
+              if image in ('workbench', 'claude-codex'):
+                  command.extend(['--build-arg', 'local_docker_gid=' + str(docker_gid)])
+              command.append(str(repository / 'dockerfiles' / image))
+              subprocess.run(command, check=True)
+
+              smoke_scripts = ['composite-image-smoke.sh']
+              if image == 'node':
+                  smoke_scripts = ['node-image-smoke.sh']
+              elif image in ('golang', 'rust'):
+                  smoke_scripts = ['language-image-smoke.sh']
+              elif image == 'workbench':
+                  smoke_scripts.append('workbench-image-smoke.sh')
+              for smoke_script in smoke_scripts:
+                  command = ['docker', 'run', '--rm', '-i', '--entrypoint', '/bin/bash']
+                  command.extend(expected_versions)
+                  if image in ('golang', 'rust'):
+                      version = (repository / 'version' / image / 'strict').read_text().strip()
+                      command.extend(['--env', 'LANG_IMAGE=' + image, '--env', 'EXPECTED_VERSION=' + version])
+                  command.extend([tag, '-s'])
+                  with (repository / 'tests' / smoke_script).open('rb') as script:
+                      subprocess.run(command, stdin=script, check=True)
+              subprocess.run(['docker', 'image', 'rm', tag], check=True)
+          PY
+        if: steps.lifecycle.outputs.changed == 'true'
+      - name: Create a version pull request
+        uses: peter-evans/create-pull-request@v8
         with:
-          title: '[NewVersion] ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}'
+          title: '[NewVersion] ${{ matrix.product }}/${{ steps.lifecycle.outputs.version }}'
           body: |
-            ${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}} is detected!
-            detail >> https://endoflife.date/${{matrix.PRODUCT}}
-          commit-message: "by life_pr.yml"
-          branch: Update/${{matrix.PRODUCT}}/${{steps.latest_env.outputs.Version}}
-        if: steps.diff_check.outcome == 'failure'
-      - name: Regist status of EOL.
-        id: not_eol
-        run: |
-            test "false" == "${{steps.latest_env.outputs.Eol}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Eol}}" ]]
-        continue-on-error: true
-      - name: Make a issue body.
-        run: |
-            mkdir -p .tmp
-            echo "---" > .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
-            echo "labels: EOL" >> .tmp/issue.md
-            echo "assignees: hinoshiba" >> .tmp/issue.md
-            echo "---" >> .tmp/issue.md
-            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
-            echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
-            cat .tmp/issue.md
-        if: steps.not_eol.outcome == 'failure'
-      - name: Create the issue.
+            Update ${{ matrix.product }} from ${{ steps.lifecycle.outputs.previous }} to ${{ steps.lifecycle.outputs.version }} in the existing ${{ steps.lifecycle.outputs.cycle }} cycle.
+            The proposed image was built for linux/amd64 and linux/arm64.
+            Workbench and claude-codex were built and smoke-tested on linux/amd64 using these checkout pins.
+          commit-message: "chore: update ${{ matrix.product }} to ${{ steps.lifecycle.outputs.version }}"
+          branch: Update/${{ matrix.product }}/${{ steps.lifecycle.outputs.version }}
+          add-paths: version/${{ matrix.product }}/strict
+        if: steps.lifecycle.outputs.changed == 'true'
+      - name: Report end of life
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           update_existing: true
           search_existing: open
-          filename: .tmp/issue.md
-        if: steps.not_eol.outcome == 'failure'
-      - name: Regist status of Support.
-        id: support
-        run: |
-            test "null" == "${{steps.latest_env.outputs.Support}}" || [[ "$(date -u +'%Y-%m-%d')" < "${{steps.latest_env.outputs.Support}}" ]]
-        continue-on-error: true
-      - name: Make a issue body.
-        run: |
-            mkdir -p .tmp
-            echo "---" > .tmp/issue.md
-            echo "title: ${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is support out." >> .tmp/issue.md
-            echo "labels: support_out" >> .tmp/issue.md
-            echo "assignees: hinoshiba" >> .tmp/issue.md
-            echo "---" >> .tmp/issue.md
-            echo "${{matrix.PRODUCT}}/$(cat version/${{matrix.PRODUCT}}/major) is EOL." >> .tmp/issue.md
-            echo "detail > https://endoflife.date/${{matrix.PRODUCT}}" >> .tmp/issue.md
-            cat .tmp/issue.md
-        if: steps.support.outcome == 'failure'
-      - name: Create the issue.
+          filename: .tmp/eol.md
+        if: steps.lifecycle.outputs.eol == 'true'
+      - name: Report the end of active support separately
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           update_existing: true
           search_existing: open
-          filename: .tmp/issue.md
-        if: steps.support.outcome == 'failure'
+          filename: .tmp/support_out.md
+        if: steps.lifecycle.outputs.support_out == 'true'

@@ -421,6 +421,13 @@ elif argv[:1] == ["run"]:
         self.assertEqual(tags[0][-1], "localhost/workbench:latest")
         self.assertIn("localhost/workbench:latest", self.run_call())
 
+    def test_ai_skill_bootstrap_controls_are_forwarded(self):
+        self.env.update(SKILLS_BOOTSTRAP="1", SKILLS_REFRESH="1", ECC_BOOTSTRAP="0")
+        self.invoke(target="claude")
+        call = self.run_call()
+        for value in ("SKILLS_BOOTSTRAP=1", "SKILLS_REFRESH=1", "ECC_BOOTSTRAP=0"):
+            self.assertIn(value, call)
+
     def test_ai_aliases_use_composite_image_and_forward_args(self):
         for target, command in (("codex", "codex"), ("claude", "claude")):
             with self.subTest(target=target):

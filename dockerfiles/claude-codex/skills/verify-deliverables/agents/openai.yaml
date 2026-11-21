@@ -1,0 +1,4 @@
+interface:
+  display_name: "成果物の検証"
+  short_description: "ツール作業の完了を実物・検証結果・参照元と照合して確認する"
+  default_prompt: "Use $verify-deliverables to verify the requested deliverables and report only the checks that actually passed."

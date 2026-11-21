@@ -26,6 +26,7 @@ function update_startup_tools() {
 		HOME="/home/${LOCAL_WHOAMI}" \
 		SKILLS_BOOTSTRAP="${SKILLS_BOOTSTRAP:-}" \
 		SKILLS_REFRESH="${SKILLS_REFRESH:-}" \
+		ECC_BOOTSTRAP="${ECC_BOOTSTRAP:-}" \
 		bash /usr/local/bin/setup_skills.sh || true
 }
 

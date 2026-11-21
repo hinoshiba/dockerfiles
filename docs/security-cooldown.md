@@ -1,8 +1,8 @@
 # Package install "cooldown" (supply-chain hardening)
 
 To reduce exposure to supply-chain attacks — where a freshly published, and
-possibly compromised, package version is pulled in the moment it appears — all
-third-party package resolution in these images only adopts releases that have
+possibly compromised, package version is pulled in the moment it appears — the covered
+package installers below only adopt releases that have
 been **public for at least 14 days** (`COOLDOWN_DAYS`).
 
 A two-week quarantine gives the wider community time to detect and pull a
@@ -15,7 +15,7 @@ maintain.
 | Ecosystem | Where | Mechanism |
 | --- | --- | --- |
 | PyPI (pip) | `workbench`, `claude-codex`, `python`, `cvemaker`, `templates/python` | `pip install --uploaded-prior-to P<COOLDOWN_DAYS>D` — pip's native flag (ISO-8601 duration) limits the **whole** resolution, including transitive dependencies, to releases uploaded at least `COOLDOWN_DAYS` days ago. |
-| npm | `workbench`, `claude-codex` | `npm install --before=<today − COOLDOWN_DAYS>` — npm's native flag; only versions published before the cutoff are eligible. |
+| npm | `workbench`, `claude-codex`, `node` | `npm install --before=<today − COOLDOWN_DAYS>` — npm's native flag; only versions published before the cutoff are eligible. |
 | vim plugins (git) | `workbench` | `vim-plugin-cooldown` rolls every NeoBundle plugin back to the newest commit that is ≥ `COOLDOWN_DAYS` days old (git has no native release-age flag). |
 
 `pip` self-upgrade is bootstrapped first (`pip install --upgrade pip`) so that
@@ -45,3 +45,9 @@ The project templates accept it as a make variable: `make d-test COOLDOWN_DAYS=2
   Revisit once upstream ships native support.
 - **apt** packages come from the distribution archive, which already applies
   its own review/stabilisation process.
+
+- **Language toolchains** use explicitly reviewed `version/*` pins, independently
+  of package cooldowns. Build arguments take these values from the checkout.
+- **Startup AI plugin updates** are separate from image-build package resolution.
+  ECC is pinned to a reviewed commit; its bundled MCP server has its own version
+  and is not governed by `COOLDOWN_DAYS`. See [ECC setup](claude-codex/everything-claude-code.md).

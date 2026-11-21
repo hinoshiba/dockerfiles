@@ -1,12 +1,16 @@
 name: build_test
 on:
   pull_request:
+concurrency:
+  group: build-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 env:
   MYNAME: hinoshiba
 jobs:
   builder:
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         include:
           - IMGNAME: workbench
@@ -19,51 +23,64 @@ jobs:
           - IMGNAME: claude-codex
     steps:
       - name: Checkout from repository.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Fetch master
         run: git fetch origin master
-      - name: has diff for the image ?
-        id: diff_check
-        run: |
-          git diff --name-only origin/master HEAD | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
-        continue-on-error: true
-      - name: Get LANG_TYPE
-        id: LANG
-        run: |
-          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
-          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
-        if: steps.diff_check.outcome == 'success'
-      - name: Get Version
-        id: VERSION
-        run: |
-          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
-        if: steps.diff_check.outcome == 'success'
+      - name: Resolve checkout versions and image dependencies
+        id: image
+        run: python3 scripts/image_build.py ${{ matrix.IMGNAME }} --base origin/master >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-        if: steps.diff_check.outcome == 'success'
+        uses: docker/setup-buildx-action@v3
+        if: steps.image.outputs.changed == 'true'
       - name: Get Docker GID
         id: docker_gid
         run: |
           echo "GID=$(getent group docker | awk -F: '{print $3}')" >> "$GITHUB_OUTPUT"
-        if: steps.diff_check.outcome == 'success'
+        if: steps.image.outputs.changed == 'true'
       - name: Build test (all).
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: false
           load: true
           platforms: linux/amd64
           build-args: |
-            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
+            ${{ steps.image.outputs.build_args }}
             local_docker_gid=${{ steps.docker_gid.outputs.GID }}
           tags: |
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
-        if: steps.diff_check.outcome == 'success'
+        if: steps.image.outputs.changed == 'true'
+      - name: Verify Node compatibility commands
+        run: |
+          docker run --rm -i --entrypoint /bin/bash \
+            -e EXPECTED_NODE="$(cat version/node/strict)" \
+            ${{ env.MYNAME }}/node:latest -s < tests/node-image-smoke.sh
+        if: steps.image.outputs.changed == 'true' && matrix.IMGNAME == 'node'
+      - name: Verify Go and Rust image versions, locale and compilers
+        env:
+          LANG_IMAGE: ${{ matrix.IMGNAME }}
+        run: |
+          docker run --rm -i --entrypoint /bin/bash \
+            -e LANG_IMAGE="$LANG_IMAGE" \
+            -e EXPECTED_VERSION="$(cat "version/$LANG_IMAGE/strict")" \
+            "${{ env.MYNAME }}/$LANG_IMAGE:latest" -s < tests/language-image-smoke.sh
+        if: steps.image.outputs.changed == 'true' && (matrix.IMGNAME == 'golang' || matrix.IMGNAME == 'rust')
+      - name: Verify bundled runtime versions and compiler behavior
+        run: |
+          docker run --rm -i --entrypoint /bin/bash \
+            -e EXPECTED_RUST="$(cat version/rust/strict)" \
+            -e EXPECTED_GO="$(cat version/golang/strict)" \
+            -e EXPECTED_PYTHON="$(cat version/python/strict)" \
+            -e EXPECTED_NODE="$(cat version/node/strict)" \
+            ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest -s < tests/composite-image-smoke.sh
+        if: steps.image.outputs.changed == 'true' && (matrix.IMGNAME == 'workbench' || matrix.IMGNAME == 'claude-codex')
       - name: Verify workbench commands and language libraries.
         run: |
           docker run --rm -i --entrypoint /bin/bash \
             ${{ env.MYNAME }}/workbench:latest -s < tests/workbench-image-smoke.sh
-        if: steps.diff_check.outcome == 'success' && matrix.IMGNAME == 'workbench'
+        if: steps.image.outputs.changed == 'true' && matrix.IMGNAME == 'workbench'
       - name: Run test x64.
         # claude-codex is a build-only AI composite image (run in practice via
         # `make target=codex` / `make target=claude`). Its entrypoint requires the
@@ -73,4 +90,4 @@ jobs:
         run: |
           make install
           make target=${{ matrix.IMGNAME }} builder=${{ env.MYNAME }} cmd="echo ok" test
-        if: steps.diff_check.outcome == 'success' && matrix.IMGNAME != 'claude-codex'
+        if: steps.image.outputs.changed == 'true' && matrix.IMGNAME != 'claude-codex'

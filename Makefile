@@ -50,7 +50,7 @@ repopull:
 
 check:
 	$(PYTHON) -m unittest discover -s tests -p 'test_*.py' -v
-	@bash -n dockerfiles/workbench/exec_user.sh dockerfiles/claude-codex/exec_user.sh tests/workbench-image-smoke.sh
+	@bash -n dockerfiles/workbench/exec_user.sh dockerfiles/claude-codex/exec_user.sh dockerfiles/claude-codex/setup_skills.sh dockerfiles/claude-codex/setup_ecc.sh tests/workbench-image-smoke.sh tests/composite-image-smoke.sh tests/node-image-smoke.sh tests/language-image-smoke.sh
 
 help:
 	@printf '%s\n' \

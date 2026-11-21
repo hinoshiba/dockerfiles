@@ -8,7 +8,11 @@ env:
 jobs:
   builder:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: publish-${{ matrix.IMGNAME }}
+      cancel-in-progress: false
     strategy:
+      fail-fast: false
       matrix:
         include:
           - IMGNAME: workbench
@@ -24,36 +28,33 @@ jobs:
         id: date
         run: echo "Weekid=$(date +'%Y%U')" >> "$GITHUB_OUTPUT"
       - name: Checkout from repository.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: has diff for the image ?
-        id: diff_check
+      - name: Resolve checkout versions and image dependencies
+        id: image
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
-          git diff --name-only "HEAD" "HEAD^" | grep -e "dockerfiles/${{matrix.IMGNAME}}" -e "version/${{matrix.IMGNAME}}"
-        continue-on-error: true
-      - name: Get LANG_TYPE
-        id: LANG
-        run: |
-          echo "TYPE=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^FROM \([^:]*\):.*$/\1/p')" >> "$GITHUB_OUTPUT"
-          echo "TAG=$(cat dockerfiles/${{matrix.IMGNAME}}/Dockerfile | grep FROM | head -n1 | sed -n 's/^.*\${\([^}]*\)}.*$/\1/p')" >> "$GITHUB_OUTPUT"
-        if: steps.diff_check.outcome == 'success'
-      - name: Get Version
-        id: VERSION
-        run: |
-          echo "TARGET=$(cat version/${{ steps.LANG.outputs.TYPE }}/${{ steps.LANG.outputs.TAG }})" >> "$GITHUB_OUTPUT"
-        if: steps.diff_check.outcome == 'success'
+          if [ "$BEFORE" = 0000000000000000000000000000000000000000 ]; then
+            python3 scripts/image_build.py ${{ matrix.IMGNAME }} >> "$GITHUB_OUTPUT"
+          else
+            python3 scripts/image_build.py ${{ matrix.IMGNAME }} --base "$BEFORE" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        if: steps.image.outputs.changed == 'true'
       - name: Set up Docker Buildx.
-        uses: docker/setup-buildx-action@v2
-        if: steps.diff_check.outcome == 'success'
+        uses: docker/setup-buildx-action@v3
+        if: steps.image.outputs.changed == 'true'
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-        if: steps.diff_check.outcome == 'success'
+        if: steps.image.outputs.changed == 'true'
       - name: Build and Push to Docker Hub.
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: dockerfiles/${{matrix.IMGNAME}}
           push: true
@@ -62,5 +63,5 @@ jobs:
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:latest
             ${{ env.MYNAME }}/${{ matrix.IMGNAME }}:${{ steps.date.outputs.Weekid }}
           build-args: |
-            ${{ steps.LANG.outputs.TAG }}=${{ steps.VERSION.outputs.TARGET }}
-        if: steps.diff_check.outcome == 'success'
+            ${{ steps.image.outputs.build_args }}
+        if: steps.image.outputs.changed == 'true'
